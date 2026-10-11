@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="description" content="Portal de gestão RBS - Dashboard administrativo">
+
+    <title>RBS Patrocinadores | Dashboard</title>
+
+    <link rel="stylesheet" href="style_rbs_final.css">
+
+</head>
+
+
+<body>
+
+    <!-- =========================================================
+
+         APP SHELL
+
+    ========================================================== -->
+
+    <div class="app-shell">
+
+
+
+        <!-- =====================================================
+
+             SIDEBAR
+
+        ====================================================== -->
+
+        <aside class="sidebar" id="sidebar">
+
+
+
+            <div class="sidebar-brand">
+
+                <div class="brand-mark">RBS</div>
+
+
+
+                <div class="brand-copy">
+
+                    <strong>Patrocinadores</strong>
+
+                    <span>Portal de gestão</span>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="workspace">
+
+                <span class="eyebrow">ÁREA DE TRABALHO</span>
+
+
+
+                <strong>Administração RBS</strong>
+
+
+
+                <span>Visão geral da operação</span>
+
+            </div>
+
+
+
+            <nav class="main-nav" aria-label="Navegação principal">
+
+
+
+                <span class="nav-label">NAVEGAÇÃO</span>
+
+
+
+                <a class="nav-item active" href="#dashboard">
+
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+
+                        <rect x="3" y="3" width="7" height="7" rx="1"/>
+
+                        <rect x="14" y="3" width="7" height="7" rx="1"/>
+
+                        <rect x="3" y="14" width="7" height="7" rx="1"/>
+
+                        <rect x="14" y="14" width="7" height="7" rx="1"/>
+
+                    </svg>
+
+                    <span>Dashboard</span>
+
+                    <span class="nav-chevron">−</span>
+
+                </a>
+
+
+
+                <a class="nav-item" href="#patrocinadores">
+
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+
+                        <rect x="3" y="4" width="18" height="16" rx="2"/>
+
+                        <path d="M8 20v-4h8v4M8 8h.01M12 8h.01M16 8h.01M8 12h.01M12 12h.01M16 12h.01"/>
+
+                    </svg>
+
+                    <span>Patrocinadores</span>
+
+                </a>
+
+
+
+                <a class="nav-item" href="#relatorios">
+
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+
+                        <path d="M4 19V9M10 19V5M16 19v-8M22 19H2"/>
+
+                    </svg>
+
+                    <span>Relatórios</span>
+
+                </a>
+
+
+
+                <a class="nav-item" href="#auditoria">
+
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+
+                        <path d="M12 3l8 3v5c0 5-3.4 8.3-8 10-4.6-1.7-8-5-8-10V6l8-3z"/>
+
+                        <path d="M9 12l2 2 4-4"/>
+
+                    </svg>
+
+                    <span>Auditoria</span>
+
+                </a>
+
+
+
+                <a class="nav-item" href="#configuracoes">
+
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+
+                        <path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z"/>
+
+                        <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-1.9 1.9-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V20h-2.68v-.09A1.7 1.7 0 0 0 11.2 18.4a1.7 1.7 0 0 0-1.88.34l-.06.06-1.9-1.9.06-.06A1.7 1.7 0 0 0 7.76 15a1.7 1.7 0 0 0-1.56-1.03H6v-2.68h.2A1.7 1.7 0 0 0 7.76 10a1.7 1.7 0 0 0-.34-1.88l-.06-.06 1.9-1.9.06.06a1.7 1.7 0 0 0 1.88.34A1.7 1.7 0 0 0 12.23 5V4h2.68v1a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06 1.9 1.9-.06.06A1.7 1.7 0 0 0 19.4 10c.23.63.83 1.05 1.5 1.05h.1v2.68h-.1c-.67 0-1.27.42-1.5 1.05z"/>
+
+                    </svg>
+
+                    <span>Configurações</span>
+
+                </a>
+
+            </nav>
+
+
+
+            <div class="sidebar-note">
+
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+
+                    <rect x="6" y="10" width="12" height="10" rx="2"/>
+
+                    <path d="M9 10V7a3 3 0 0 1 6 0v3"/>
+
+                </svg>
+
+                <span>Acesso à gestão de todos os patrocinadores e cotas.</span>
+
+            </div>
+
+        </aside>
+
+        <!-- =====================================================
+
+             MAIN AREA
+
+        ====================================================== -->
+
+        <div class="main-area">
+
+            <!-- TOPBAR -->
+
+            <header class="topbar">
+
+                <div class="topbar-breadcrumb">
+
+                    <span class="breadcrumb">
+
+                        Administração RBS <b>/</b> Dashboard <!-- Breadcrumbs, Mmanter isso quando funfar?-->
+
+                    </span>
+
+                </div>
+
+                <div class="topbar-user">
+
+
+
+                    <button class="notification" type="button" aria-label="Notificações">
+
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+
+                            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
+
+                            <path d="M10 21h4"/>
+
+                        </svg>
+
+                    </button>
+
+
+
+                    <div class="user-text">
+
+                        <strong>Otávio Fogaça</strong>
+
+                        <span>Equipe RBS</span>
+
+                    </div>
+
+
+
+                    <div class="avatar">OF</div>
+
+
+
+                </div>
+
+            </header>
+
+
+
+            <main class="content" id="dashboard">
+
+
+
+                <!-- DASHBOARD HEADER -->
+
+                                <section class="dashboard-header">
+                    <div class="dashboard-title">
+                        <h1>Dashboard</h1>
+                        <p>Acompanhe patrocinadores, entregas e pendências.</p>
+
+                        <div class="new-sponsor-wrapper">
+                            <button
+                                class="button button-primary"
+                                type="button"
+                                id="newSponsorButton"
+                                aria-expanded="false"
+                                aria-controls="newSponsorForm"
+                            >
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M12 5v14M5 12h14"/>
+                                </svg>
+                                Novo patrocinador
+                            </button>
+
+                            <div class="new-sponsor-form" id="newSponsorForm">
+
+
+
+        <div class="form-header">
+
+
+
+            <div>
+
+                <h3>Novo patrocinador</h3>
+
+                <p>Cadastre um novo patrocinador na plataforma.</p>
+
+            </div>
+
+
+
+            <button
+
+                type="button"
+
+                class="close-form"
+
+                id="closeSponsorForm"
+
+                aria-label="Fechar"
+
+            >
+
+                ×
+
+            </button>
+
+
+
+        </div>
+
+        <form id="sponsorForm">
+
+            <!-- Nome -->
+
+            <div class="form-group">
+                
+                <label for="sponsorName">
+
+                    Nome da empresa
+
+                </label>
+
+
+
+                <input
+
+                    type="text"
+
+                    id="sponsorName"
+
+                    name="nome"
+
+                    placeholder="Ex.: Aurora Alimentos"
+
+                    required
+
+                >
+
+
+
+            </div>
+
+
+
+
+
+            <!-- CNPJ -->
+
+            <div class="form-group">
+
+
+
+                <label for="sponsorCnpj">
+
+                    CNPJ
+
+                </label>
+
+
+
+                <input
+
+                    type="text"
+
+                    id="sponsorCnpj"
+
+                    name="cnpj"
+
+                    placeholder="00.000.000/0000-00"
+
+                    maxlength="18"
+
+                    required
+
+                >
+
+
+
+            </div>
+
+
+
+
+
+            <!-- Segmento -->
+
+            <div class="form-group">
+
+
+
+                <label for="sponsorSegment">
+
+                    Segmento
+
+                </label>
+
+
+
+                <input
+
+                    type="text"
+
+                    id="sponsorSegment"
+
+                    name="segmento"
+
+                    placeholder="Ex.: Alimentos e bebidas"
+
+                    required
+
+                >
+
+
+
+            </div>
+
+            <!-- Cota -->
+
+            <div class="form-group">
+
+                <label for="sponsorQuota">
+
+                    Cota
+
+                </label>
+
+                <select
+
+                    id="sponsorQuota"
+
+                    name="cota"
+
+                    required
+
+                >
+
+                    <option value="">Selecione uma cota</option>
+
+                    <option value="Ouro">Master</option>
+
+                    <option value="Prata">Subcota G</option>
+
+                    <option value="Bronze">Subcota</option>
+
+                </select>
+
+
+
+            </div>
+
+
+
+
+
+            <!-- Data -->
+
+            <div class="form-group">
+
+
+
+                <label for="sponsorStart">
+
+                    Início do patrocínio
+
+                </label>
+
+
+
+                <input
+
+                    type="date"
+
+                    id="sponsorStart"
+
+                    name="inicio"
+
+                >
+
+
+
+            </div>
+
+
+
+
+
+            <!-- Botões -->
+
+            <div class="form-actions">
+
+
+
+                <button
+
+                    type="button"
+
+                    class="form-cancel"
+
+                    id="cancelSponsor"
+
+                >
+
+                    Cancelar
+
+                </button>
+
+
+
+                <button
+
+                    type="submit"
+
+                    class="form-submit"
+
+                >
+
+                    Cadastrar patrocinador
+
+                </button>
+
+
+
+            </div>
+
+
+
+        </form>
+
+
+
+    </div>
+
+
+
+</div>
+
+                </section>
+
+
+
+            </main>
+
+        </div>
+
+    </div>
+
+
+
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const newSponsorButton = document.getElementById("newSponsorButton");
+    const newSponsorForm = document.getElementById("newSponsorForm");
+    const closeSponsorForm = document.getElementById("closeSponsorForm");
+    const cancelSponsor = document.getElementById("cancelSponsor");
+    const sponsorForm = document.getElementById("sponsorForm");
+
+    function closeForm() {
+        newSponsorForm.classList.remove("open");
+        newSponsorButton.setAttribute("aria-expanded", "false");
+    }
+
+    // Garante que o formulário comece fechado ao carregar a página.
+    closeForm();
+
+    newSponsorButton.addEventListener("click", function () {
+        const isOpen = newSponsorForm.classList.toggle("open");
+        newSponsorButton.setAttribute("aria-expanded", String(isOpen));
+    });
+
+    closeSponsorForm.addEventListener("click", closeForm);
+    cancelSponsor.addEventListener("click", closeForm);
+
+    document.addEventListener("click", function (event) {
+        if (!newSponsorForm.parentElement.contains(event.target)) {
+            closeForm();
+        }
+    });
+
+    sponsorForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+        // O envio/cadastro pode ser conectado à API ou backend posteriormente.
+    });
+});
+</script>
+
+</body>
+
+</html>
