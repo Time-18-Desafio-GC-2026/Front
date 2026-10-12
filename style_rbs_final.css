@@ -1238,3 +1238,112 @@ svg {
         justify-content: flex-start;
     }
 }
+
+/* CSS REFERENTE AOS CARDS DE PATROCINADORES */
+
+/* Grade de patrocinadores */
+.patrocinadores-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    width: 100%;
+    margin-top: 24px;
+    align-items: stretch;
+}
+
+/* Card individual */
+.patrocinador-card {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+    aspect-ratio: 1 / 1;
+    padding: 22px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    overflow-wrap: anywhere;
+}
+
+.patrocinador-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* Cabeçalho do card */
+.patrocinador-card-header {
+    padding-bottom: 14px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.patrocinador-card h3 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 700;
+    line-height: 1.35;
+    color: #172033;
+}
+
+/* Cota */
+.patrocinador-cota {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    background: #eef2ff;
+    color: #4338ca;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+/* Informações */
+.patrocinador-info {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.patrocinador-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.patrocinador-info-item strong {
+    color: #6b7280;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.patrocinador-info-item span {
+    color: #263244;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+/* Mensagem quando não existem registros */
+.patrocinadores-vazio {
+    grid-column: 1 / -1;
+    padding: 32px 20px;
+    text-align: center;
+    color: #6b7280;
+    background: #ffffff;
+    border: 1px dashed #cbd5e1;
+    border-radius: 12px;
+}
+
+/* Ajustes para telas menores */
+@media (max-width: 600px) {
+    .patrocinadores-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .patrocinador-card {
+        aspect-ratio: auto;
+        min-height: 250px;
+    }
+}

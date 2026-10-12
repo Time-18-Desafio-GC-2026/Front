@@ -94,3 +94,69 @@ function cadastrarEnvio(patrocinadorId, dados) {
 
     return novoEnvio;
 }
+
+// FUNÇÃO QUE GERA OS CARDS DOS PATROCINADORES
+function renderizarPatrocinadores() {
+    const grid = document.getElementById("patrocinadoresGrid");
+
+    // Se a página não tiver a área dos cards, não faz nada.
+    if (!grid) return;
+
+    const patrocinadores = listarPatrocinadores();
+
+    grid.replaceChildren();
+
+    if (patrocinadores.length === 0) {
+        const mensagem = document.createElement("div");
+        mensagem.className = "patrocinadores-vazio";
+        mensagem.textContent = "Nenhum patrocinador cadastrado ainda.";
+        grid.appendChild(mensagem);
+        return;
+    }
+
+    patrocinadores.forEach(function (patrocinador) {
+        const card = document.createElement("article");
+        card.className = "patrocinador-card";
+
+        const header = document.createElement("div");
+        header.className = "patrocinador-card-header";
+
+        const nome = document.createElement("h3");
+        nome.textContent = patrocinador.nome || "Empresa sem nome";
+
+        const cota = document.createElement("span");
+        cota.className = "patrocinador-cota";
+        cota.textContent = patrocinador.cota || "Cota não informada";
+
+        header.append(nome, cota);
+
+        const info = document.createElement("div");
+        info.className = "patrocinador-info";
+
+        function adicionarInformacao(rotulo, valor) {
+            const item = document.createElement("div");
+            item.className = "patrocinador-info-item";
+
+            const titulo = document.createElement("strong");
+            titulo.textContent = rotulo;
+
+            const conteudo = document.createElement("span");
+            conteudo.textContent = valor || "Não informado";
+
+            item.append(titulo, conteudo);
+            info.appendChild(item);
+        }
+
+        adicionarInformacao("CNPJ", patrocinador.cnpj);
+        adicionarInformacao("E-mail", patrocinador.email);
+        adicionarInformacao(
+            "Plano comercial",
+            patrocinador.arquivo
+        );
+
+        card.append(header, info);
+        grid.appendChild(card);
+    });
+}
+
+document.addEventListener("DOMContentLoaded", renderizarPatrocinadores);

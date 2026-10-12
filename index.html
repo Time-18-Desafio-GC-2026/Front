@@ -270,20 +270,14 @@
 
                             <div class="new-sponsor-form" id="newSponsorForm">
 
-
-
         <div class="form-header">
 
             <div>
-
                 <h3>Novo patrocinador</h3>
-
                 <p>Cadastre um novo patrocinador na plataforma.</p>
-
             </div>
 
             <button
-
                 type="button"
 
                 class="close-form"
@@ -398,14 +392,13 @@
                     required
 
                 >
-
                     <option value="">Selecione uma cota</option>
 
-                    <option value="Ouro">Master</option>
+                    <option value="Master">Master</option>
 
-                    <option value="Prata">Subcota G</option>
+                    <option value="Subcota G">Subcota G</option>
 
-                    <option value="Bronze">Subcota</option>
+                    <option value="Subcota">Subcota</option>
 
                 </select>
 
@@ -424,13 +417,11 @@
                 </label>
 
                 <input
-
                     type="file"
 
                     id="sponsorComercialPlan"
 
                     name="plano_comercial"
-
                 >
 
             </div>
@@ -438,63 +429,45 @@
 
             <div class="form-actions">
 
-
-
                 <button
-
                     type="button"
 
                     class="form-cancel"
 
                     id="cancelSponsor"
-
                 >
-
                     Cancelar
-
                 </button>
 
-
-
                 <button
-
                     type="submit"
 
                     class="form-submit"
-
                 >
-
                     Cadastrar patrocinador
 
                 </button>
-
-
-
             </div>
-
-
-
         </form>
-
-
-
     </div>
-
-
-
 </div>
 
+                 <div class="dashboard-title">
+                    <br>
+                    <h1>Patrocinadores</h1>
+                     <p>Visualize os patrocinadores cadastrados.</p>
+
+                        <div id="patrocinadoresGrid" class="patrocinadores-grid">
+                            <!-- Cards dos patrocinadores -->
+                        </div>
+                    </div>
+
                 </section>
-
-
-
             </main>
-
         </div>
-
     </div>
 
-
+ <!--    SCRIPTS    -->
 
     <script>
 document.addEventListener("DOMContentLoaded", function () {
@@ -526,10 +499,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    sponsorForm.addEventListener("submit", function (event) {
-        event.preventDefault();
-        // O envio/cadastro pode ser conectado à API ou backend posteriormente.
-    });
 });
 
 </script>
@@ -543,6 +512,9 @@ Isso não oferece autenticação, controle de acesso nem integridade de um banco
 document.addEventListener("DOMContentLoaded", function () {
     const sponsorForm = document.getElementById("sponsorForm"); */
 
+document.addEventListener("DOMContentLoaded", function () {
+    const sponsorForm = document.getElementById("sponsorForm");
+
     sponsorForm.addEventListener("submit", function (event) {
         event.preventDefault();
 
@@ -550,15 +522,15 @@ document.addEventListener("DOMContentLoaded", function () {
         const cnpj = document.getElementById("sponsorCnpj").value.trim();
         const email = document.getElementById("sponsorEmails").value.trim();
         const cota = document.getElementById("sponsorQuota").value;
-
-        const arquivo = document.getElementById("sponsorComercialPlan").files[0];
+        const inputArquivo = document.getElementById("sponsorComercialPlan");
+        const arquivo = inputArquivo.files[0];
 
         const dados = {
             nome: nome,
             cnpj: cnpj,
             email: email,
             cota: cota,
-            planoComercial: arquivo ? arquivo.name : ""
+            arquivo: arquivo ? arquivo.name : ""
         };
 
         try {
@@ -567,19 +539,19 @@ document.addEventListener("DOMContentLoaded", function () {
             alert("Patrocinador cadastrado com sucesso!");
 
             sponsorForm.reset();
-
-            document.getElementById("newSponsorForm")
-                .classList.remove("open");
-
+            document.getElementById("newSponsorForm").classList.remove("open");
             document.getElementById("newSponsorButton")
                 .setAttribute("aria-expanded", "false");
 
-            console.log("Patrocinadores cadastrados:", listarPatrocinadores());
+            renderizarPatrocinadores();
         } catch (erro) {
             console.error("Erro ao cadastrar patrocinador:", erro);
             alert("Não foi possível salvar o patrocinador.");
         }
     });
+
+    renderizarPatrocinadores();
+});
 </script>
 </body>
 </html>
