@@ -274,8 +274,6 @@
 
         <div class="form-header">
 
-
-
             <div>
 
                 <h3>Novo patrocinador</h3>
@@ -283,8 +281,6 @@
                 <p>Cadastre um novo patrocinador na plataforma.</p>
 
             </div>
-
-
 
             <button
 
@@ -297,12 +293,8 @@
                 aria-label="Fechar"
 
             >
-
                 ×
-
             </button>
-
-
 
         </div>
 
@@ -334,27 +326,17 @@
 
                 >
 
-
-
             </div>
-
-
-
-
 
             <!-- CNPJ -->
 
             <div class="form-group">
-
-
 
                 <label for="sponsorCnpj">
 
                     CNPJ
 
                 </label>
-
-
 
                 <input
 
@@ -372,44 +354,29 @@
 
                 >
 
-
-
             </div>
-
-
-
-
 
             <!-- Segmento -->
 
             <div class="form-group">
 
+                <label for="sponsorEmails">
 
-
-                <label for="sponsorSegment">
-
-                    Segmento
+                    Emails
 
                 </label>
-
-
 
                 <input
 
                     type="text"
 
-                    id="sponsorSegment"
+                    id="sponsorEmails"
 
-                    name="segmento"
+                    name="Emails"
 
-                    placeholder="Ex.: Alimentos e bebidas"
+                    placeholder="Ex.: Funcionário1@empresa.com, Funcionário2@empresa.com"
 
-                    required
-
-                >
-
-
-
+                    required >
             </div>
 
             <!-- Cota -->
@@ -446,42 +413,27 @@
 
             </div>
 
-
-
-
-
             <!-- Data -->
 
             <div class="form-group">
 
+                <label for="sponsorComercialPlan">
 
-
-                <label for="sponsorStart">
-
-                    Início do patrocínio
+                    Plano Comercial
 
                 </label>
 
-
-
                 <input
 
-                    type="date"
+                    type="file"
 
-                    id="sponsorStart"
+                    id="sponsorComercialPlan"
 
-                    name="inicio"
+                    name="plano_comercial"
 
                 >
 
-
-
             </div>
-
-
-
-
-
             <!-- Botões -->
 
             <div class="form-actions">
@@ -579,8 +531,56 @@ document.addEventListener("DOMContentLoaded", function () {
         // O envio/cadastro pode ser conectado à API ou backend posteriormente.
     });
 });
+
 </script>
 
-</body>
+<script src="patrocinadores.js"></script>
+<script>
+    /*Script para cadastrar patrocinadores Os dados ficam somente naquele navegador e naquela origem do site.
+Outro computador ou usuário não verá os mesmos registros.
+Limpar os dados do navegador pode apagar os registros.
+Isso não oferece autenticação, controle de acesso nem integridade de um banco de dados real.
+document.addEventListener("DOMContentLoaded", function () {
+    const sponsorForm = document.getElementById("sponsorForm"); */
 
+    sponsorForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        const nome = document.getElementById("sponsorName").value.trim();
+        const cnpj = document.getElementById("sponsorCnpj").value.trim();
+        const email = document.getElementById("sponsorEmails").value.trim();
+        const cota = document.getElementById("sponsorQuota").value;
+
+        const arquivo = document.getElementById("sponsorComercialPlan").files[0];
+
+        const dados = {
+            nome: nome,
+            cnpj: cnpj,
+            email: email,
+            cota: cota,
+            planoComercial: arquivo ? arquivo.name : ""
+        };
+
+        try {
+            cadastrarPatrocinador(dados);
+
+            alert("Patrocinador cadastrado com sucesso!");
+
+            sponsorForm.reset();
+
+            document.getElementById("newSponsorForm")
+                .classList.remove("open");
+
+            document.getElementById("newSponsorButton")
+                .setAttribute("aria-expanded", "false");
+
+            console.log("Patrocinadores cadastrados:", listarPatrocinadores());
+        } catch (erro) {
+            console.error("Erro ao cadastrar patrocinador:", erro);
+            alert("Não foi possível salvar o patrocinador.");
+        }
+    });
+});
+</script>
+</body>
 </html>
