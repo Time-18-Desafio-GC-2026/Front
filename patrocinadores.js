@@ -24,6 +24,8 @@ function cadastrarPatrocinador(dados) {
         cnpj: dados.cnpj,
         email: dados.email,
         cota: dados.cota,
+        texto: dados.texto,
+        arquivo: dados.arquivo,
         criadoEm: new Date().toISOString()
     };
 
@@ -41,4 +43,54 @@ function excluirPatrocinador(id) {
     );
 
     salvarPatrocinadores(atualizados);
+}
+
+
+const ENVIOS_KEY = "rbs_envios";
+
+// Lista os envios realizados por todos os patrocinadores.
+function listarEnvios() {
+    return JSON.parse(
+        localStorage.getItem(ENVIOS_KEY) || "[]"
+    );
+}
+
+// Lista somente os envios de uma empresa.
+function listarEnviosPorPatrocinador(patrocinadorId) {
+    return listarEnvios().filter(
+        envio => envio.patrocinadorId === patrocinadorId
+    );
+}
+
+// Registra um envio vinculado a uma empresa existente.
+function cadastrarEnvio(patrocinadorId, dados) {
+    const patrocinadores = listarPatrocinadores();
+
+    const patrocinadorExiste = patrocinadores.some(
+        patrocinador => patrocinador.id === patrocinadorId
+    );
+
+    if (!patrocinadorExiste) {
+        throw new Error("Patrocinador não encontrado.");
+    }
+
+    const envios = listarEnvios();
+
+    const novoEnvio = {
+        id: crypto.randomUUID(),
+        patrocinadorId: patrocinadorId,
+        texto: dados.texto || "",
+        arquivo: dados.arquivo || null,
+        status: "Pendente",
+        criadoEm: new Date().toISOString()
+    };
+
+    envios.push(novoEnvio);
+
+    localStorage.setItem(
+        ENVIOS_KEY,
+        JSON.stringify(envios)
+    );
+
+    return novoEnvio;
 }
