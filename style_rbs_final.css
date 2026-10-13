@@ -1403,3 +1403,134 @@ svg {
     color: #64748b;
     font-size: 0.85rem;
 }
+
+/*CORTESIAS*/
+
+
+
+/* Seção de cortesias */
+.patrocinador-cortesias {
+    margin-top: 4px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.patrocinador-cortesias h4 {
+    margin: 0 0 14px;
+    color: #172033;
+    font-size: 1rem;
+}
+
+.cortesias-grade {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.cortesia-setor {
+    min-width: 0;
+    padding: 12px;
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+}
+
+.cortesia-setor h5 {
+    margin: 0 0 10px;
+    color: #263244;
+    font-size: 0.9rem;
+}
+
+.cortesia-resumo {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    gap: 8px;
+    margin-top: 8px;
+    color: #475569;
+    font-size: 0.82rem;
+}
+
+.cortesia-resumo strong {
+    color: #172033;
+}
+
+.lounge-info {
+    margin: 0;
+    color: #475569;
+    font-size: 0.85rem;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.botao-editar-cortesias {
+    margin-top: 12px;
+}
+
+.form-cortesias {
+    margin-top: 14px;
+    padding: 14px;
+    border: 1px solid #dbe2ea;
+    border-radius: 10px;
+    background: #ffffff;
+}
+
+.form-cortesias[hidden] {
+    display: none;
+}
+
+.form-cortesias h5 {
+    margin: 14px 0 8px;
+    color: #172033;
+}
+
+.form-cortesias h5:first-child {
+    margin-top: 0;
+}
+
+.campo-cortesia {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 10px;
+    color: #475569;
+    font-size: 0.85rem;
+}
+
+.campo-cortesia input,
+.campo-cortesia textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 9px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font: inherit;
+}
+
+.campo-cortesia textarea {
+    resize: vertical;
+}
+
+.cortesias-acoes {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.cortesias-acoes button {
+    padding: 9px 14px;
+    border: 0;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.cortesias-acoes button[type="submit"] {
+    background: #4338ca;
+    color: #ffffff;
+}
+
+@media (max-width: 600px) {
+    .cortesias-grade {
+        grid-template-columns: 1fr;
+    }
+}
