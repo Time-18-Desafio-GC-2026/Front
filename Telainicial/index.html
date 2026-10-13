@@ -270,20 +270,14 @@
 
                             <div class="new-sponsor-form" id="newSponsorForm">
 
-
-
         <div class="form-header">
 
             <div>
-
                 <h3>Novo patrocinador</h3>
-
                 <p>Cadastre um novo patrocinador na plataforma.</p>
-
             </div>
 
             <button
-
                 type="button"
 
                 class="close-form"
@@ -398,14 +392,13 @@
                     required
 
                 >
-
                     <option value="">Selecione uma cota</option>
 
-                    <option value="Ouro">Master</option>
+                    <option value="Master">Master</option>
 
-                    <option value="Prata">Subcota G</option>
+                    <option value="Subcota G">Subcota G</option>
 
-                    <option value="Bronze">Subcota</option>
+                    <option value="Subcota">Subcota</option>
 
                 </select>
 
@@ -424,13 +417,11 @@
                 </label>
 
                 <input
-
                     type="file"
 
                     id="sponsorComercialPlan"
 
                     name="plano_comercial"
-
                 >
 
             </div>
@@ -438,63 +429,45 @@
 
             <div class="form-actions">
 
-
-
                 <button
-
                     type="button"
 
                     class="form-cancel"
 
                     id="cancelSponsor"
-
                 >
-
                     Cancelar
-
                 </button>
 
-
-
                 <button
-
                     type="submit"
 
                     class="form-submit"
-
                 >
-
                     Cadastrar patrocinador
 
                 </button>
-
-
-
             </div>
-
-
-
         </form>
-
-
-
     </div>
-
-
-
 </div>
 
+                 <div class="dashboard-title">
+                    <br>
+                    <h1>Patrocinadores</h1>
+                     <p>Visualize os patrocinadores cadastrados.</p>
+
+                        <div id="patrocinadoresGrid" class="patrocinadores-grid">
+                            <!-- Cards dos patrocinadores -->
+                        </div>
+                    </div>
+
                 </section>
-
-
-
             </main>
-
         </div>
-
     </div>
 
-
+ <!--    SCRIPTS    -->
 
     <script>
 document.addEventListener("DOMContentLoaded", function () {
@@ -521,27 +494,27 @@ document.addEventListener("DOMContentLoaded", function () {
     cancelSponsor.addEventListener("click", closeForm);
 
     document.addEventListener("click", function (event) {
-        if (!newSponsorForm.parentElement.contains(event.target)) {
-            closeForm();
-        }
-    });
+    const clicouFora = !newSponsorForm.parentElement.contains(event.target);
+    const clicouEmEditar = event.target.closest(".botao-editar");
 
-    sponsorForm.addEventListener("submit", function (event) {
-        event.preventDefault();
-        // O envio/cadastro pode ser conectado à API ou backend posteriormente.
-    });
+    if (clicouFora && !clicouEmEditar) {
+        closeForm();
+    }
+});
+
 });
 
 </script>
 
 <script src="patrocinadores.js"></script>
+
 <script>
-    /*Script para cadastrar patrocinadores Os dados ficam somente naquele navegador e naquela origem do site.
-Outro computador ou usuário não verá os mesmos registros.
-Limpar os dados do navegador pode apagar os registros.
-Isso não oferece autenticação, controle de acesso nem integridade de um banco de dados real.
 document.addEventListener("DOMContentLoaded", function () {
-    const sponsorForm = document.getElementById("sponsorForm"); */
+    const sponsorForm = document.getElementById("sponsorForm");
+    const newSponsorForm = document.getElementById("newSponsorForm");
+    const newSponsorButton = document.getElementById("newSponsorButton");
+    const submitButton = sponsorForm.querySelector("[type='submit']");
+    const tituloFormulario = newSponsorForm.querySelector("h3");
 
     sponsorForm.addEventListener("submit", function (event) {
         event.preventDefault();
@@ -550,37 +523,45 @@ document.addEventListener("DOMContentLoaded", function () {
         const cnpj = document.getElementById("sponsorCnpj").value.trim();
         const email = document.getElementById("sponsorEmails").value.trim();
         const cota = document.getElementById("sponsorQuota").value;
-
-        const arquivo = document.getElementById("sponsorComercialPlan").files[0];
+        const inputArquivo = document.getElementById("sponsorComercialPlan");
+        const arquivo = inputArquivo.files[0];
 
         const dados = {
             nome: nome,
             cnpj: cnpj,
             email: email,
             cota: cota,
-            planoComercial: arquivo ? arquivo.name : ""
+            arquivo: arquivo ? arquivo.name : ""
         };
 
         try {
-            cadastrarPatrocinador(dados);
+            const idEdicao = sponsorForm.dataset.editandoId;
 
-            alert("Patrocinador cadastrado com sucesso!");
+            if (idEdicao) {
+                editarPatrocinador(idEdicao, dados);
+                alert("Patrocinador atualizado com sucesso!");
+                delete sponsorForm.dataset.editandoId;
+            } else {
+                cadastrarPatrocinador(dados);
+                alert("Patrocinador cadastrado com sucesso!");
+            }
 
             sponsorForm.reset();
 
-            document.getElementById("newSponsorForm")
-                .classList.remove("open");
+            newSponsorForm.classList.remove("open");
+            newSponsorButton.setAttribute("aria-expanded", "false");
 
-            document.getElementById("newSponsorButton")
-                .setAttribute("aria-expanded", "false");
+            submitButton.textContent = "Cadastrar patrocinador";
+            tituloFormulario.textContent = "Novo patrocinador";
 
-            console.log("Patrocinadores cadastrados:", listarPatrocinadores());
+            renderizarPatrocinadores();
+
         } catch (erro) {
-            console.error("Erro ao cadastrar patrocinador:", erro);
-            alert("Não foi possível salvar o patrocinador.");
+            console.error("Erro ao salvar patrocinador:", erro);
+            alert(erro.message || "Não foi possível salvar o patrocinador.");
         }
     });
-;
+});
 </script>
 </body>
 </html>

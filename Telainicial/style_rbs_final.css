@@ -1238,3 +1238,345 @@ svg {
         justify-content: flex-start;
     }
 }
+
+/* CSS REFERENTE AOS CARDS DE PATROCINADORES */
+
+/* Grade de patrocinadores */
+
+
+.patrocinadores-grid {
+    column-count: 3;
+    column-gap: 24px;
+    width: 100%;
+    margin-top: 24px;
+}
+
+.patrocinador-card {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    min-width: 0;
+    height: fit-content;
+    margin: 0 0 24px;
+    padding: 22px;
+    break-inside: avoid;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    overflow-wrap: anywhere;
+    transition: box-shadow 0.2s ease;
+}
+
+.patrocinador-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+@media (max-width: 1000px) {
+    .patrocinadores-grid {
+        column-count: 2;
+    }
+}
+
+@media (max-width: 600px) {
+    .patrocinadores-grid {
+        column-count: 1;
+    }
+}
+
+
+/* Cota */
+.patrocinador-cota {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    background: #eef2ff;
+    color: #4338ca;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+/* Informações */
+.patrocinador-info {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.patrocinador-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.patrocinador-info-item strong {
+    color: #6b7280;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.patrocinador-info-item span {
+    color: #263244;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+/* Mensagem quando não existem registros */
+.patrocinadores-vazio {
+    grid-column: 1 / -1;
+    padding: 32px 20px;
+    text-align: center;
+    color: #6b7280;
+    background: #ffffff;
+    border: 1px dashed #cbd5e1;
+    border-radius: 12px;
+}
+
+/* Ajustes para telas menores */
+@media (max-width: 600px) {
+    .patrocinadores-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .patrocinador-card {
+    aspect-ratio: auto;
+    min-height: 0;
+    height: fit-content;
+}
+}
+
+
+/* Seção de conteúdos enviados por cada patrocinador */
+.patrocinador-envios {
+    margin-top: 4px;
+    padding-top: 14px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.patrocinador-envios h4 {
+    margin: 0 0 12px;
+    color: #172033;
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.envio-item {
+    padding: 12px;
+    margin-bottom: 10px;
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow-wrap: anywhere;
+}
+
+.envio-texto {
+    margin: 0 0 10px;
+    color: #334155;
+    font-size: 0.9rem;
+    white-space: pre-wrap;
+}
+
+.envio-arquivo {
+    margin: 0 0 10px;
+    color: #475569;
+    font-size: 0.85rem;
+}
+
+.envio-status {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 5px;
+    background: #fef3c7;
+    color: #92400e;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.envios-vazio {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.85rem;
+}
+
+/*CORTESIAS*/
+
+
+
+/* Seção de cortesias */
+.patrocinador-cortesias {
+    margin-top: 4px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.patrocinador-cortesias h4 {
+    margin: 0 0 14px;
+    color: #172033;
+    font-size: 1rem;
+}
+
+.cortesias-grade {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.cortesia-setor {
+    min-width: 0;
+    padding: 12px;
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+}
+
+.cortesia-setor h5 {
+    margin: 0 0 10px;
+    color: #263244;
+    font-size: 0.9rem;
+}
+
+.cortesia-resumo {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    gap: 8px;
+    margin-top: 8px;
+    color: #475569;
+    font-size: 0.82rem;
+}
+
+.cortesia-resumo strong {
+    color: #172033;
+}
+
+.lounge-info {
+    margin: 0;
+    color: #475569;
+    font-size: 0.85rem;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.botao-editar-cortesias {
+    margin-top: 12px;
+}
+
+.form-cortesias {
+    margin-top: 14px;
+    padding: 14px;
+    border: 1px solid #dbe2ea;
+    border-radius: 10px;
+    background: #ffffff;
+}
+
+.form-cortesias[hidden] {
+    display: none;
+}
+
+.form-cortesias h5 {
+    margin: 14px 0 8px;
+    color: #172033;
+}
+
+.form-cortesias h5:first-child {
+    margin-top: 0;
+}
+
+.campo-cortesia {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 10px;
+    color: #475569;
+    font-size: 0.85rem;
+}
+
+.campo-cortesia input,
+.campo-cortesia textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 9px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font: inherit;
+}
+
+.campo-cortesia textarea {
+    resize: vertical;
+}
+
+.cortesias-acoes {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.cortesias-acoes button {
+    padding: 9px 14px;
+    border: 0;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.cortesias-acoes button[type="submit"] {
+    background: #4338ca;
+    color: #ffffff;
+}
+
+@media (max-width: 600px) {
+    .cortesias-grade {
+        grid-template-columns: 1fr;
+    }
+}
+
+/*BOTÕES*/
+.secao-cabecalho {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.secao-cabecalho h4 {
+    margin: 0;
+}
+
+.botao-recolher {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: #53677d;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.botao-recolher:hover {
+    background: #edf1f6;
+}
+
+.patrocinador-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.patrocinador-card-header h3 {
+    flex: 1;
+    min-width: 0;
+}
+
+[hidden] {
+    display: none !important;
+}
+
