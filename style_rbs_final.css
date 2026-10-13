@@ -1243,29 +1243,30 @@ svg {
 
 /* Grade de patrocinadores */
 
-/* Grade com até 3 cards por linha */
+
 .patrocinadores-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 24px;
+    column-count: 3;
+    column-gap: 24px;
     width: 100%;
     margin-top: 24px;
-    align-items: stretch;
 }
 
-/* Cards dos patrocinadores */
 .patrocinador-card {
     display: flex;
     flex-direction: column;
     gap: 16px;
+    width: 100%;
     min-width: 0;
+    height: fit-content;
+    margin: 0 0 24px;
     padding: 22px;
+    break-inside: avoid;
     background: #ffffff;
     border: 1px solid #e5e7eb;
     border-radius: 16px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
     overflow-wrap: anywhere;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: box-shadow 0.2s ease;
 }
 
 .patrocinador-card:hover {
@@ -1273,21 +1274,18 @@ svg {
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
 }
 
-/* Duas colunas em telas médias */
 @media (max-width: 1000px) {
     .patrocinadores-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 20px;
+        column-count: 2;
     }
 }
 
-/* Uma coluna em telas pequenas */
 @media (max-width: 600px) {
     .patrocinadores-grid {
-        grid-template-columns: 1fr;
-        gap: 16px;
+        column-count: 1;
     }
 }
+
 
 /* Cota */
 .patrocinador-cota {
@@ -1346,9 +1344,10 @@ svg {
     }
 
     .patrocinador-card {
-        aspect-ratio: auto;
-        min-height: 250px;
-    }
+    aspect-ratio: auto;
+    min-height: 0;
+    height: fit-content;
+}
 }
 
 
@@ -1534,3 +1533,50 @@ svg {
         grid-template-columns: 1fr;
     }
 }
+
+/*BOTÕES*/
+.secao-cabecalho {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.secao-cabecalho h4 {
+    margin: 0;
+}
+
+.botao-recolher {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: #53677d;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.botao-recolher:hover {
+    background: #edf1f6;
+}
+
+.patrocinador-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.patrocinador-card-header h3 {
+    flex: 1;
+    min-width: 0;
+}
+
+[hidden] {
+    display: none !important;
+}
+

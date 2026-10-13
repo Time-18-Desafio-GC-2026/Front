@@ -128,7 +128,17 @@ function renderizarPatrocinadores() {
         cota.className = "patrocinador-cota";
         cota.textContent = patrocinador.cota || "Cota não informada";
 
-        header.append(nome, cota);
+        const botaoRecolherTudo = document.createElement("button");
+        botaoRecolherTudo.type = "button";
+        botaoRecolherTudo.className = "botao-recolher";
+        botaoRecolherTudo.textContent = "⌃";
+        botaoRecolherTudo.setAttribute("aria-expanded", "true");
+        botaoRecolherTudo.setAttribute(
+        "aria-label",
+        "Recolher conteúdo do patrocinador"
+    );
+
+        header.append(nome, botaoRecolherTudo, cota);
 
         const info = document.createElement("div");
         info.className = "patrocinador-info";
@@ -160,16 +170,32 @@ function renderizarPatrocinadores() {
         const secaoEnvios = document.createElement("div");
         secaoEnvios.className = "patrocinador-envios";
 
-        const tituloEnvios = document.createElement("h4");
-        tituloEnvios.textContent = `Envios de conteúdo e mídia (${envios.length})`;
+        
+        const cabecalhoEnvios = document.createElement("div");
+        cabecalhoEnvios.className = "secao-cabecalho";
 
-        secaoEnvios.appendChild(tituloEnvios);
+        const tituloEnvios = document.createElement("h4");
+        tituloEnvios.textContent =
+            `Envios de conteúdo e mídia (${envios.length})`;
+
+        const botaoEnvios = document.createElement("button");
+        botaoEnvios.type = "button";
+        botaoEnvios.className = "botao-recolher";
+        botaoEnvios.textContent = "⌃";
+        botaoEnvios.setAttribute("aria-expanded", "true");
+
+        const conteudoEnvios = document.createElement("div");
+        conteudoEnvios.className = "secao-conteudo";
+
+        cabecalhoEnvios.append(tituloEnvios, botaoEnvios);
+        secaoEnvios.append(cabecalhoEnvios, conteudoEnvios);
+
 
         if (envios.length === 0) {
             const vazio = document.createElement("p");
             vazio.className = "envios-vazio";
             vazio.textContent = "Nenhum conteúdo enviado.";
-            secaoEnvios.appendChild(vazio);
+            conteudoEnvios.appendChild(vazio);
         } else {
             envios.forEach(function (envio) {
                 const item = document.createElement("div");
@@ -191,9 +217,21 @@ function renderizarPatrocinadores() {
                     item.appendChild(arquivo);
                 }
 
-                secaoEnvios.appendChild(item);
+                conteudoEnvios.appendChild(item);
             });
         }
+
+                botaoEnvios.addEventListener("click", function () {
+            const vaiRecolher = !conteudoEnvios.hidden;
+
+            conteudoEnvios.hidden = vaiRecolher;
+            botaoEnvios.textContent = vaiRecolher ? "⌄" : "⌃";
+
+            botaoEnvios.setAttribute(
+                "aria-expanded",
+                String(!vaiRecolher)
+            );
+        });
              
         const acoes = document.createElement("div");
         acoes.className = "patrocinador-acoes";
@@ -224,19 +262,44 @@ function renderizarPatrocinadores() {
         });
 
         
+            
             acoes.append(botaoEditar, botaoExcluir);
 
             const secaoCortesias = criarSecaoCortesias(patrocinador);
 
-            card.append(
-                header,
+            const conteudoPatrocinador = document.createElement("div");
+            conteudoPatrocinador.className = "patrocinador-conteudo";
+
+            conteudoPatrocinador.append(
                 info,
                 secaoEnvios,
                 secaoCortesias,
                 acoes
             );
 
+            card.append(header, conteudoPatrocinador);
+
+            botaoRecolherTudo.addEventListener("click", function () {
+                const vaiRecolher = !conteudoPatrocinador.hidden;
+
+                conteudoPatrocinador.hidden = vaiRecolher;
+                botaoRecolherTudo.textContent = vaiRecolher ? "⌄" : "⌃";
+
+                botaoRecolherTudo.setAttribute(
+                    "aria-expanded",
+                    String(!vaiRecolher)
+                );
+
+                botaoRecolherTudo.setAttribute(
+                    "aria-label",
+                    vaiRecolher
+                        ? "Expandir conteúdo do patrocinador"
+                        : "Recolher conteúdo do patrocinador"
+                );
+            });
+
             grid.appendChild(card);
+
 
     });
 }
@@ -406,13 +469,28 @@ function criarSecaoCortesias(patrocinador) {
     const secao = document.createElement("section");
     secao.className = "patrocinador-cortesias";
 
+    
+    const cabecalhoCortesias = document.createElement("div");
+    cabecalhoCortesias.className = "secao-cabecalho";
+
     const titulo = document.createElement("h4");
     titulo.textContent = "Cortesias";
+
+    const botaoCortesias = document.createElement("button");
+    botaoCortesias.type = "button";
+    botaoCortesias.className = "botao-recolher";
+    botaoCortesias.textContent = "⌃";
+    botaoCortesias.setAttribute("aria-expanded", "true");
+
+    cabecalhoCortesias.append(titulo, botaoCortesias);
+
+    const conteudoCortesias = document.createElement("div");
+    conteudoCortesias.className = "secao-conteudo";
 
     const grade = document.createElement("div");
     grade.className = "cortesias-grade";
 
-    
+
 function adicionarResumo(pai, rotulo, valor) {
     const linha = document.createElement("div");
     linha.className = "cortesia-resumo";
@@ -459,7 +537,7 @@ function adicionarResumo(pai, rotulo, valor) {
         dados.loungeInfo || "Nenhuma informação cadastrada.";
 
     lounge.append(tituloLounge, textoLounge);
-    secao.append(titulo, grade, lounge);
+    conteudoCortesias.append(grade, lounge);
 
     // Botão para abrir o formulário de edição.
     const botaoEditar = document.createElement("button");
@@ -574,7 +652,23 @@ function adicionarResumo(pai, rotulo, valor) {
         }
     });
 
-    secao.append(botaoEditar, formulario);
+    
+        conteudoCortesias.append(botaoEditar, formulario);
 
-    return secao;
+        secao.append(cabecalhoCortesias, conteudoCortesias);
+
+        botaoCortesias.addEventListener("click", function () {
+            const vaiRecolher = !conteudoCortesias.hidden;
+
+            conteudoCortesias.hidden = vaiRecolher;
+            botaoCortesias.textContent = vaiRecolher ? "⌄" : "⌃";
+
+            botaoCortesias.setAttribute(
+                "aria-expanded",
+                String(!vaiRecolher)
+            );
+        });
+
+return secao;
+
 }
