@@ -153,8 +153,48 @@ function renderizarPatrocinadores() {
             "Plano comercial",
             patrocinador.arquivo
         );
+        
+        // Busca os envios vinculados a esta empresa pelo ID.
+        const envios = listarEnviosPorPatrocinador(patrocinador.id);
 
-                
+        const secaoEnvios = document.createElement("div");
+        secaoEnvios.className = "patrocinador-envios";
+
+        const tituloEnvios = document.createElement("h4");
+        tituloEnvios.textContent = `Envios de conteúdo (${envios.length})`;
+
+        secaoEnvios.appendChild(tituloEnvios);
+
+        if (envios.length === 0) {
+            const vazio = document.createElement("p");
+            vazio.className = "envios-vazio";
+            vazio.textContent = "Nenhum conteúdo enviado.";
+            secaoEnvios.appendChild(vazio);
+        } else {
+            envios.forEach(function (envio) {
+                const item = document.createElement("div");
+                item.className = "envio-item";
+
+                // Conteúdo textual enviado
+                if (envio.texto) {
+                    const texto = document.createElement("p");
+                    texto.className = "envio-texto";
+                    texto.textContent = envio.texto;
+                    item.appendChild(texto);
+                }
+
+                // Arquivo enviado
+                if (envio.arquivo) {
+                    const arquivo = document.createElement("p");
+                    arquivo.className = "envio-arquivo";
+                    arquivo.textContent = `Arquivo: ${envio.arquivo}`;
+                    item.appendChild(arquivo);
+                }
+
+                secaoEnvios.appendChild(item);
+            });
+        }
+             
         const acoes = document.createElement("div");
         acoes.className = "patrocinador-acoes";
 
@@ -184,9 +224,10 @@ function renderizarPatrocinadores() {
         });
 
         acoes.append(botaoEditar, botaoExcluir);
-        card.append(header, info, acoes);
-        grid.appendChild(card);
 
+        // Mantém a ordem visual: dados da empresa, envios e ações.
+        card.append(header, info, secaoEnvios, acoes);
+        grid.appendChild(card);
     });
 }
 
@@ -219,8 +260,6 @@ function editarPatrocinador(id, novosDados) {
 
     return patrocinadores[indice];
 }
-
-
 
 function abrirEdicaoPatrocinador(id) {
     const patrocinador = listarPatrocinadores().find(
