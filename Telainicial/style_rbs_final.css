@@ -1580,3 +1580,83 @@ svg {
     display: none !important;
 }
 
+
+.midia-rbs {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.midia-rbs h5 {
+    margin: 0 0 12px;
+    font-size: 0.95rem;
+}
+
+.midia-rbs-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.midia-rbs-item {
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #f8fafc;
+    overflow-wrap: anywhere;
+}
+
+.midia-rbs-item a {
+    color: #4338ca;
+    font-size: 0.85rem;
+    text-decoration: none;
+}
+
+.midia-rbs-item a:hover {
+    text-decoration: underline;
+}
+
+.midia-rbs-vazio {
+    color: #64748b;
+    font-size: 0.85rem;
+}
+
+.midia-rbs-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.midia-rbs-form input[type="url"] {
+    flex: 1;
+    min-width: 0;
+    padding: 9px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+}
+
+.midia-rbs-form button,
+.midia-rbs-arquivo button {
+    padding: 9px 12px;
+    border: 0;
+    border-radius: 6px;
+    background: #4338ca;
+    color: white;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.midia-rbs-arquivo {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.titulo-materiais-cliente {
+    margin: 0 0 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #64748b;
+}
