@@ -95,6 +95,183 @@ function cadastrarEnvio(patrocinadorId, dados) {
     return novoEnvio;
 }
 
+//rbs envia relatorio demidia e link de post
+const MIDIA_RBS_KEY = "rbs_midia_rbs";
+
+function listarMidiaRBS() {
+    return JSON.parse(
+        localStorage.getItem(MIDIA_RBS_KEY) || "[]"
+    );
+}
+
+function listarMidiaRBSPorPatrocinador(patrocinadorId) {
+    return listarMidiaRBS().filter(
+        item => item.patrocinadorId === patrocinadorId
+    );
+}
+
+function salvarMidiaRBS(registro) {
+    const registros = listarMidiaRBS();
+
+    registros.push(registro);
+
+    localStorage.setItem(
+        MIDIA_RBS_KEY,
+        JSON.stringify(registros)
+    );
+}
+
+
+function criarAreaMidiaRBS(patrocinador) {
+    const secao = document.createElement("div");
+    secao.className = "midia-rbs";
+
+    const titulo = document.createElement("h5");
+    titulo.textContent = "Materiais publicados pela RBS";
+
+    const lista = document.createElement("div");
+    lista.className = "midia-rbs-lista";
+
+    const formularioLink = document.createElement("form");
+    formularioLink.className = "midia-rbs-form";
+
+    const campoLink = document.createElement("input");
+    campoLink.type = "url";
+    campoLink.placeholder = "https://link-da-publicacao.com";
+    campoLink.required = true;
+    campoLink.setAttribute("aria-label", "Link da publicação");
+
+    const botaoLink = document.createElement("button");
+    botaoLink.type = "submit";
+    botaoLink.textContent = "Adicionar link";
+
+    formularioLink.append(campoLink, botaoLink);
+
+    const formularioArquivo = document.createElement("div");
+    formularioArquivo.className = "midia-rbs-arquivo";
+
+    const campoArquivo = document.createElement("input");
+    campoArquivo.type = "file";
+    campoArquivo.accept = ".pdf,.jpg,.jpeg,.png";
+    campoArquivo.hidden = true;
+
+    const botaoArquivo = document.createElement("button");
+    botaoArquivo.type = "button";
+    botaoArquivo.textContent = "Adicionar relatório de mídia";
+
+    botaoArquivo.addEventListener("click", function () {
+        campoArquivo.click();
+    });
+
+    campoArquivo.addEventListener("change", function () {
+        const arquivo = campoArquivo.files[0];
+
+        if (!arquivo) return;
+
+        if (arquivo.size > 1024 * 1024) {
+            alert("Para este protótipo, selecione um arquivo de até 1 MB.");
+            campoArquivo.value = "";
+            return;
+        }
+
+        const leitor = new FileReader();
+
+        leitor.onload = function () {
+            try {
+                salvarMidiaRBS({
+                    id: crypto.randomUUID(),
+                    patrocinadorId: patrocinador.id,
+                    tipo: "relatorio",
+                    nome: arquivo.name,
+                    arquivoData: leitor.result,
+                    criadoEm: new Date().toISOString()
+                });
+
+                renderizarPatrocinadores();
+            } catch (erro) {
+                console.error(erro);
+                alert("Não foi possível salvar o relatório. O armazenamento do navegador pode estar cheio.");
+            }
+        };
+
+        leitor.readAsDataURL(arquivo);
+    });
+
+    formularioLink.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        const url = campoLink.value.trim();
+
+        try {
+            const endereco = new URL(url);
+
+            if (!["http:", "https:"].includes(endereco.protocol)) {
+                throw new Error("Use um endereço HTTP ou HTTPS.");
+            }
+
+            salvarMidiaRBS({
+                id: crypto.randomUUID(),
+                patrocinadorId: patrocinador.id,
+                tipo: "link",
+                url: endereco.href,
+                criadoEm: new Date().toISOString()
+            });
+
+            renderizarPatrocinadores();
+        } catch (erro) {
+            alert(erro.message || "Informe um link válido.");
+        }
+    });
+
+    const registros = listarMidiaRBSPorPatrocinador(patrocinador.id);
+
+    if (registros.length === 0) {
+        const vazio = document.createElement("p");
+        vazio.textContent = "Nenhum relatório ou link adicionado pela RBS.";
+        vazio.className = "midia-rbs-vazio";
+        lista.appendChild(vazio);
+    }
+
+    registros.forEach(function (registro) {
+        const item = document.createElement("div");
+        item.className = "midia-rbs-item";
+
+        if (registro.tipo === "relatorio") {
+            const linkArquivo = document.createElement("a");
+            linkArquivo.href = registro.arquivoData;
+            linkArquivo.target = "_blank";
+            linkArquivo.rel = "noopener noreferrer";
+            linkArquivo.textContent = "Relatório: " + registro.nome;
+
+            item.appendChild(linkArquivo);
+        }
+
+        if (registro.tipo === "link") {
+            const linkPost = document.createElement("a");
+            linkPost.href = registro.url;
+            linkPost.target = "_blank";
+            linkPost.rel = "noopener noreferrer";
+            linkPost.textContent = registro.url;
+
+            item.appendChild(linkPost);
+        }
+
+        lista.appendChild(item);
+    });
+
+    secao.append(
+        titulo,
+        lista,
+        formularioLink,
+        formularioArquivo
+    );
+
+    formularioArquivo.append(botaoArquivo, campoArquivo);
+
+    return secao;
+}
+
+
 // FUNÇÃO QUE GERA OS CARDS DOS PATROCINADORES
 function renderizarPatrocinadores() {
     const grid = document.getElementById("patrocinadoresGrid");
@@ -176,7 +353,7 @@ function renderizarPatrocinadores() {
 
         const tituloEnvios = document.createElement("h4");
         tituloEnvios.textContent =
-            `Envios de conteúdo e mídia (${envios.length})`;
+            `Mídia e Conteúdo (${envios.length})`;
 
         const botaoEnvios = document.createElement("button");
         botaoEnvios.type = "button";
@@ -186,6 +363,12 @@ function renderizarPatrocinadores() {
 
         const conteudoEnvios = document.createElement("div");
         conteudoEnvios.className = "secao-conteudo";
+
+        const tituloMateriaisCliente = document.createElement("h5");
+        tituloMateriaisCliente.className = "titulo-materiais-cliente";
+        tituloMateriaisCliente.textContent = "Materiais enviados pelo patrocinador";
+
+        conteudoEnvios.appendChild(tituloMateriaisCliente);
 
         cabecalhoEnvios.append(tituloEnvios, botaoEnvios);
         secaoEnvios.append(cabecalhoEnvios, conteudoEnvios);
@@ -205,7 +388,7 @@ function renderizarPatrocinadores() {
                 if (envio.texto) {
                     const texto = document.createElement("p");
                     texto.className = "envio-texto";
-                    texto.textContent = envio.texto;
+                    texto.textContent = `Arquivo em texto: ${envio.texto}`;
                     item.appendChild(texto);
                 }
 
@@ -213,13 +396,16 @@ function renderizarPatrocinadores() {
                 if (envio.arquivo) {
                     const arquivo = document.createElement("p");
                     arquivo.className = "envio-arquivo";
-                    arquivo.textContent = `Arquivo: ${envio.arquivo}`;
+                    arquivo.textContent = `Arquivo em documento (Docx, pdf ou etc.): ${envio.arquivo}`;
                     item.appendChild(arquivo);
                 }
 
                 conteudoEnvios.appendChild(item);
             });
         }
+
+            const areaMidiaRBS = criarAreaMidiaRBS(patrocinador);
+            conteudoEnvios.appendChild(areaMidiaRBS);
 
                 botaoEnvios.addEventListener("click", function () {
             const vaiRecolher = !conteudoEnvios.hidden;
