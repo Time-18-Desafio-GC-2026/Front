@@ -1242,48 +1242,51 @@ svg {
 /* CSS REFERENTE AOS CARDS DE PATROCINADORES */
 
 /* Grade de patrocinadores */
+
+/* Grade com até 3 cards por linha */
 .patrocinadores-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
     width: 100%;
     margin-top: 24px;
     align-items: stretch;
 }
 
-/* Card individual */
+/* Cards dos patrocinadores */
 .patrocinador-card {
     display: flex;
     flex-direction: column;
     gap: 16px;
     min-width: 0;
-    aspect-ratio: 1 / 1;
     padding: 22px;
     background: #ffffff;
     border: 1px solid #e5e7eb;
     border-radius: 16px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
     overflow-wrap: anywhere;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .patrocinador-card:hover {
-    transform: translateY(-4px);
+    transform: translateY(-3px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
 }
 
-/* Cabeçalho do card */
-.patrocinador-card-header {
-    padding-bottom: 14px;
-    border-bottom: 1px solid #e5e7eb;
+/* Duas colunas em telas médias */
+@media (max-width: 1000px) {
+    .patrocinadores-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+    }
 }
 
-.patrocinador-card h3 {
-    margin: 0;
-    font-size: 1.3rem;
-    font-weight: 700;
-    line-height: 1.35;
-    color: #172033;
+/* Uma coluna em telas pequenas */
+@media (max-width: 600px) {
+    .patrocinadores-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
 }
 
 /* Cota */

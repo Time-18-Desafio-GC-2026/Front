@@ -154,9 +154,108 @@ function renderizarPatrocinadores() {
             patrocinador.arquivo
         );
 
-        card.append(header, info);
+                
+        const acoes = document.createElement("div");
+        acoes.className = "patrocinador-acoes";
+
+        const botaoEditar = document.createElement("button");
+        botaoEditar.type = "button";
+        botaoEditar.className = "botao-editar";
+        botaoEditar.textContent = "Editar";
+
+        botaoEditar.addEventListener("click", function () {
+            abrirEdicaoPatrocinador(patrocinador.id);
+        });
+
+        const botaoExcluir = document.createElement("button");
+        botaoExcluir.type = "button";
+        botaoExcluir.className = "botao-excluir";
+        botaoExcluir.textContent = "Excluir";
+
+        botaoExcluir.addEventListener("click", function () {
+            const confirmar = confirm(
+                `Deseja realmente excluir ${patrocinador.nome}?`
+            );
+
+            if (!confirmar) return;
+
+            excluirPatrocinador(patrocinador.id);
+            renderizarPatrocinadores();
+        });
+
+        acoes.append(botaoEditar, botaoExcluir);
+        card.append(header, info, acoes);
         grid.appendChild(card);
+
     });
 }
 
 document.addEventListener("DOMContentLoaded", renderizarPatrocinadores);
+
+// FUNÇÃO QUE EDITA OS DADOS DE UM PATROCINADOR
+function editarPatrocinador(id, novosDados) {
+    const patrocinadores = listarPatrocinadores();
+
+    const indice = patrocinadores.findIndex(
+        patrocinador => patrocinador.id === id
+    );
+
+    if (indice === -1) {
+        throw new Error("Patrocinador não encontrado.");
+    }
+
+    patrocinadores[indice] = {
+        ...patrocinadores[indice],
+        nome: novosDados.nome,
+        cnpj: novosDados.cnpj,
+        email: novosDados.email,
+        cota: novosDados.cota,
+        arquivo: novosDados.arquivo
+            ? novosDados.arquivo
+            : patrocinadores[indice].arquivo
+    };
+
+    salvarPatrocinadores(patrocinadores);
+
+    return patrocinadores[indice];
+}
+
+
+
+function abrirEdicaoPatrocinador(id) {
+    const patrocinador = listarPatrocinadores().find(
+        item => item.id === id
+    );
+
+    if (!patrocinador) {
+        alert("Patrocinador não encontrado.");
+        return;
+    }
+
+    document.getElementById("sponsorName").value =
+        patrocinador.nome || "";
+
+    document.getElementById("sponsorCnpj").value =
+        patrocinador.cnpj || "";
+
+    document.getElementById("sponsorEmails").value =
+        patrocinador.email || "";
+
+    document.getElementById("sponsorQuota").value =
+        patrocinador.cota || "";
+
+    document.getElementById("sponsorComercialPlan").value = "";
+
+    document.getElementById("sponsorForm").dataset.editandoId = id;
+
+    document.querySelector("#sponsorForm [type='submit']")
+        .textContent = "Salvar alterações";
+
+    document.querySelector("#newSponsorForm h3").textContent =
+        "Editar patrocinador";
+
+    document.getElementById("newSponsorForm").classList.add("open");
+
+    document.getElementById("newSponsorButton")
+        .setAttribute("aria-expanded", "true");
+}
