@@ -19,25 +19,24 @@
 
 <body>
 
-    <!-- =========================================================
+            <script>
+        const sessao = JSON.parse(
+            localStorage.getItem("rbs_sessao") || "null"
+        );
 
-         APP SHELL
+        if (!sessao || sessao.perfil !== "patrocinador") {
+            window.location.replace("../Teladelogin/indexLogin.html");
+        }
+        </script>
 
-    ========================================================== -->
+    <!-- APP SHELL -->
 
     <div class="app-shell">
 
 
-
-        <!-- =====================================================
-
-             SIDEBAR
-
-        ====================================================== -->
+        <!-- SIDEBAR -->
 
         <aside class="sidebar" id="sidebar">
-
-
 
             <div class="sidebar-brand">
 
@@ -240,28 +239,20 @@
 
                 <section class="dashboard-header">
                     
-            <!-- Identificação do patrocinador -->
-            <div class="identificacao-patrocinador">
-                <h1>Identificar patrocinador</h1>
-                <p>Informe o ID da empresa para carregar as informações correspondentes.</p>
+                    
+                    <div class="identificacao-patrocinador">
+                        <h1 id="nomePatrocinador">Minha empresa</h1>
 
-                <div class="identificacao-campos">
-                    <input
-                        type="text"
-                        id="sponsorId"
-                        placeholder="Cole o ID do patrocinador"
-                        autocomplete="off"
-                    >
+                        <p>
+                            Aqui você encontra as informações vinculadas
+                            à sua conta de patrocinador.
+                        </p>
 
-                    <button type="button" id="selecionarPatrocinador">
-                        Carregar informações
-                    </button>
-                </div>
+                        <p id="mensagemPatrocinador" role="status">
+                            Carregando informações...
+                        </p>
+                    </div>
 
-                <p id="mensagemPatrocinador" role="status">
-                    Nenhum patrocinador selecionado.
-                </p>
-            </div>
 
                     <div class="dashboard-title">
                         <h1>Mídia e conteúdo</h1>
@@ -517,29 +508,39 @@ function renderizarMateriaisPublicados(patrocinadorId) {
     secao.hidden = false;
 }
 
-document.getElementById("selecionarPatrocinador")
-    .addEventListener("click", function () {
-        const id = document.getElementById("sponsorId").value.trim();
-        const mensagem = document.getElementById("mensagemPatrocinador");
 
-        const patrocinador = listarPatrocinadores().find(
-            empresa => empresa.id === id
-        );
+document.addEventListener("DOMContentLoaded", function () {
+    const mensagem = document.getElementById("mensagemPatrocinador");
+    const nomeEmpresa = document.getElementById("nomePatrocinador");
 
-        if (!patrocinador) {
-            patrocinadorSelecionado = null;
-            mensagem.textContent =
-                "ID inválido. Verifique o ID do patrocinador.";
-                document.getElementById("materiaisPublicadosRBS").hidden = true;
-            return;
-        }
+    // Recupera o patrocinador vinculado à sessão.
+    const patrocinadorId = sessao.patrocinadorId;
 
-        patrocinadorSelecionado = patrocinador;
+    const patrocinador = listarPatrocinadores().find(
+        empresa => String(empresa.id) === String(patrocinadorId)
+    );
 
+    if (!patrocinador) {
         mensagem.textContent =
-            `Patrocinador selecionado: ${patrocinador.nome} — Cota: ${patrocinador.cota}`;
-            renderizarMateriaisPublicados(patrocinador.id);
-    });
+            "Não foi possível localizar sua empresa.";
+
+        document.getElementById("materiaisPublicadosRBS").hidden = true;
+        document.getElementById("newSponsorButton").disabled = true;
+        return;
+    }
+
+    // Registra a empresa autenticada como selecionada.
+    patrocinadorSelecionado = patrocinador;
+
+    nomeEmpresa.textContent = patrocinador.nome;
+
+    mensagem.textContent =
+        `Bem-vindo! Sua cota é: ${patrocinador.cota}`;
+
+    // Carrega automaticamente os materiais da empresa.
+    renderizarMateriaisPublicados(patrocinador.id);
+});
+
     /*Script para cadastrar patrocinadores Os dados ficam somente naquele navegador e naquela origem do site.
 Outro computador ou usuário não verá os mesmos registros.
 Limpar os dados do navegador pode apagar os registros.
