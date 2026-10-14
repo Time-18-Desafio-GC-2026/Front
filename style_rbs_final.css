@@ -1570,6 +1570,19 @@ svg {
     align-items: center;
     gap: 10px;
 }
+.patrocinador-card-header .botao-recolher {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    width: 30px;
+    height: 30px;
+    padding: 0;
+
+    line-height: 1;
+    text-align: center;
+}
 
 .patrocinador-card-header h3 {
     flex: 1;
@@ -1757,4 +1770,40 @@ svg {
     .patrocinadores-titulos h1 {
         font-size: 24px;
     }
+}
+
+/* MIDIA E CONTEUDO PUBLICADA PELA RBS, MAS NA PAG DO PATROCINADOR */
+.materiais-publicados-cliente {
+    margin-top: 24px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+}
+
+.materiais-publicados-cliente h2 {
+    margin: 0 0 12px;
+    color: var(--text-strong);
+    font-size: 18px;
+}
+
+.material-publicado-item {
+    margin-bottom: 8px;
+    padding: 12px;
+    overflow-wrap: anywhere;
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+}
+
+.material-publicado-item a {
+    color: #4338ca;
+    text-decoration: none;
+}
+
+.material-publicado-item a:hover {
+    text-decoration: underline;
+}
+
+#listaMateriaisRBS > p {
+    color: var(--text-muted);
+    font-size: 13px;
 }

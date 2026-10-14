@@ -238,10 +238,34 @@
 
                 <!-- DASHBOARD HEADER -->
 
-                                <section class="dashboard-header">
+                <section class="dashboard-header">
+                    
+            <!-- Identificação do patrocinador -->
+            <div class="identificacao-patrocinador">
+                <h1>Identificar patrocinador</h1>
+                <p>Informe o ID da empresa para carregar as informações correspondentes.</p>
+
+                <div class="identificacao-campos">
+                    <input
+                        type="text"
+                        id="sponsorId"
+                        placeholder="Cole o ID do patrocinador"
+                        autocomplete="off"
+                    >
+
+                    <button type="button" id="selecionarPatrocinador">
+                        Carregar informações
+                    </button>
+                </div>
+
+                <p id="mensagemPatrocinador" role="status">
+                    Nenhum patrocinador selecionado.
+                </p>
+            </div>
+
                     <div class="dashboard-title">
-                        <h1>Arquivos e Texto</h1>
-                        <p>Acompanhe entregas e pendências.</p>
+                        <h1>Mídia e conteúdo</h1>
+                        <p>Envie materiais em arquivo ou em texto</p>
 
                         <div class="new-sponsor-wrapper">
                             <button
@@ -257,16 +281,12 @@
                                 Enviar Mídia ou Conteudo
                             </button>
 
+
                             <div class="new-sponsor-form" id="newSponsorForm">
-
-
-
         <div class="form-header">
-
             <div>
 
                 <h3>Enviar Mídia ou Conteúdo</h3>
-
                 <p>Registar novos dados em texto ou imagem na plataforma.</p>
 
             </div>
@@ -288,25 +308,10 @@
         </div>
 
         <form id="sponsorForm">
-
-           
-
             <!-- Envio Texto -->
-
             <div class="form-group">
-                <label for="sponsorId">ID do patrocinador</label>
-                  <input
-                      type="text"
-                         id="sponsorId"
-                         placeholder="Cole o ID da empresa"
-                           required
-                            >
-
-                <label for="sponsorTexto">
-
-                    Texto
-
-                </label>
+                
+                <label for="sponsorTexto">  Texto </label>
 
                 <input
 
@@ -380,8 +385,14 @@
         </form>
 
     </div>
-
-</div>
+            <!-- Materiais publicados pela RBS -->
+                                <section id="materiaisPublicadosRBS" class="materiais-publicados-cliente" hidden>
+                                    <h2>Materiais publicados pela RBS</h2>
+                                    <div id="listaMateriaisRBS">
+                                        <!-- Os materiais serão inseridos pelo JavaScript -->
+                                    </div>
+                                </section>
+            </div>
                 <br>
                 <div class="dashboard-title">
                         <h1>3 Perguntas </h1>
@@ -451,7 +462,84 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 
 <script src="patrocinadores.js"></script>
+
 <script>
+    let patrocinadorSelecionado = null;
+
+function renderizarMateriaisPublicados(patrocinadorId) {
+    const secao = document.getElementById("materiaisPublicadosRBS");
+    const lista = document.getElementById("listaMateriaisRBS");
+
+    if (!secao || !lista) return;
+
+    lista.replaceChildren();
+
+    // Recupera os materiais publicados pela RBS.
+    const todosMateriais = JSON.parse(
+        localStorage.getItem("rbs_midia_rbs") || "[]"
+    );
+
+    // Mantém apenas os materiais da empresa selecionada.
+    const materiais = todosMateriais.filter(
+        item => item.patrocinadorId === patrocinadorId
+    );
+
+    if (materiais.length === 0) {
+        const mensagem = document.createElement("p");
+        mensagem.textContent =
+            "Nenhum relatório ou link publicado pela RBS.";
+        lista.appendChild(mensagem);
+    } else {
+        materiais.forEach(material => {
+            const item = document.createElement("div");
+            item.className = "material-publicado-item";
+
+            const link = document.createElement("a");
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+
+            if (material.tipo === "relatorio" && material.arquivoData) {
+                link.href = material.arquivoData;
+                link.textContent = "Relatório: " + material.nome;
+                link.download = material.nome || "relatorio";
+            } else if (material.tipo === "link" && material.url) {
+                link.href = material.url;
+                link.textContent = material.url;
+            } else {
+                return;
+            }
+
+            item.appendChild(link);
+            lista.appendChild(item);
+        });
+    }
+
+    secao.hidden = false;
+}
+
+document.getElementById("selecionarPatrocinador")
+    .addEventListener("click", function () {
+        const id = document.getElementById("sponsorId").value.trim();
+        const mensagem = document.getElementById("mensagemPatrocinador");
+
+        const patrocinador = listarPatrocinadores().find(
+            empresa => empresa.id === id
+        );
+
+        if (!patrocinador) {
+            patrocinadorSelecionado = null;
+            mensagem.textContent =
+                "ID inválido. Verifique o ID do patrocinador.";
+                document.getElementById("materiaisPublicadosRBS").hidden = true;
+            return;
+        }
+
+        patrocinadorSelecionado = patrocinador;
+
+        mensagem.textContent =
+            `Patrocinador selecionado: ${patrocinador.nome} — Cota: ${patrocinador.cota}`;
+            renderizarMateriaisPublicados(patrocinador.id);
+    });
     /*Script para cadastrar patrocinadores Os dados ficam somente naquele navegador e naquela origem do site.
 Outro computador ou usuário não verá os mesmos registros.
 Limpar os dados do navegador pode apagar os registros.
@@ -464,8 +552,12 @@ document.getElementById("sponsorForm").addEventListener(
     function (event) {
         event.preventDefault();
 
-        const patrocinadorId =
-            document.getElementById("sponsorId").value.trim();
+                if (!patrocinadorSelecionado) {
+            alert("Identifique um patrocinador antes de enviar materiais.");
+            return;
+        }
+
+        const patrocinadorId = patrocinadorSelecionado.id;
 
         const texto =
             document.getElementById("sponsorTexto").value.trim();

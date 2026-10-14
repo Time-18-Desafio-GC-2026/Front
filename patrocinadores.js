@@ -396,8 +396,8 @@ function renderizarPatrocinadores() {
         const botaoRecolherTudo = document.createElement("button");
         botaoRecolherTudo.type = "button";
         botaoRecolherTudo.className = "botao-recolher";
-        botaoRecolherTudo.textContent = "⌃";
-        botaoRecolherTudo.setAttribute("aria-expanded", "true");
+        botaoRecolherTudo.textContent = "⌄";
+        botaoRecolherTudo.setAttribute("aria-expanded", "false");
         botaoRecolherTudo.setAttribute(
         "aria-label",
         "Recolher conteúdo do patrocinador"
@@ -446,11 +446,12 @@ function renderizarPatrocinadores() {
         const botaoEnvios = document.createElement("button");
         botaoEnvios.type = "button";
         botaoEnvios.className = "botao-recolher";
-        botaoEnvios.textContent = "⌃";
-        botaoEnvios.setAttribute("aria-expanded", "true");
-
+        botaoEnvios.textContent = "⌄";
+        botaoEnvios.setAttribute("aria-expanded", "false");
+        
         const conteudoEnvios = document.createElement("div");
         conteudoEnvios.className = "secao-conteudo";
+        conteudoEnvios.hidden = true;
 
         const tituloMateriaisCliente = document.createElement("h5");
         tituloMateriaisCliente.className = "titulo-materiais-cliente";
@@ -543,6 +544,7 @@ function renderizarPatrocinadores() {
 
             const conteudoPatrocinador = document.createElement("div");
             conteudoPatrocinador.className = "patrocinador-conteudo";
+            conteudoPatrocinador.hidden = true;
 
             conteudoPatrocinador.append(
                 info,
@@ -753,13 +755,14 @@ function criarSecaoCortesias(patrocinador) {
     const botaoCortesias = document.createElement("button");
     botaoCortesias.type = "button";
     botaoCortesias.className = "botao-recolher";
-    botaoCortesias.textContent = "⌃";
-    botaoCortesias.setAttribute("aria-expanded", "true");
+    botaoCortesias.textContent = "⌄";
+    botaoCortesias.setAttribute("aria-expanded", "false");
 
     cabecalhoCortesias.append(titulo, botaoCortesias);
 
     const conteudoCortesias = document.createElement("div");
     conteudoCortesias.className = "secao-conteudo";
+    conteudoCortesias.hidden = true;
 
     const grade = document.createElement("div");
     grade.className = "cortesias-grade";
