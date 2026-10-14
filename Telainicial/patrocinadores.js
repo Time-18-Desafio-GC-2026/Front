@@ -92,6 +92,20 @@ function cadastrarEnvio(patrocinadorId, dados) {
         JSON.stringify(envios)
     );
 
+    if (dados.arquivo || dados.texto) {
+        const patrocinador = patrocinadores.find(
+            item => item.id === patrocinadorId
+        );
+        const descricaoEnvio = dados.arquivo
+            ? `o arquivo "${dados.arquivo}"`
+            : "um conteúdo em texto";
+
+        registrarHistorico(
+            `A empresa "${patrocinador.nome}" enviou ${descricaoEnvio} para a equipe RBS.`,
+            dados.atorEmail
+        );
+    }
+
     return novoEnvio;
 }
 
@@ -187,6 +201,9 @@ function criarAreaMidiaRBS(patrocinador) {
                     criadoEm: new Date().toISOString()
                 });
 
+                registrarHistorico(
+                    `Admin RBS enviou o arquivo "${arquivo.name}" para ${patrocinador.nome}.`
+                );
                 renderizarPatrocinadores();
             } catch (erro) {
                 console.error(erro);
@@ -217,6 +234,10 @@ function criarAreaMidiaRBS(patrocinador) {
                 criadoEm: new Date().toISOString()
             });
 
+            // Registra quem adicionou o link e a qual empresa ele pertence.
+            registrarHistorico(
+                `Admin RBS adicionou o link "${endereco.href}" para ${patrocinador.nome}.`
+            );
             renderizarPatrocinadores();
         } catch (erro) {
             alert(erro.message || "Informe um link válido.");
@@ -241,9 +262,24 @@ function criarAreaMidiaRBS(patrocinador) {
             linkArquivo.href = registro.arquivoData;
             linkArquivo.target = "_blank";
             linkArquivo.rel = "noopener noreferrer";
-            linkArquivo.textContent = "Relatório: " + registro.nome;
+            linkArquivo.textContent = "Visualizar relatório: " + registro.nome;
+            linkArquivo.addEventListener("click", function () {
+                registrarHistorico(
+                    `Arquivo "${registro.nome}" visualizado por ${patrocinador.nome}.`
+                );
+            });
 
-            item.appendChild(linkArquivo);
+            const baixarArquivo = document.createElement("a");
+            baixarArquivo.href = registro.arquivoData;
+            baixarArquivo.download = registro.nome;
+            baixarArquivo.textContent = "Baixar";
+            baixarArquivo.addEventListener("click", function () {
+                registrarHistorico(
+                    `Arquivo "${registro.nome}" baixado por ${patrocinador.nome}.`
+                );
+            });
+
+            item.append(linkArquivo, baixarArquivo);
         }
 
         if (registro.tipo === "link") {
@@ -443,6 +479,10 @@ function renderizarPatrocinadores() {
 
             if (!confirmar) return;
 
+            // Guarda a exclusão somente após a confirmação do usuário.
+            registrarHistorico(
+                `Admin RBS excluiu a empresa "${patrocinador.nome}".`
+            );
             excluirPatrocinador(patrocinador.id);
             renderizarPatrocinadores();
         });
@@ -828,6 +868,10 @@ function adicionarResumo(pai, rotulo, valor) {
                 try {
             salvarCortesias(patrocinador.id, novosDados);
 
+            // Registra a alteração depois que as cortesias foram salvas.
+            registrarHistorico(
+                `Admin RBS editou as cortesias da empresa "${patrocinador.nome}".`
+            );
             alert("Cortesias salvas com sucesso!");
 
             renderizarPatrocinadores();

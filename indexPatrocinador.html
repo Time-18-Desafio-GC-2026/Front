@@ -302,6 +302,17 @@
                            required
                             >
 
+                <label for="sponsorActorEmail">
+                    E-mail da conta que está enviando
+                </label>
+                <input
+                    type="email"
+                    id="sponsorActorEmail"
+                    placeholder="voce@empresa.com"
+                    autocomplete="email"
+                    required
+                >
+
                 <label for="sponsorTexto">
 
                     Texto
@@ -450,7 +461,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
 </script>
 
-<script src="patrocinadores.js"></script>
+<!-- Carrega o registro compartilhado e as operações usadas pelo formulário. -->
+<script src="Telahistorico/historico.js"></script>
+<script src="Telainicial/patrocinadores.js"></script>
 <script>
     /*Script para cadastrar patrocinadores Os dados ficam somente naquele navegador e naquela origem do site.
 Outro computador ou usuário não verá os mesmos registros.
@@ -467,6 +480,9 @@ document.getElementById("sponsorForm").addEventListener(
         const patrocinadorId =
             document.getElementById("sponsorId").value.trim();
 
+        const atorEmail =
+            document.getElementById("sponsorActorEmail").value.trim();
+
         const texto =
             document.getElementById("sponsorTexto").value.trim();
 
@@ -478,7 +494,8 @@ document.getElementById("sponsorForm").addEventListener(
         try {
             cadastrarEnvio(patrocinadorId, {
                 texto: texto,
-                arquivo: arquivo ? arquivo.name : null
+                arquivo: arquivo ? arquivo.name : null,
+                atorEmail: atorEmail
             });
 
             alert("Envio registrado com sucesso!");
