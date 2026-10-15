@@ -559,9 +559,31 @@ document.addEventListener("DOMContentLoaded", function () {
                 editarPatrocinador(idEdicao, dados);
                 alert("Patrocinador atualizado com sucesso!");
                 delete sponsorForm.dataset.editandoId;
+            
             } else {
-                cadastrarPatrocinador(dados);
-                alert("Patrocinador cadastrado com sucesso!");
+                // 1. Valida os e-mails antes de cadastrar a empresa.
+                const emails = validarEmailsPatrocinador(dados.email);
+
+                // 2. Cadastra a empresa e obtém seu ID.
+                const patrocinador = cadastrarPatrocinador(dados);
+
+                // 3. Cria uma conta vinculada à empresa para cada e-mail.
+                const contas = criarContasPatrocinador(
+                    patrocinador,
+                    emails
+                );
+
+                // 4. Exibe as credenciais para a demonstração.
+                const credenciais = contas.map(conta =>
+                    `E-mail: ${conta.email}\nSenha temporária: ${conta.senha}`
+                ).join("\n\n");
+
+                alert(
+                    "Patrocinador cadastrado com sucesso!\n\n" +
+                    "Contas criadas:\n\n" +
+                    credenciais +
+                    "\n\nGuarde as credenciais para realizar o teste de login."
+                );
             }
 
             sponsorForm.reset();
