@@ -137,7 +137,7 @@
 
 
 
-                <a class="nav-item" href="#configuracoes">
+                <a class="nav-item" href="../teladeconfig/indexconfig.html">
 
                     <svg viewBox="0 0 24 24" aria-hidden="true">
 
@@ -301,35 +301,18 @@
         <form id="sponsorForm">
             <!-- Envio Texto -->
             <div class="form-group">
-<<<<<<< HEAD:indexPatrocinador.html
-                <label for="sponsorId">ID do patrocinador</label>
-                  <input
-                      type="text"
-                         id="sponsorId"
-                         placeholder="Cole o ID da empresa"
-                           required
-                            >
-
                 <label for="sponsorActorEmail">
-                    E-mail da conta que está enviando
+                    Conta conectada
                 </label>
                 <input
                     type="email"
                     id="sponsorActorEmail"
-                    placeholder="voce@empresa.com"
                     autocomplete="email"
+                    readonly
                     required
                 >
 
-                <label for="sponsorTexto">
-
-                    Texto
-
-                </label>
-=======
-                
-                <label for="sponsorTexto">  Texto </label>
->>>>>>> origin/main:Telainicial/indexPatrocinador.html
+                <label for="sponsorTexto">Texto</label>
 
                 <input
 
@@ -479,14 +462,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
 </script>
 
-<<<<<<< HEAD:indexPatrocinador.html
-<!-- Carrega o registro compartilhado e as operações usadas pelo formulário. -->
-<script src="Telahistorico/historico.js"></script>
-<script src="Telainicial/patrocinadores.js"></script>
-=======
+<!-- Carrega os scripts compartilhados para registrar as atividades. -->
+<script src="../Telahistorico/historico.js"></script>
 <script src="patrocinadores.js"></script>
-
->>>>>>> origin/main:Telainicial/indexPatrocinador.html
 <script>
     let patrocinadorSelecionado = null;
 
@@ -545,6 +523,13 @@ function renderizarMateriaisPublicados(patrocinadorId) {
 document.addEventListener("DOMContentLoaded", function () {
     const mensagem = document.getElementById("mensagemPatrocinador");
     const nomeEmpresa = document.getElementById("nomePatrocinador");
+    const atorEmail = document.getElementById("sponsorActorEmail");
+
+    // Exibe o e-mail da conta autenticada, nunca o contato da empresa.
+    atorEmail.value =
+        sessionStorage.getItem("rbs_usuario_email")
+        || (sessao && sessao.email)
+        || "";
 
     // Recupera o patrocinador vinculado à sessão.
     const patrocinadorId = sessao.patrocinadorId;
@@ -593,8 +578,8 @@ document.getElementById("sponsorForm").addEventListener(
 
         const patrocinadorId = patrocinadorSelecionado.id;
 
-        const atorEmail =
-            document.getElementById("sponsorActorEmail").value.trim();
+        const emailAtor =
+            sessionStorage.getItem("rbs_usuario_email") || sessao.email;
 
         const texto =
             document.getElementById("sponsorTexto").value.trim();
@@ -608,7 +593,7 @@ document.getElementById("sponsorForm").addEventListener(
             cadastrarEnvio(patrocinadorId, {
                 texto: texto,
                 arquivo: arquivo ? arquivo.name : null,
-                atorEmail: atorEmail
+                atorEmail: emailAtor
             });
 
             alert("Envio registrado com sucesso!");
