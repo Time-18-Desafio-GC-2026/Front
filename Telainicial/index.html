@@ -19,31 +19,32 @@
 
 <body>
 
+<script>
+    const sessaoAdmin = JSON.parse(
+        localStorage.getItem("rbs_sessao") || "null"
+    );
+
+    if (!sessaoAdmin || sessaoAdmin.perfil !== "funcionario") {
+        localStorage.removeItem("rbs_sessao");
+        window.location.replace("../Teladelogin/indexLogin.html");
+    }
+</script>
+
     <!-- =========================================================
-
          APP SHELL
-
     ========================================================== -->
 
     <div class="app-shell">
 
-
-
         <!-- =====================================================
-
              SIDEBAR
-
         ====================================================== -->
 
         <aside class="sidebar" id="sidebar">
 
-
-
             <div class="sidebar-brand">
 
                 <div class="brand-mark">RBS</div>
-
-
 
                 <div class="brand-copy">
 

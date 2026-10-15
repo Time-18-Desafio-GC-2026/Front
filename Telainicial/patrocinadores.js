@@ -586,12 +586,33 @@ function renderizarPatrocinadores() {
                 }
 
                 // Arquivo enviado
+                
                 if (envio.arquivo) {
-                    const arquivo = document.createElement("p");
-                    arquivo.className = "envio-arquivo";
-                    arquivo.textContent = `Arquivo em documento (Docx, pdf ou etc.): ${envio.arquivo}`;
-                    item.appendChild(arquivo);
+                    const linkArquivo = document.createElement("a");
+                    linkArquivo.className = "envio-arquivo";
+
+                    // Compatibilidade com envios antigos, que guardavam
+                    // somente o nome do arquivo.
+                    if (
+                        typeof envio.arquivo === "object" &&
+                        envio.arquivo.arquivoData
+                    ) {
+                        linkArquivo.href = envio.arquivo.arquivoData;
+                        linkArquivo.download =
+                            envio.arquivo.nome || "arquivo-enviado";
+                        linkArquivo.textContent =
+                            "Baixar arquivo: " + linkArquivo.download;
+                    } else {
+                        // Registros antigos não possuem o conteúdo.
+                        linkArquivo.removeAttribute("href");
+                        linkArquivo.textContent =
+                            "Arquivo antigo (somente nome): " +
+                            String(envio.arquivo);
+                    }
+
+                    item.appendChild(linkArquivo);
                 }
+
 
                 conteudoEnvios.appendChild(item);
             });
