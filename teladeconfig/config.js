@@ -7,6 +7,9 @@ document.addEventListener("DOMContentLoaded", () => {
     var session = JSON.parse(localStorage.getItem(SESSION_KEY) || "null");
     var email = sessionStorage.getItem(EMAIL_SESSION_KEY) || session?.email || "";
     var profileEmail = document.getElementById("profileEmail");
+    var profileUsername = document.getElementById("profileUsername");
+    var usernameForm = document.getElementById("usernameForm");
+    var usernameMessage = document.getElementById("usernameMessage");
     var accountName = document.getElementById("accountName");
     var settingsWelcome = document.getElementById("settingsWelcome");
     var profileView = document.getElementById("profileView");
@@ -21,7 +24,13 @@ document.addEventListener("DOMContentLoaded", () => {
     var logoutButton = document.getElementById("logoutButton");
 
     profileEmail.value = email;
-    accountName.textContent = session?.nome || email || "Conta";
+    var users = JSON.parse(localStorage.getItem(USERS_KEY) || "[]");
+    var currentUser = users.find((item) =>
+        item.email.toLowerCase() === email.toLowerCase()
+    );
+    var displayName = currentUser?.nome || session?.nome || email || "Conta";
+    profileUsername.value = displayName;
+    accountName.textContent = displayName;
 
     // Abre o formulário de perfil selecionado no menu.
     function openProfile() {
@@ -40,6 +49,68 @@ document.addEventListener("DOMContentLoaded", () => {
     if (window.location.hash === "#perfil") {
         openProfile();
     }
+
+    usernameForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        usernameMessage.textContent = "";
+
+        var newName = profileUsername.value.trim();
+        if (!newName) {
+            usernameMessage.textContent = "Informe um nome de usuário.";
+            return;
+        }
+
+        var users = JSON.parse(localStorage.getItem(USERS_KEY) || "[]");
+        var user = users.find((item) =>
+            item.email.toLowerCase() === email.toLowerCase()
+        );
+
+        if (!user) {
+            usernameMessage.textContent = "Não foi possível encontrar a conta conectada.";
+            return;
+        }
+
+        var previousName = user.nome || email;
+        if (previousName === newName) {
+            usernameMessage.textContent = "O nome de usuário não foi alterado.";
+            return;
+        }
+
+        user.nome = newName;
+        localStorage.setItem(USERS_KEY, JSON.stringify(users));
+
+        var updatedSession = JSON.parse(localStorage.getItem(SESSION_KEY) || "null");
+        if (updatedSession && updatedSession.email?.toLowerCase() === email.toLowerCase()) {
+            updatedSession.nome = newName;
+            localStorage.setItem(SESSION_KEY, JSON.stringify(updatedSession));
+        }
+
+        accountName.textContent = newName;
+        document.querySelectorAll("[data-account-name]").forEach((element) => {
+            element.textContent = newName;
+        });
+        var initials = newName
+            .split(/\s+/)
+            .slice(0, 2)
+            .map((part) => part[0])
+            .join("")
+            .toUpperCase();
+        document.querySelectorAll("[data-account-avatar]").forEach((element) => {
+            element.textContent = initials;
+        });
+
+        try {
+            registrarHistorico(
+                `Nome de usuário alterado de "${previousName}" para "${newName}".`,
+                email
+            );
+            usernameMessage.textContent = "Nome atualizado e registrado no histórico.";
+        } catch (error) {
+            console.error("Não foi possível registrar a alteração do nome no histórico:", error);
+            usernameMessage.textContent =
+                "O nome foi atualizado, mas não foi possível registrar a alteração no histórico.";
+        }
+    });
 
     // Confirma a saída antes de encerrar a sessão e abrir o login.
     logoutButton.addEventListener("click", () => {

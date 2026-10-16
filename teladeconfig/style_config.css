@@ -11,6 +11,10 @@
     cursor: pointer;
 }
 
+.settings-menu-link {
+    margin-top: 8px;
+}
+
 .settings-welcome h1,
 .profile-header h1 {
     margin: 0 0 5px;
@@ -30,7 +34,8 @@
     margin-bottom: 18px;
 }
 
-.profile-form {
+.profile-form,
+.username-form {
     width: min(100%, 620px);
     margin-bottom: 18px;
     padding: 20px;
@@ -132,7 +137,8 @@
         font-size: 24px;
     }
 
-    .profile-form {
+    .profile-form,
+    .username-form {
         padding: 16px;
     }
 }

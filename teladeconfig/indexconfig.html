@@ -42,6 +42,12 @@
                     </svg>
                     <span>Perfil</span>
                 </a>
+                <a class="nav-item settings-menu-link" href="../Telainicial/index.html">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                    <span>Menu</span>
+                </a>
             </nav>
         </aside>
 
@@ -52,10 +58,10 @@
                 </div>
                 <div class="topbar-user">
                     <div class="user-text">
-                        <strong id="accountName">Conta</strong>
+                        <strong id="accountName" data-account-name>Conta</strong>
                         <span>Perfil da conta</span>
                     </div>
-                    <div class="avatar" aria-hidden="true">RBS</div>
+                    <div class="avatar" data-account-avatar aria-hidden="true">RBS</div>
                 </div>
             </header>
 
@@ -69,8 +75,20 @@
                 <section class="profile-view" id="profileView" hidden>
                     <header class="profile-header">
                         <h1>Perfil</h1>
-                        <p>Consulte seu e-mail e atualize a senha da conta.</p>
+                        <p>Atualize seu nome de usuário e gerencie os dados da conta.</p>
                     </header>
+
+                    <form class="username-form" id="usernameForm">
+                        <div class="profile-field">
+                            <label for="profileUsername">Nome de usuário</label>
+                            <input id="profileUsername" name="username" type="text" maxlength="80" required>
+                            <small>Este nome será exibido no cabeçalho da tela inicial.</small>
+                        </div>
+                        <p class="profile-message" id="usernameMessage" role="status" aria-live="polite"></p>
+                        <div class="profile-actions">
+                            <button class="button button-primary profile-save" type="submit">Salvar nome</button>
+                        </div>
+                    </form>
 
                     <form class="profile-form" id="profileForm">
                         <div class="profile-field">
@@ -109,6 +127,8 @@
         </div>
     </div>
 
+    <script src="../Telahistorico/historico.js"></script>
+    <script src="../Telainicial/account-display.js"></script>
     <script src="config.js"></script>
 </body>
 </html>
