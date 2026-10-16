@@ -19,31 +19,32 @@
 
 <body>
 
+<script>
+    const sessaoAdmin = JSON.parse(
+        localStorage.getItem("rbs_sessao") || "null"
+    );
+
+    if (!sessaoAdmin || sessaoAdmin.perfil !== "funcionario") {
+        localStorage.removeItem("rbs_sessao");
+        window.location.replace("../Teladelogin/indexLogin.html");
+    }
+</script>
+
     <!-- =========================================================
-
          APP SHELL
-
     ========================================================== -->
 
     <div class="app-shell">
 
-
-
         <!-- =====================================================
-
              SIDEBAR
-
         ====================================================== -->
 
         <aside class="sidebar" id="sidebar">
 
-
-
             <div class="sidebar-brand">
 
                 <div class="brand-mark">RBS</div>
-
-
 
                 <div class="brand-copy">
 
@@ -567,12 +568,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 editarPatrocinador(idEdicao, dados);
                 alert("Patrocinador atualizado com sucesso!");
                 delete sponsorForm.dataset.editandoId;
+            
             } else {
                 cadastrarPatrocinador(dados);
-                // Registra o cadastro usando a conta ativa que executou a ação.
-                registrarHistorico(
-                    `Admin RBS cadastrou a empresa "${nome}".`
-                );
                 alert("Patrocinador cadastrado com sucesso!");
             }
 

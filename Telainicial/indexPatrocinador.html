@@ -19,15 +19,18 @@
 
 <body>
 
-            <script>
-        const sessao = JSON.parse(
-            localStorage.getItem("rbs_sessao") || "null"
-        );
+        
+        <script>
+            const sessao = JSON.parse(
+                localStorage.getItem("rbs_sessao") || "null"
+            );
 
-        if (!sessao || sessao.perfil !== "patrocinador") {
-            window.location.replace("../Teladelogin/indexLogin.html");
-        }
+            if (!sessao || sessao.perfil !== "patrocinador") {
+                localStorage.removeItem("rbs_sessao");
+                window.location.replace("../Teladelogin/indexLogin.html");
+            }
         </script>
+
 
     <!-- APP SHELL -->
 
@@ -403,9 +406,9 @@
                             <button
                                 class="button button-primary"
                                 type="button"
-                                id="newSponsorButton"
+                                id="botaoPerguntas"
                                 aria-expanded="false"
-                                aria-controls="newSponsorForm"
+                                aria-controls="formPerguntas"
                             >
                                 <svg viewBox="0 0 24 24" aria-hidden="true">
                                     <path d="M12 5v14M5 12h14"/>
@@ -413,7 +416,7 @@
                                 Enviar Mídia ou Conteudo
                             </button>
 
-                            <div class="new-sponsor-form" id="newSponsorForm">
+                            <div class="new-sponsor-form" id="formPerguntas">
 
                 </section>
 
@@ -466,6 +469,18 @@ document.addEventListener("DOMContentLoaded", function () {
 <script src="../Telahistorico/historico.js"></script>
 <script src="patrocinadores.js"></script>
 <script>
+    function lerArquivoComoDataURL(arquivo) {
+    return new Promise((resolve, reject) => {
+        const leitor = new FileReader();
+
+        leitor.onload = () => resolve(leitor.result);
+        leitor.onerror = () => {
+            reject(new Error("Não foi possível ler o arquivo."));
+        };
+
+        leitor.readAsDataURL(arquivo);
+    });
+}
     let patrocinadorSelecionado = null;
 
 function renderizarMateriaisPublicados(patrocinadorId) {
@@ -566,34 +581,46 @@ Isso não oferece autenticação, controle de acesso nem integridade de um banco
 document.addEventListener("DOMContentLoaded", function () {
     const sponsorForm = document.getElementById("sponsorForm"); */
 
+
 document.getElementById("sponsorForm").addEventListener(
     "submit",
-    function (event) {
+    async function (event) {
         event.preventDefault();
 
-                if (!patrocinadorSelecionado) {
+        if (!patrocinadorSelecionado) {
             alert("Identifique um patrocinador antes de enviar materiais.");
             return;
         }
 
         const patrocinadorId = patrocinadorSelecionado.id;
 
-        const emailAtor =
-            sessionStorage.getItem("rbs_usuario_email") || sessao.email;
-
         const texto =
             document.getElementById("sponsorTexto").value.trim();
 
-        const arquivoInput =
-            document.getElementById("sponsorArchive");
-
+        const arquivoInput = document.getElementById("sponsorArchive");
         const arquivo = arquivoInput.files[0];
 
         try {
+            // Limite de 1 MB para a demonstração.
+            if (arquivo && arquivo.size > 1024 * 1024) {
+                throw new Error(
+                    "O arquivo deve ter no máximo 1 MB."
+                );
+            }
+
+            // Armazena o conteúdo, não apenas o nome.
+            const arquivoSalvo = arquivo
+                ? {
+                    nome: arquivo.name,
+                    tipo: arquivo.type || "application/octet-stream",
+                    tamanho: arquivo.size,
+                    arquivoData: await lerArquivoComoDataURL(arquivo)
+                }
+                : null;
+
             cadastrarEnvio(patrocinadorId, {
                 texto: texto,
-                arquivo: arquivo ? arquivo.name : null,
-                atorEmail: emailAtor
+                arquivo: arquivo ? arquivo.name : null
             });
 
             alert("Envio registrado com sucesso!");
@@ -607,11 +634,15 @@ document.getElementById("sponsorForm").addEventListener(
                 .setAttribute("aria-expanded", "false");
 
         } catch (erro) {
-            console.error(erro);
-            alert(erro.message);
+            console.error("Erro ao enviar material:", erro);
+            alert(
+                erro.message ||
+                "Não foi possível salvar o arquivo. O armazenamento pode estar cheio."
+            );
         }
     }
 );
+
 </script>
 </body>
 </html>

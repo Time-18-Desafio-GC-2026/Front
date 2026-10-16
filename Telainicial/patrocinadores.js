@@ -1,18 +1,105 @@
-// esse documento se trata de um LocalStorage, a finalidade dele é de servir como um banco de dados temporário, até a implementação de um real
+const PATROCINADORES_KEY = "rbs_patrocinadores";
 
-const STORAGE_KEY = "rbs_patrocinadores";
-
+// Recupera os patrocinadores salvos no localStorage.
 function listarPatrocinadores() {
-    return JSON.parse(
-        localStorage.getItem(STORAGE_KEY) || "[]"
-    );
+return JSON.parse(
+localStorage.getItem(PATROCINADORES_KEY) || "[]"
+);
+}
+// Salva a lista atualizada de patrocinadores.
+function salvarPatrocinadores(patrocinadores) {
+localStorage.setItem(
+PATROCINADORES_KEY,
+JSON.stringify(patrocinadores)
+);
 }
 
-function salvarPatrocinadores(patrocinadores) {
-    localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(patrocinadores)
+
+const USUARIOS_KEY = "rbs_usuarios";
+
+// Separa, normaliza e remove e-mails repetidos.
+function normalizarEmailsPatrocinador(valor) {
+    return [...new Set(
+        String(valor || "")
+            .split(/[;,]/)
+            .map(email => email.trim().toLowerCase())
+            .filter(Boolean)
+    )];
+}
+
+// Valida os e-mails antes de cadastrar a empresa.
+function validarEmailsPatrocinador(valor) {
+    const emails = normalizarEmailsPatrocinador(valor);
+
+    if (emails.length === 0) {
+        throw new Error("Informe pelo menos um e-mail.");
+    }
+
+    const formatoEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    const invalido = emails.find(
+        email => !formatoEmail.test(email)
     );
+
+    if (invalido) {
+        throw new Error(`E-mail inválido: ${invalido}`);
+    }
+
+    const usuarios = JSON.parse(
+        localStorage.getItem(USUARIOS_KEY) || "[]"
+    );
+
+    const existente = emails.find(email =>
+        usuarios.some(usuario =>
+            String(usuario.email || "").trim().toLowerCase() === email
+        )
+    );
+
+    if (existente) {
+        throw new Error(
+            `O e-mail ${existente} já possui uma conta cadastrada.`
+        );
+    }
+
+    return emails;
+}
+
+// Gera uma senha temporária para cada conta.
+function gerarSenhaTemporaria() {
+    const caracteres =
+        "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#";
+
+    const valores = crypto.getRandomValues(new Uint8Array(16));
+
+    return Array.from(valores, valor =>
+        caracteres[valor % caracteres.length]
+    ).join("");
+}
+
+// Cria uma conta vinculada à empresa para cada e-mail.
+function criarContasPatrocinador(patrocinador, emails) {
+    const usuarios = JSON.parse(
+        localStorage.getItem(USUARIOS_KEY) || "[]"
+    );
+
+    const contasCriadas = emails.map(email => ({
+        id: crypto.randomUUID(),
+        nome: patrocinador.nome,
+        email,
+        senha: gerarSenhaTemporaria(),
+        perfil: "patrocinador",
+        patrocinadorId: patrocinador.id
+    }));
+
+    localStorage.setItem(
+        USUARIOS_KEY,
+        JSON.stringify([...usuarios, ...contasCriadas])
+    );
+
+    return contasCriadas.map(({ email, senha }) => ({
+        email,
+        senha
+    }));
 }
 
 function cadastrarPatrocinador(dados) {
@@ -464,6 +551,23 @@ function renderizarPatrocinadores() {
             "Plano comercial",
             patrocinador.arquivo
         );
+
+                // Busca as contas vinculadas a este patrocinador.
+        const usuarios = JSON.parse(
+            localStorage.getItem("rbs_usuarios") || "[]"
+        );
+
+        const contasPatrocinador = usuarios.filter(
+            usuario => usuario.patrocinadorId === patrocinador.id
+        );
+
+        // Exibe o e-mail e a senha de cada conta.
+        contasPatrocinador.forEach(conta => {
+            adicionarInformacao(
+                `Senha (${conta.email})`,
+                conta.senha
+            );
+        });
         
         // Busca os envios vinculados a esta empresa pelo ID.
         const envios = listarEnviosPorPatrocinador(patrocinador.id);
@@ -518,12 +622,33 @@ function renderizarPatrocinadores() {
                 }
 
                 // Arquivo enviado
+                
                 if (envio.arquivo) {
-                    const arquivo = document.createElement("p");
-                    arquivo.className = "envio-arquivo";
-                    arquivo.textContent = `Arquivo em documento (Docx, pdf ou etc.): ${envio.arquivo}`;
-                    item.appendChild(arquivo);
+                    const linkArquivo = document.createElement("a");
+                    linkArquivo.className = "envio-arquivo";
+
+                    // Compatibilidade com envios antigos, que guardavam
+                    // somente o nome do arquivo.
+                    if (
+                        typeof envio.arquivo === "object" &&
+                        envio.arquivo.arquivoData
+                    ) {
+                        linkArquivo.href = envio.arquivo.arquivoData;
+                        linkArquivo.download =
+                            envio.arquivo.nome || "arquivo-enviado";
+                        linkArquivo.textContent =
+                            "Baixar arquivo: " + linkArquivo.download;
+                    } else {
+                        // Registros antigos não possuem o conteúdo.
+                        linkArquivo.removeAttribute("href");
+                        linkArquivo.textContent =
+                            "Arquivo antigo (somente nome): " +
+                            String(envio.arquivo);
+                    }
+
+                    item.appendChild(linkArquivo);
                 }
+
 
                 conteudoEnvios.appendChild(item);
             });
