@@ -1,174 +1,315 @@
-// Usa a conta autenticada da aba, sem misturar o e-mail da empresa.
+
 var EMAIL_SESSION_KEY = "rbs_usuario_email";
 var SESSION_KEY = "rbs_sessao";
 var USERS_KEY = "rbs_usuarios";
 
-document.addEventListener("DOMContentLoaded", () => {
-    var session = JSON.parse(localStorage.getItem(SESSION_KEY) || "null");
-    var email = sessionStorage.getItem(EMAIL_SESSION_KEY) || session?.email || "";
-    var profileEmail = document.getElementById("profileEmail");
-    var profileUsername = document.getElementById("profileUsername");
-    var usernameForm = document.getElementById("usernameForm");
-    var usernameMessage = document.getElementById("usernameMessage");
-    var accountName = document.getElementById("accountName");
-    var settingsWelcome = document.getElementById("settingsWelcome");
-    var profileView = document.getElementById("profileView");
-    var profileNav = document.getElementById("profileNav");
-    var breadcrumbTitle = document.getElementById("breadcrumbTitle");
-    var profileForm = document.getElementById("profileForm");
-    var profileMessage = document.getElementById("profileMessage");
-    var currentPasswordInput = document.getElementById("currentPassword");
-    var newPasswordInput = document.getElementById("newPassword");
-    var confirmPasswordInput = document.getElementById("confirmPassword");
-    var forgotPasswordButton = document.getElementById("forgotPasswordButton");
-    var logoutButton = document.getElementById("logoutButton");
-
-    profileEmail.value = email;
-    var users = JSON.parse(localStorage.getItem(USERS_KEY) || "[]");
-    var currentUser = users.find((item) =>
-        item.email.toLowerCase() === email.toLowerCase()
+document.addEventListener("DOMContentLoaded", function () {
+    const session = JSON.parse(
+        localStorage.getItem(SESSION_KEY) || "null"
     );
-    var displayName = currentUser?.nome || session?.nome || email || "Conta";
-    profileUsername.value = displayName;
-    accountName.textContent = displayName;
 
-    // Abre o formulário de perfil selecionado no menu.
+    const users = JSON.parse(
+        localStorage.getItem(USERS_KEY) || "[]"
+    );
+
+    const emailSessao =
+        sessionStorage.getItem(EMAIL_SESSION_KEY) ||
+        session?.email ||
+        "";
+
+    // Localiza a conta pelo ID da sessão ou pelo e-mail.
+    const localizarUsuario = (lista, sessao, email) => {
+        return lista.find(item =>
+            sessao?.usuarioId &&
+            String(item.id) === String(sessao.usuarioId)
+        ) || lista.find(item =>
+            email &&
+            item.email?.toLowerCase() === email.toLowerCase()
+        );
+    };
+
+    const currentUser = localizarUsuario(
+        users,
+        session,
+        emailSessao
+    );
+
+    const email = currentUser?.email || emailSessao;
+
+    const profileEmail = document.getElementById("profileEmail");
+    const profileUsername = document.getElementById("profileUsername");
+    const usernameForm = document.getElementById("usernameForm");
+    const usernameMessage = document.getElementById("usernameMessage");
+    const accountName = document.getElementById("accountName");
+    const settingsWelcome = document.getElementById("settingsWelcome");
+    const profileView = document.getElementById("profileView");
+    const profileNav = document.getElementById("profileNav");
+    const breadcrumbTitle = document.getElementById("breadcrumbTitle");
+    const profileForm = document.getElementById("profileForm");
+    const profileMessage = document.getElementById("profileMessage");
+    const currentPasswordInput = document.getElementById("currentPassword");
+    const newPasswordInput = document.getElementById("newPassword");
+    const confirmPasswordInput = document.getElementById("confirmPassword");
+    const forgotPasswordButton = document.getElementById("forgotPasswordButton");
+    const logoutButton = document.getElementById("logoutButton");
+
+    // Preenche os dados do perfil.
+    if (profileEmail) profileEmail.value = email;
+    
+    const displayName =
+        currentUser?.nome || session?.nome || email || "Conta";
+
+    if (profileUsername) profileUsername.value = displayName;
+    if (accountName) accountName.textContent = displayName;
+
+    // Abre a seção Perfil.
     function openProfile() {
-        settingsWelcome.hidden = true;
-        profileView.hidden = false;
-        profileNav.classList.add("active");
-        breadcrumbTitle.textContent = "Perfil";
+        if (settingsWelcome) settingsWelcome.hidden = true;
+        if (profileView) profileView.hidden = false;
+        if (profileNav) profileNav.classList.add("active");
+        if (breadcrumbTitle) breadcrumbTitle.textContent = "Perfil";
     }
 
-    profileNav.addEventListener("click", (event) => {
-        event.preventDefault();
-        openProfile();
-        window.location.hash = "perfil";
-    });
+    if (profileNav) {
+        profileNav.addEventListener("click", function (event) {
+            event.preventDefault();
+            openProfile();
+            window.location.hash = "perfil";
+        });
+    }
 
     if (window.location.hash === "#perfil") {
         openProfile();
     }
 
-    usernameForm.addEventListener("submit", (event) => {
-        event.preventDefault();
-        usernameMessage.textContent = "";
+    // Atualiza o nome de usuário.
+    if (usernameForm) {
+        usernameForm.addEventListener("submit", function (event) {
+            event.preventDefault();
+            usernameMessage.textContent = "";
 
-        var newName = profileUsername.value.trim();
-        if (!newName) {
-            usernameMessage.textContent = "Informe um nome de usuário.";
-            return;
-        }
+            const newName = profileUsername.value.trim();
 
-        var users = JSON.parse(localStorage.getItem(USERS_KEY) || "[]");
-        var user = users.find((item) =>
-            item.email.toLowerCase() === email.toLowerCase()
-        );
+            if (!newName) {
+                usernameMessage.textContent =
+                    "Informe um nome de usuário.";
+                return;
+            }
 
-        if (!user) {
-            usernameMessage.textContent = "Não foi possível encontrar a conta conectada.";
-            return;
-        }
+            const listaUsuarios = JSON.parse(
+                localStorage.getItem(USERS_KEY) || "[]"
+            );
 
-        var previousName = user.nome || email;
-        if (previousName === newName) {
-            usernameMessage.textContent = "O nome de usuário não foi alterado.";
-            return;
-        }
-
-        user.nome = newName;
-        localStorage.setItem(USERS_KEY, JSON.stringify(users));
-
-        var updatedSession = JSON.parse(localStorage.getItem(SESSION_KEY) || "null");
-        if (updatedSession && updatedSession.email?.toLowerCase() === email.toLowerCase()) {
-            updatedSession.nome = newName;
-            localStorage.setItem(SESSION_KEY, JSON.stringify(updatedSession));
-        }
-
-        accountName.textContent = newName;
-        document.querySelectorAll("[data-account-name]").forEach((element) => {
-            element.textContent = newName;
-        });
-        var initials = newName
-            .split(/\s+/)
-            .slice(0, 2)
-            .map((part) => part[0])
-            .join("")
-            .toUpperCase();
-        document.querySelectorAll("[data-account-avatar]").forEach((element) => {
-            element.textContent = initials;
-        });
-
-        try {
-            registrarHistorico(
-                `Nome de usuário alterado de "${previousName}" para "${newName}".`,
+            const user = localizarUsuario(
+                listaUsuarios,
+                session,
                 email
             );
-            usernameMessage.textContent = "Nome atualizado e registrado no histórico.";
-        } catch (error) {
-            console.error("Não foi possível registrar a alteração do nome no histórico:", error);
-            usernameMessage.textContent =
-                "O nome foi atualizado, mas não foi possível registrar a alteração no histórico.";
-        }
-    });
 
-    // Confirma a saída antes de encerrar a sessão e abrir o login.
-    logoutButton.addEventListener("click", () => {
-        const confirmarSaida = window.confirm("Deseja realmente sair da plataforma?");
+            if (!user) {
+                usernameMessage.textContent =
+                    "Não foi possível encontrar a conta conectada.";
+                return;
+            }
 
-        if (!confirmarSaida) return;
+            const previousName = user.nome || user.email || email;
 
-        sessionStorage.removeItem(EMAIL_SESSION_KEY);
-        localStorage.removeItem(SESSION_KEY);
-        window.location.replace("../Teladelogin/indexLogin.html");
-    });
+            if (previousName === newName) {
+                usernameMessage.textContent =
+                    "O nome de usuário não foi alterado.";
+                return;
+            }
 
-    // Atualiza a senha da conta após conferir a senha atual e a confirmação.
-    profileForm.addEventListener("submit", (event) => {
-        event.preventDefault();
-        profileMessage.textContent = "";
+            user.nome = newName;
 
-        var currentPassword = currentPasswordInput.value;
-        var newPassword = newPasswordInput.value;
-        var confirmPassword = confirmPasswordInput.value;
+            try {
+                localStorage.setItem(
+                    USERS_KEY,
+                    JSON.stringify(listaUsuarios)
+                );
 
-        if (!email) {
-            profileMessage.textContent = "Não foi possível identificar a conta conectada.";
-            return;
-        }
+                const updatedSession = JSON.parse(
+                    localStorage.getItem(SESSION_KEY) || "null"
+                );
 
-        if (newPassword !== confirmPassword) {
-            profileMessage.textContent = "A nova senha e a confirmação não coincidem.";
-            return;
-        }
+                if (updatedSession) {
+                    updatedSession.nome = newName;
 
-        var users = JSON.parse(localStorage.getItem(USERS_KEY) || "[]");
-        var user = users.find((item) =>
-            item.email.toLowerCase() === email.toLowerCase()
-        );
+                    if (!updatedSession.email && user.email) {
+                        updatedSession.email = user.email;
+                    }
 
-        if (!user || user.senha !== currentPassword) {
-            profileMessage.textContent = "A senha atual está incorreta ou a conta não foi encontrada.";
-            return;
-        }
+                    localStorage.setItem(
+                        SESSION_KEY,
+                        JSON.stringify(updatedSession)
+                    );
+                }
 
-        user.senha = newPassword;
-        localStorage.setItem(USERS_KEY, JSON.stringify(users));
-        profileForm.reset();
-        profileEmail.value = email;
-        profileMessage.textContent = "Senha atualizada com sucesso.";
-    });
+                if (user.email) {
+                    sessionStorage.setItem(
+                        EMAIL_SESSION_KEY,
+                        user.email
+                    );
+                }
 
-    // Informa o destino de redefinição sem afirmar que um e-mail foi enviado.
-    forgotPasswordButton.addEventListener("click", () => {
-        if (!email) {
-            profileMessage.textContent = "Não foi possível identificar o e-mail da conta.";
-            return;
-        }
+                if (accountName) {
+                    accountName.textContent = newName;
+                }
 
-        profileMessage.textContent =
-            `As instruções para trocar a senha foram enviadas para ${email}. `
-           ;
-    });
+                document.querySelectorAll("[data-account-name]")
+                    .forEach(element => {
+                        element.textContent = newName;
+                    });
 
+                const initials = newName
+                    .split(/\s+/)
+                    .slice(0, 2)
+                    .map(part => part[0])
+                    .join("")
+                    .toUpperCase();
+
+                document.querySelectorAll("[data-account-avatar]")
+                    .forEach(element => {
+                        element.textContent = initials;
+                    });
+
+                try {
+                    if (typeof registrarHistorico === "function") {
+                        registrarHistorico(
+                            `Nome de usuário alterado de "${previousName}" para "${newName}".`,
+                            user.email || email
+                        );
+                    }
+
+                    usernameMessage.textContent =
+                        "Nome atualizado com sucesso.";
+                } catch (error) {
+                    console.error(
+                        "Erro ao registrar o histórico:",
+                        error
+                    );
+
+                    usernameMessage.textContent =
+                        "Nome atualizado, mas não foi possível registrar o histórico.";
+                }
+            } catch (error) {
+                console.error("Erro ao salvar o nome:", error);
+
+                usernameMessage.textContent =
+                    "Não foi possível salvar o nome. Verifique o armazenamento.";
+            }
+        });
+    }
+
+    // Encerra a sessão.
+    if (logoutButton) {
+        logoutButton.addEventListener("click", function () {
+            const confirmar = window.confirm(
+                "Deseja realmente sair da plataforma?"
+            );
+
+            if (!confirmar) return;
+
+            sessionStorage.removeItem(EMAIL_SESSION_KEY);
+            localStorage.removeItem(SESSION_KEY);
+
+            window.location.replace(
+                "../Teladelogin/indexLogin.html"
+            );
+        });
+    }
+
+    // Atualiza a senha.
+    if (profileForm) {
+        profileForm.addEventListener("submit", function (event) {
+            event.preventDefault();
+            profileMessage.textContent = "";
+
+            const currentPassword = currentPasswordInput.value;
+            const newPassword = newPasswordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+
+            if (!email) {
+                profileMessage.textContent =
+                    "Não foi possível identificar a conta conectada.";
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                profileMessage.textContent =
+                    "A nova senha deve ter pelo menos 6 caracteres.";
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                profileMessage.textContent =
+                    "A nova senha e a confirmação não coincidem.";
+                return;
+            }
+
+            const listaUsuarios = JSON.parse(
+                localStorage.getItem(USERS_KEY) || "[]"
+            );
+
+            const user = localizarUsuario(
+                listaUsuarios,
+                session,
+                email
+            );
+
+            if (!user || user.senha !== currentPassword) {
+                profileMessage.textContent =
+                    "A senha atual está incorreta ou a conta não foi encontrada.";
+                return;
+            }
+
+            try {
+                user.senha = newPassword;
+
+                localStorage.setItem(
+                    USERS_KEY,
+                    JSON.stringify(listaUsuarios)
+                );
+
+                profileForm.reset();
+                profileEmail.value = user.email || email;
+
+                profileMessage.textContent =
+                    "Senha atualizada com sucesso.";
+
+                try {
+                    if (typeof registrarHistorico === "function") {
+                        registrarHistorico(
+                            "Senha da conta alterada.",
+                            user.email || email
+                        );
+                    }
+                } catch (error) {
+                    console.error(
+                        "Erro ao registrar a alteração de senha:",
+                        error
+                    );
+                }
+            } catch (error) {
+                console.error("Erro ao salvar a senha:", error);
+
+                profileMessage.textContent =
+                    "Não foi possível atualizar a senha.";
+            }
+        });
+    }
+
+    // Orienta o usuário sobre a recuperação de senha.
+    if (forgotPasswordButton) {
+        forgotPasswordButton.addEventListener("click", function () {
+            if (!email) {
+                profileMessage.textContent =
+                    "Não foi possível identificar o e-mail da conta.";
+                return;
+            }
+
+            profileMessage.textContent =
+                `A recuperação de senha por e-mail ainda precisa ser implementada para ${email}.`;
+        });
+    }
 });
