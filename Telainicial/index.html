@@ -13,6 +13,7 @@
     <title>RBS Patrocinadores | Dashboard</title>
 
     <link rel="stylesheet" href="style_rbs_final.css">
+    <link rel="stylesheet" href="../exemploCSS/rbs-theme.css">
 
 </head>
 
@@ -44,13 +45,12 @@
 
             <div class="sidebar-brand">
 
-                <div class="brand-mark">RBS</div>
+                <img class="brand-mark" src="LogoPlanetaOrange.png" alt="Planeta Atlântida">
 
                 <div class="brand-copy">
 
-                    <strong>Patrocinadores</strong>
+                    <strong>Portal do Patrocinador</strong>
 
-                    <span>Portal de gestão</span>
 
                 </div>
 
@@ -82,7 +82,7 @@
 
 
 
-                <a class="nav-item active" href="#dashboard">
+                <a class="nav-item active" id="dashboardNav" href="#dashboard">
 
                     <svg viewBox="0 0 24 24" aria-hidden="true">
 
@@ -99,22 +99,6 @@
                     <span>Dashboard</span>
 
                     <span class="nav-chevron">−</span>
-
-                </a>
-
-
-
-                <a class="nav-item" href="#patrocinadores">
-
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-
-                        <rect x="3" y="4" width="18" height="16" rx="2"/>
-
-                        <path d="M8 20v-4h8v4M8 8h.01M12 8h.01M16 8h.01M8 12h.01M12 12h.01M16 12h.01"/>
-
-                    </svg>
-
-                    <span>Patrocinadores</span>
 
                 </a>
 
@@ -148,9 +132,15 @@
 
                 </a>
 
+                <a class="nav-item" href="../Telahistorico/index.html">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M3 12a9 9 0 1 0 2.64-6.36L3 8"/>
+                        <path d="M3 3v5h5M12 7v5l3 2"/>
+                    </svg>
+                    <span>Histórico</span>
+                </a>
 
-
-                <a class="nav-item" href="#configuracoes">
+                <a class="nav-item" href="../teladeconfig/indexconfig.html">
 
                     <svg viewBox="0 0 24 24" aria-hidden="true">
 
@@ -200,45 +190,23 @@
 
                     <span class="breadcrumb">
 
-                        Administração RBS <b>/</b> Dashboard <!-- Breadcrumbs, Mmanter isso quando funfar?-->
+                        Administração RBS <b>/</b> Dashboard
 
                     </span>
 
+                            </div>
+            <a class="topbar-user topbar-user-link"
+            href="../teladeconfig/indexconfig.html#perfil"
+            aria-label="Abrir perfil da conta">
+
+                <div class="user-text">
+                    <strong data-account-name>Otávio Fogaça</strong>
+                    <span>Equipe RBS</span>
                 </div>
 
-                <div class="topbar-user">
+                <div class="avatar" data-account-avatar aria-hidden="true">OF</div>
+            </a>
 
-
-
-                    <button class="notification" type="button" aria-label="Notificações">
-
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-
-                            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
-
-                            <path d="M10 21h4"/>
-
-                        </svg>
-
-                    </button>
-
-
-
-                    <div class="user-text">
-
-                        <strong>Otávio Fogaça</strong>
-
-                        <span>Equipe RBS</span>
-
-                    </div>
-
-
-
-                    <div class="avatar">OF</div>
-
-
-
-                </div>
 
             </header>
 
@@ -483,6 +451,7 @@
         </section>
 
             </main>
+
         </div>
     </div>
 
@@ -525,7 +494,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
 </script>
 
+<script src="../Telahistorico/historico.js"></script>
 <script src="patrocinadores.js"></script>
+<script src="account-display.js"></script>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
@@ -562,29 +533,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 delete sponsorForm.dataset.editandoId;
             
             } else {
-                // 1. Valida os e-mails antes de cadastrar a empresa.
-                const emails = validarEmailsPatrocinador(dados.email);
-
-                // 2. Cadastra a empresa e obtém seu ID.
-                const patrocinador = cadastrarPatrocinador(dados);
-
-                // 3. Cria uma conta vinculada à empresa para cada e-mail.
-                const contas = criarContasPatrocinador(
-                    patrocinador,
-                    emails
-                );
-
-                // 4. Exibe as credenciais para a demonstração.
-                const credenciais = contas.map(conta =>
-                    `E-mail: ${conta.email}\nSenha temporária: ${conta.senha}`
-                ).join("\n\n");
-
-                alert(
-                    "Patrocinador cadastrado com sucesso!\n\n" +
-                    "Contas criadas:\n\n" +
-                    credenciais +
-                    "\n\nGuarde as credenciais para realizar o teste de login."
-                );
+                cadastrarPatrocinador(dados);
+                alert("Patrocinador cadastrado com sucesso!");
             }
 
             sponsorForm.reset();
@@ -602,8 +552,6 @@ document.addEventListener("DOMContentLoaded", function () {
             alert(erro.message || "Não foi possível salvar o patrocinador.");
         }
     });
-
-    renderizarPatrocinadores();
 });
 </script>
 </body>

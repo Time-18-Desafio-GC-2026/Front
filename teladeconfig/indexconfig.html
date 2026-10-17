@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Perfil e configurações da conta RBS">
+    <title>RBS Patrocinadores | Configurações</title>
+    <link rel="stylesheet" href="../Telainicial/style_rbs_final.css">
+    <link rel="stylesheet" href="style_config.css">
+    <link rel="stylesheet" href="../exemploCSS/rbs-theme.css">
+</head>
+<body>
+    <div class="app-shell">
+        <!-- Menu de configurações com acesso ao perfil e saída segura. -->
+        <aside class="sidebar">
+            <a class="sidebar-brand settings-brand" href="../Telainicial/index.html">
+                <img class="brand-mark" src="../Telainicial/LogoPlanetaOrange.png" alt="Planeta Atlântida">
+                <span class="brand-copy">
+                    <strong>Portal do Patrocinador</strong>
+                </span>
+            </a>
+
+            <div class="workspace">
+                <span class="eyebrow">CONTA</span>
+                <strong>Configurações</strong>
+                <span>Perfil e preferências</span>
+            </div>
+
+            <nav class="main-nav" aria-label="Opções da conta">
+                <span class="nav-label">CONTA</span>
+                <button class="nav-item nav-item-button" id="logoutButton" type="button">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M10 17l5-5-5-5M15 12H3"/>
+                        <path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"/>
+                    </svg>
+                    <span>Sair</span>
+                </button>
+                <a class="nav-item" id="profileNav" href="#perfil">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="12" cy="8" r="4"/>
+                        <path d="M4 21a8 8 0 0 1 16 0"/>
+                    </svg>
+                    <span>Perfil</span>
+                </a>
+                <a class="nav-item settings-menu-link" href="../Telainicial/index.html">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                    <span>Menu</span>
+                </a>
+            </nav>
+        </aside>
+
+        <div class="main-area">
+            <header class="topbar">
+                <div class="topbar-breadcrumb">
+                    <span class="breadcrumb">Administração RBS <b>/</b> <span id="breadcrumbTitle">Configurações</span></span>
+                </div>
+                
+                <a class="topbar-user topbar-user-link"
+                href="#perfil"
+                aria-label="Abrir perfil da conta">
+
+                    <div class="user-text">
+                        <strong id="accountName" data-account-name>Conta</strong>
+                        <span>Perfil da conta</span>
+                    </div>
+
+                    <div class="avatar" data-account-avatar aria-hidden="true">RBS</div>
+                </a>
+
+            </header>
+
+            <main class="content">
+                <section class="settings-welcome" id="settingsWelcome">
+                    <h1>Configurações</h1>
+                    <p>Escolha Perfil no menu para gerenciar sua conta.</p>
+                </section>
+
+                <!-- Perfil com e-mail bloqueado e preferências editáveis. -->
+                <section class="profile-view" id="profileView" hidden>
+                    <header class="profile-header">
+                        <h1>Perfil</h1>
+                        <p>Atualize seu nome de usuário e gerencie os dados da conta.</p>
+                    </header>
+
+                    <form class="username-form" id="usernameForm">
+                        <div class="profile-field">
+                            <label for="profileUsername">Nome de usuário</label>
+                            <input id="profileUsername" name="username" type="text" maxlength="80" required>
+                            <small>Este nome será exibido no cabeçalho da tela inicial.</small>
+                        </div>
+                        <p class="profile-message" id="usernameMessage" role="status" aria-live="polite"></p>
+                        <div class="profile-actions">
+                            <button class="button button-primary profile-save" type="submit">Salvar nome</button>
+                        </div>
+                    </form>
+
+                    <form class="profile-form" id="profileForm">
+                        <div class="profile-field">
+                            <label for="profileEmail">E-mail da conta</label>
+                            <input id="profileEmail" name="email" type="email" readonly>
+                            <small>O e-mail usado no login não pode ser alterado.</small>
+                        </div>
+
+                        <div class="profile-divider"></div>
+                        <h2>Trocar senha</h2>
+
+                        <div class="profile-field">
+                            <label for="currentPassword">Senha atual</label>
+                            <input id="currentPassword" name="currentPassword" type="password" autocomplete="current-password" required>
+                        </div>
+
+                        <div class="profile-field">
+                            <label for="newPassword">Nova senha</label>
+                            <input id="newPassword" name="newPassword" type="password" minlength="6" autocomplete="new-password" required>
+                        </div>
+
+                        <div class="profile-field">
+                            <label for="confirmPassword">Confirmar nova senha</label>
+                            <input id="confirmPassword" name="confirmPassword" type="password" minlength="6" autocomplete="new-password" required>
+                        </div>
+
+                        <p class="profile-message" id="profileMessage" role="status" aria-live="polite"></p>
+                        <div class="profile-actions">
+                            <button class="button button-primary profile-save" type="submit">Atualizar senha</button>
+                            <button class="profile-forgot" id="forgotPasswordButton" type="button">Esqueci senha</button>
+                        </div>
+                    </form>
+
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script src="../Telahistorico/historico.js"></script>
+    <script src="../Telainicial/account-display.js"></script>
+    <script src="config.js"></script>
+</body>
+</html>
