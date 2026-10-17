@@ -24,7 +24,9 @@ body {
   display: grid;
   place-items: center;
   font-family: Arial, Helvetica, sans-serif;
-  background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+  background:
+    linear-gradient(rgba(11, 23, 77, 0.25), rgba(11, 23, 77, 0.25)),
+    url("PAfundo1.png") center / cover no-repeat fixed;
   color: var(--text);
 }
 
@@ -130,6 +132,23 @@ input:focus {
   color: var(--muted);
 }
 
+.options a,
+.register a {
+  display: inline-block;
+  padding: 0;
+  border: 0;
+  color: var(--primary-dark);
+  font-weight: 700;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.options a:hover,
+.register a:hover {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
 .remember {
   display: flex;
   align-items: center;
@@ -173,6 +192,10 @@ button:hover {
   text-align: center;
   color: var(--muted);
   font-size: 0.87rem;
+}
+
+.register a {
+  margin-left: 4px;
 }
 
 /* Ajustes para telas estreitas. */
