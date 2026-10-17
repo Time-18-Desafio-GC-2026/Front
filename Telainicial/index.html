@@ -140,19 +140,23 @@
                     <span>Histórico</span>
                 </a>
 
-                <a class="nav-item" href="../teladeconfig/indexconfig.html">
-
+                
+                <a class="nav-item" href="../teladeconfig/indexconfig.html#perfil">
                     <svg viewBox="0 0 24 24" aria-hidden="true">
-
-                        <path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z"/>
-
-                        <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-1.9 1.9-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V20h-2.68v-.09A1.7 1.7 0 0 0 11.2 18.4a1.7 1.7 0 0 0-1.88.34l-.06.06-1.9-1.9.06-.06A1.7 1.7 0 0 0 7.76 15a1.7 1.7 0 0 0-1.56-1.03H6v-2.68h.2A1.7 1.7 0 0 0 7.76 10a1.7 1.7 0 0 0-.34-1.88l-.06-.06 1.9-1.9.06.06a1.7 1.7 0 0 0 1.88.34A1.7 1.7 0 0 0 12.23 5V4h2.68v1a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06 1.9 1.9-.06.06A1.7 1.7 0 0 0 19.4 10c.23.63.83 1.05 1.5 1.05h.1v2.68h-.1c-.67 0-1.27.42-1.5 1.05z"/>
-
+                        <circle cx="12" cy="8" r="4"/>
+                        <path d="M4 21a8 8 0 0 1 16 0"/>
                     </svg>
-
-                    <span>Configurações</span>
-
+                    <span>Perfil</span>
                 </a>
+
+                <button class="nav-item nav-item-button" id="logoutButton" type="button">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M10 17l5-5-5-5M15 12H3"/>
+                        <path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"/>
+                    </svg>
+                    <span>Sair</span>
+                </button>
+
 
             </nav>
 
@@ -553,6 +557,27 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    const logoutButton = document.getElementById("logoutButton");
+
+    if (!logoutButton) return;
+
+    logoutButton.addEventListener("click", function () {
+        const confirmar = window.confirm(
+            "Deseja realmente sair da plataforma?"
+        );
+
+        if (!confirmar) return;
+
+        sessionStorage.removeItem("rbs_usuario_email");
+        localStorage.removeItem("rbs_sessao");
+
+        window.location.replace("../Teladelogin/indexLogin.html");
+    });
+});
+</script>
+
 </script>
 </body>
 </html>

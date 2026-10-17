@@ -1829,3 +1829,22 @@ svg {
 .topbar-user-link .user-text span {
     text-decoration: none;
 }
+
+
+.nav-item-button {
+    width: 100%;
+    border: 0;
+    text-align: left;
+    background: transparent;
+    font: inherit;
+    cursor: pointer;
+}
+
+.nav-item-button:hover {
+    background: var(--surface);
+}
+
+.nav-item-button:focus-visible {
+    outline: 2px solid var(--border);
+    outline-offset: -2px;
+}
