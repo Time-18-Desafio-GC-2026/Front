@@ -1,9 +1,24 @@
-
+// Aguarda o formulário carregar antes de registrar suas interações.
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.querySelector("form");
   const emailInput = document.getElementById("email");
   const passwordInput = document.getElementById("password");
   const togglePassword = document.getElementById("toggle-password");
+  const USERS_KEY = "rbs_usuarios";
+  const DEFAULT_USER = {
+    id: "usuario-admin-padrao",
+    nome: "Administrador RBS",
+    email: "adm1@gmail.com",
+    senha: "adm123",
+    perfil: "funcionario"
+  };
+
+  const usuariosExistentes = JSON.parse(
+    localStorage.getItem(USERS_KEY) || "[]"
+  );
+  if (usuariosExistentes.length === 0) {
+    localStorage.setItem(USERS_KEY, JSON.stringify([DEFAULT_USER]));
+  }
 
   // Alterna entre mostrar e ocultar a senha.
   togglePassword.addEventListener("change", () => {
@@ -16,15 +31,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const email = emailInput.value.trim().toLowerCase();
     const senha = passwordInput.value;
 
-    // Recupera as contas cadastradas.
+    // Recupera as contas cadastradas no armazenamento local do protótipo.
     const usuarios = JSON.parse(
       localStorage.getItem("rbs_usuarios") || "[]"
     );
 
-    // Busca a conta correspondente às credenciais.
-    const usuario = usuarios.find((u) =>
-      u.email.toLowerCase() === email &&
-      u.senha === senha
+    // Confere as credenciais antes de abrir uma sessão.
+    const usuario = usuarios.find((conta) =>
+      conta.email.toLowerCase() === email &&
+      conta.senha === senha
     );
 
     if (!usuario) {
@@ -32,11 +47,14 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Verifica o perfil e registra os dados da sessão.
+    // Mantém o e-mail do ator por aba, separado do contato da empresa.
+    sessionStorage.setItem("rbs_usuario_email", usuario.email);
+
     if (usuario.perfil === "funcionario") {
       localStorage.setItem("rbs_sessao", JSON.stringify({
         usuarioId: usuario.id,
         nome: usuario.nome,
+        email: usuario.email,
         perfil: usuario.perfil
       }));
 
@@ -52,9 +70,9 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.getItem("rbs_patrocinadores") || "[]"
       );
 
-      // Confirma se a empresa vinculada à conta existe.
+      // Confirma se a conta está vinculada a uma empresa existente.
       const patrocinador = patrocinadores.find(
-        (p) => String(p.id) === String(usuario.patrocinadorId)
+        (empresa) => String(empresa.id) === String(usuario.patrocinadorId)
       );
 
       if (!patrocinador) {
@@ -65,6 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
       localStorage.setItem("rbs_sessao", JSON.stringify({
         usuarioId: usuario.id,
         nome: usuario.nome,
+        email: usuario.email,
         perfil: usuario.perfil,
         patrocinadorId: patrocinador.id
       }));

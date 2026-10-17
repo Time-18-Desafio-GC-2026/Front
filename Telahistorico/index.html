@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Histórico de atividades do Portal RBS">
+    <title>RBS Patrocinadores | Histórico</title>
+
+    <link rel="stylesheet" href="../Telainicial/style_rbs_final.css">
+    <link rel="stylesheet" href="style_historico.css">
+    <link rel="stylesheet" href="../exemploCSS/rbs-theme.css">
+</head>
+<body>
+    <div class="app-shell">
+        <!-- Menu lateral para navegar pelo portal sem sair da estrutura visual. -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <img class="brand-mark" src="../Telainicial/LogoPlanetaOrange.png" alt="Planeta Atlântida">
+                <div class="brand-copy">
+                    <strong>Portal do Patrocinador</strong>
+                </div>
+            </div>
+
+            <div class="workspace">
+                <span class="eyebrow">ÁREA DE TRABALHO</span>
+                <strong>Administração RBS</strong>
+                <span>Visão geral da operação</span>
+            </div>
+
+            <nav class="main-nav" aria-label="Navegação principal">
+                <span class="nav-label">NAVEGAÇÃO</span>
+
+                <a class="nav-item" href="../Telainicial/index.html#dashboard">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <rect x="3" y="3" width="7" height="7" rx="1"/>
+                        <rect x="14" y="3" width="7" height="7" rx="1"/>
+                        <rect x="3" y="14" width="7" height="7" rx="1"/>
+                        <rect x="14" y="14" width="7" height="7" rx="1"/>
+                    </svg>
+                    <span>Dashboard</span>
+                </a>
+
+                <a class="nav-item" href="../Telainicial/index.html#relatorios">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 19V9M10 19V5M16 19v-8M22 19H2"/>
+                    </svg>
+                    <span>Relatórios</span>
+                </a>
+
+                <a class="nav-item" href="../Telainicial/index.html#auditoria">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 3l8 3v5c0 5-3.4 8.3-8 10-4.6-1.7-8-5-8-10V6l8-3z"/>
+                        <path d="M9 12l2 2 4-4"/>
+                    </svg>
+                    <span>Auditoria</span>
+                </a>
+
+                <a class="nav-item active" href="index.html" aria-current="page">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M3 12a9 9 0 1 0 2.64-6.36L3 8"/>
+                        <path d="M3 3v5h5M12 7v5l3 2"/>
+                    </svg>
+                    <span>Histórico</span>
+                </a>
+
+                <a class="nav-item" href="../teladeconfig/indexconfig.html">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z"/>
+                        <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-1.9 1.9-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V20h-2.68v-.09A1.7 1.7 0 0 0 11.2 18.4a1.7 1.7 0 0 0-1.88.34l-.06.06-1.9-1.9.06-.06A1.7 1.7 0 0 0 7.76 15a1.7 1.7 0 0 0-1.56-1.03H6v-2.68h.2A1.7 1.7 0 0 0 7.76 10a1.7 1.7 0 0 0-.34-1.88l-.06-.06 1.9-1.9.06.06a1.7 1.7 0 0 0 1.88.34A1.7 1.7 0 0 0 12.23 5V4h2.68v1a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06 1.9 1.9-.06.06A1.7 1.7 0 0 0 19.4 10c.23.63.83 1.05 1.5 1.05h.1v2.68h-.1c-.67 0-1.27.42-1.5 1.05z"/>
+                    </svg>
+                    <span>Configurações</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-note">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <rect x="6" y="10" width="12" height="10" rx="2"/>
+                    <path d="M9 10V7a3 3 0 0 1 6 0v3"/>
+                </svg>
+                <span>Acesso à gestão de todos os patrocinadores e cotas.</span>
+            </div>
+        </aside>
+
+        <div class="main-area">
+            <!-- Barra superior mantém a identidade da página principal. -->
+            <header class="topbar">
+                <div class="topbar-breadcrumb">
+                    <span class="breadcrumb">Administração RBS <b>/</b> Histórico</span>
+                </div>
+                <div class="topbar-user">
+                    <div class="user-text">
+                        <strong data-account-name>Otávio Fogaça</strong>
+                        <span>Equipe RBS</span>
+                    </div>
+                    <div class="avatar" data-account-avatar>OF</div>
+                </div>
+            </header>
+
+            <!-- Tabela com as atividades gravadas no navegador. -->
+            <main class="content">
+                <header class="history-header">
+                    <h1>Histórico</h1>
+                    <p>Consulte as atividades realizadas no portal.</p>
+                </header>
+
+                <!-- Filtros combináveis para localizar uma atividade. -->
+                <form class="history-filters" id="historyFilters">
+                    <label for="filterEmail">
+                        E-mail
+                        <input id="filterEmail" type="search" placeholder="Filtrar por e-mail">
+                    </label>
+                    <label for="filterDate">
+                        Data
+                        <input id="filterDate" type="date">
+                    </label>
+                    <label for="filterTime">
+                        Hora
+                        <input id="filterTime" type="time">
+                    </label>
+                    <button class="history-filter-reset" type="reset">Limpar filtros</button>
+                </form>
+
+                <div class="history-table-wrapper">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">E-mail</th>
+                                <th scope="col">Data</th>
+                                <th scope="col">Hora</th>
+                                <th scope="col">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyRows">
+                            <tr>
+                                <td colspan="4">Ainda não há atividades registradas.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Carrega a leitura e o registro compartilhado do histórico. -->
+    <script src="historico.js"></script>
+    <script src="../Telainicial/account-display.js"></script>
+</body>
+</html>
