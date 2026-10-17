@@ -106,10 +106,31 @@
                         <div class="profile-divider"></div>
                         <h2>Trocar senha</h2>
 
+                        
                         <div class="profile-field">
                             <label for="currentPassword">Senha atual</label>
-                            <input id="currentPassword" name="currentPassword" type="password" autocomplete="current-password" required>
+
+                            <div class="password-input-wrapper">
+                                <input
+                                    id="currentPassword"
+                                    name="currentPassword"
+                                    type="password"
+                                    autocomplete="current-password"
+                                    required
+                                >
+
+                                <button
+                                    type="button"
+                                    class="toggle-password"
+                                    data-target="currentPassword"
+                                    aria-label="Mostrar senha atual"
+                                    aria-pressed="false"
+                                >
+                                    Mostrar
+                                </button>
+                            </div>
                         </div>
+
 
                         <div class="profile-field">
                             <label for="newPassword">Nova senha</label>

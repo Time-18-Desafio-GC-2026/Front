@@ -160,3 +160,55 @@
     outline: 2px solid var(--border);
     outline-offset: 2px;
 }
+
+
+.password-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.password-input-wrapper input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 75px 8px 10px;
+}
+
+.password-input-wrapper .toggle-password {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    z-index: 2;
+
+    padding: 4px 6px;
+    border: none;
+    background: transparent;
+    color: #53677d;
+
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.password-input-wrapper .toggle-password:hover {
+    color: var(--text-strong);
+    text-decoration: underline;
+}
+
+
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    border: 0;
+    background: transparent;
+    color: #53677d;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.toggle-password:hover {
+    color: var(--text-strong);
+    text-decoration: underline;
+}

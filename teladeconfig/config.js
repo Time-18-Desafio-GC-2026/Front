@@ -4,6 +4,24 @@ var SESSION_KEY = "rbs_sessao";
 var USERS_KEY = "rbs_usuarios";
 
 document.addEventListener("DOMContentLoaded", function () {
+
+    document.querySelectorAll(".toggle-password").forEach(button => {
+    button.addEventListener("click", () => {
+        const input = document.getElementById(button.dataset.target);
+
+        if (!input) return;
+
+        const mostrar = input.type === "password";
+
+        input.type = mostrar ? "text" : "password";
+        button.textContent = mostrar ? "Ocultar" : "Mostrar";
+        button.setAttribute("aria-label",
+            `${mostrar ? "Ocultar" : "Mostrar"} senha`
+        );
+        button.setAttribute("aria-pressed", String(mostrar));
+    });
+});
+
     const session = JSON.parse(
         localStorage.getItem(SESSION_KEY) || "null"
     );
