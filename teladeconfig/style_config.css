@@ -212,3 +212,13 @@
     color: var(--text-strong);
     text-decoration: underline;
 }
+
+/* Mantém o perfil oculto enquanto possuir o atributo hidden. */
+.profile-view[hidden] {
+    display: none !important;
+}
+
+/* Exibe o perfil quando o JavaScript o habilitar. */
+.profile-view:not([hidden]) {
+    display: block;
+}

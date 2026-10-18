@@ -268,3 +268,23 @@
         min-width: 620px;
     }
 }
+
+.nav-item-button {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    border: 0;
+    text-align: left;
+    background: transparent;
+    font: inherit;
+    cursor: pointer;
+}
+
+.nav-item-button:hover {
+    background: rgba(255, 255, 255, 0.09);
+}
+
+.nav-item-button:focus-visible {
+    outline: 2px solid #ffbd72;
+    outline-offset: 2px;
+}
