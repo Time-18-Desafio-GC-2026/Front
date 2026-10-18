@@ -1861,3 +1861,174 @@ svg {
     color: inherit;
     text-decoration: none;
 }
+
+
+/* Identificação da empresa e destaque da categoria */
+.identificacao-patrocinador {
+    margin-bottom: 28px;
+    padding: 26px;
+    border: 1px solid #e2e7ef;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8faff 100%);
+    box-shadow: 0 8px 24px rgba(15, 31, 69, 0.06);
+}
+
+.identificacao-cabecalho {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.identificacao-legenda {
+    display: block;
+    margin-bottom: 7px;
+    color: #75829a;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+}
+
+.identificacao-patrocinador h1 {
+    margin: 0;
+    color: #14264b;
+    font-size: clamp(25px, 3vw, 34px);
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.identificacao-descricao {
+    margin: 12px 0 20px;
+    color: #64748b;
+    line-height: 1.6;
+}
+
+.cota-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 170px;
+    padding: 13px 18px;
+    border: 1px solid #dce3ef;
+    border-radius: 14px;
+    background: #f1f5fb;
+    color: #20375f;
+}
+
+.cota-icone {
+    display: grid;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    place-items: center;
+    border-radius: 12px;
+    background: #dce6f7;
+    color: #254c8e;
+    font-size: 23px;
+}
+
+.cota-badge small,
+.cota-badge strong {
+    display: block;
+}
+
+.cota-badge small {
+    margin-bottom: 3px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    opacity: 0.8;
+}
+
+.cota-badge strong {
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.cota-destaque {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px 18px;
+    border: 1px solid #dce5f2;
+    border-left: 4px solid #5579b8;
+    border-radius: 10px;
+    background: #f1f5fb;
+}
+
+.cota-status-icone {
+    display: grid;
+    width: 27px;
+    height: 27px;
+    flex-shrink: 0;
+    place-items: center;
+    border-radius: 50%;
+    background: #dbe7fa;
+    color: #254c8e;
+    font-weight: 900;
+}
+
+.cota-destaque strong {
+    display: block;
+    margin-bottom: 5px;
+    color: #20375f;
+    font-size: 15px;
+}
+
+.cota-destaque p {
+    margin: 0;
+    color: #526581;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* Identidade visual especial para a cota Master */
+.cota-badge.cota-master {
+    border-color: #f2bd45;
+    background: linear-gradient(135deg, #fff4c9 0%, #ffe09a 100%);
+    color: #6d3900;
+    box-shadow: 0 5px 16px rgba(226, 147, 20, 0.13);
+}
+
+.cota-badge.cota-master .cota-icone {
+    background: linear-gradient(135deg, #ffce52, #ff972b);
+    color: #ffffff;
+    box-shadow: 0 3px 8px rgba(177, 91, 0, 0.2);
+}
+
+.cota-destaque.destaque-master {
+    border-color: #f2bd45;
+    border-left-color: #f28c16;
+    background: linear-gradient(110deg, #fff8e5, #fff0ca);
+}
+
+.cota-destaque.destaque-master .cota-status-icone {
+    background: #f5a623;
+    color: #ffffff;
+}
+
+.cota-destaque.destaque-master strong {
+    color: #793d00;
+}
+
+.cota-destaque.destaque-master p {
+    color: #79572a;
+}
+
+@media (max-width: 600px) {
+    .identificacao-patrocinador {
+        padding: 19px;
+    }
+
+    .identificacao-cabecalho {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .cota-badge {
+        width: 100%;
+        box-sizing: border-box;
+    }
+}

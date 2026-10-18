@@ -141,3 +141,130 @@
     outline: 2px solid var(--border);
     outline-offset: 2px;
 }
+
+:root {
+    --hist-orange: #f47b20;
+    --hist-orange-dark: #d95d0b;
+    --hist-yellow: #ffc247;
+    --hist-white: #ffffff;
+}
+
+/* Caixa dos filtros: laranja/amarelo, com campos brancos */
+.history-filters {
+    background: linear-gradient(110deg, var(--hist-yellow) 0%, var(--hist-orange) 100%);
+    border: 1px solid var(--hist-orange-dark);
+    border-radius: 10px;
+    padding: 14px;
+    box-shadow: 0 4px 12px rgba(217, 93, 11, 0.12);
+    gap: 12px;
+}
+
+/* Rótulos dos campos */
+.history-filters label {
+    color: var(--hist-white);
+    font-weight: 700;
+}
+
+/* Campos continuam brancos para facilitar a leitura e digitação */
+.history-filters input,
+.history-filters select {
+    background: var(--hist-white);
+    color: #344054;
+    border: 1px solid rgba(91, 62, 41, 0.18);
+    border-radius: 6px;
+}
+
+.history-filters input::placeholder {
+    color: #8993a1;
+}
+
+.history-filters input:focus,
+.history-filters select:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.9);
+    outline-offset: 1px;
+    border-color: var(--hist-orange-dark);
+}
+
+/* Botão limpar filtros */
+.history-filter-reset {
+    background: rgba(255, 255, 255, 0.96);
+    color: var(--hist-orange-dark);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    border-radius: 6px;
+    font-weight: 700;
+    transition: background 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.history-filter-reset:hover {
+    background: var(--hist-orange-dark);
+    color: var(--hist-white);
+    border-color: var(--hist-orange-dark);
+}
+
+/* Moldura externa da tabela */
+.history-table-wrapper {
+    overflow: hidden;
+    border: 1px solid #ead8c8;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 3px 12px rgba(22, 35, 58, 0.04);
+}
+
+/* Cabeçalho da tabela em laranja, com texto branco */
+.history-table thead {
+    background: linear-gradient(100deg, var(--hist-yellow) 0%, var(--hist-orange) 100%);
+}
+
+.history-table thead tr {
+    background: transparent;
+}
+
+.history-table thead th {
+    background: transparent;
+    color: var(--hist-white);
+    border-color: rgba(255, 255, 255, 0.28);
+    font-weight: 700;
+}
+
+/* Linhas do histórico permanecem claras para leitura */
+.history-table tbody tr {
+    background: #ffffff;
+    transition: background 150ms ease;
+}
+
+.history-table tbody tr:nth-child(even) {
+    background: #fffaf5;
+}
+
+.history-table tbody tr:hover {
+    background: #fff0df;
+}
+
+.history-table tbody td {
+    color: #52657b;
+    border-color: #f0e2d6;
+}
+
+/* Links, caso existam dentro das células */
+.history-table tbody td a {
+    color: var(--hist-orange-dark);
+}
+
+.history-table tbody td a:hover {
+    color: #a94306;
+}
+
+/* Responsividade */
+@media (max-width: 760px) {
+    .history-filters {
+        padding: 12px;
+    }
+
+    .history-table-wrapper {
+        overflow-x: auto;
+    }
+
+    .history-table {
+        min-width: 620px;
+    }
+}

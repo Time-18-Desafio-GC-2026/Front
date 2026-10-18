@@ -694,9 +694,22 @@ function renderizarPatrocinadores() {
             if (!confirmar) return;
 
             // Guarda a exclusão somente após a confirmação do usuário.
-            registrarHistorico(
-                `Admin RBS excluiu a empresa "${patrocinador.nome}".`
-            );
+           const sessaoAtual = JSON.parse(
+    localStorage.getItem("rbs_sessao") || "null"
+);
+
+const usuarios = JSON.parse(
+    localStorage.getItem("rbs_usuarios") || "[]"
+);
+
+const usuarioAtual = usuarios.find(usuario =>
+    String(usuario.id) === String(sessaoAtual?.usuarioId)
+);
+
+registrarHistorico(
+    `Admin RBS excluiu a empresa "${patrocinador.nome}".`,
+    usuarioAtual?.email || sessaoAtual?.email || "Conta não identificada"
+);
             excluirPatrocinador(patrocinador.id);
             renderizarPatrocinadores();
         });
