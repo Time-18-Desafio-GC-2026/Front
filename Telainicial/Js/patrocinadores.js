@@ -1,19 +1,31 @@
+// Portal RBS — gerenciamento de patrocinadores, envios, mídia e cortesias.
+// Esta versão organiza o arquivo por seções; a lógica executável foi preservada.
+
+// ============================================================
+// 1. CONSTANTES E PERSISTÊNCIA DE PATROCINADORES
+// ============================================================
+
 const PATROCINADORES_KEY = "rbs_patrocinadores";
 
 // Recupera os patrocinadores salvos no localStorage.
 function listarPatrocinadores() {
-return JSON.parse(
-localStorage.getItem(PATROCINADORES_KEY) || "[]"
-);
-}
-// Salva a lista atualizada de patrocinadores.
-function salvarPatrocinadores(patrocinadores) {
-localStorage.setItem(
-PATROCINADORES_KEY,
-JSON.stringify(patrocinadores)
-);
+    return JSON.parse(
+        localStorage.getItem(PATROCINADORES_KEY) || "[]"
+    );
 }
 
+// Salva a lista atualizada de patrocinadores.
+function salvarPatrocinadores(patrocinadores) {
+    localStorage.setItem(
+        PATROCINADORES_KEY,
+        JSON.stringify(patrocinadores)
+    );
+}
+
+
+// ============================================================
+// 2. VALIDAÇÃO DE E-MAILS E CRIAÇÃO DE CONTAS
+// ============================================================
 
 const USUARIOS_KEY = "rbs_usuarios";
 
@@ -102,6 +114,11 @@ function criarContasPatrocinador(patrocinador, emails) {
     }));
 }
 
+
+// ============================================================
+// 3. CADASTRO, EDIÇÃO E EXCLUSÃO DE PATROCINADORES
+// ============================================================
+
 function cadastrarPatrocinador(dados) {
     const patrocinadores = listarPatrocinadores();
 
@@ -122,16 +139,82 @@ function cadastrarPatrocinador(dados) {
     return novoPatrocinador;
 }
 
+// Exclui um patrocinador e os dados vinculados a ele.
 function excluirPatrocinador(id) {
     const patrocinadores = listarPatrocinadores();
 
-    const atualizados = patrocinadores.filter(
-        patrocinador => patrocinador.id !== id
+    const patrocinadorExiste = patrocinadores.some(
+        patrocinador => patrocinador.id === id
     );
 
-    salvarPatrocinadores(atualizados);
+    if (!patrocinadorExiste) {
+        throw new Error("Patrocinador não encontrado.");
+    }
+
+    // 1. Remove o cadastro da empresa.
+    salvarPatrocinadores(
+        patrocinadores.filter(
+            patrocinador => patrocinador.id !== id
+        )
+    );
+
+    // 2. Remove as contas vinculadas à empresa.
+    const usuarios = JSON.parse(
+        localStorage.getItem(USUARIOS_KEY) || "[]"
+    );
+
+    localStorage.setItem(
+        USUARIOS_KEY,
+        JSON.stringify(
+            usuarios.filter(
+                usuario => usuario.patrocinadorId !== id
+            )
+        )
+    );
+
+    // 3. Remove os envios da empresa.
+    const envios = listarEnvios();
+
+    localStorage.setItem(
+        ENVIOS_KEY,
+        JSON.stringify(
+            envios.filter(
+                envio => envio.patrocinadorId !== id
+            )
+        )
+    );
+
+    // 4. Remove as cortesias da empresa.
+    const cortesias = listarCortesias();
+
+    localStorage.setItem(
+        CORTESIAS_KEY,
+        JSON.stringify(
+            cortesias.filter(
+                cortesia => cortesia.patrocinadorId !== id
+            )
+        )
+    );
+
+    // 5. Remove os materiais publicados pela RBS para a empresa.
+    const midias = listarMidiaRBS();
+
+    localStorage.setItem(
+        MIDIA_RBS_KEY,
+        JSON.stringify(
+            midias.filter(
+                midia => midia.patrocinadorId !== id
+            )
+        )
+    );
+
+    // O histórico de atividades não é apagado.
 }
 
+
+// ============================================================
+// 4. GERENCIAMENTO DOS ENVIOS DOS PATROCINADORES
+// ============================================================
 
 const ENVIOS_KEY = "rbs_envios";
 
@@ -183,6 +266,7 @@ function cadastrarEnvio(patrocinadorId, dados) {
         const patrocinador = patrocinadores.find(
             item => item.id === patrocinadorId
         );
+
         const descricaoEnvio = dados.arquivo
             ? `o arquivo "${dados.arquivo}"`
             : "um conteúdo em texto";
@@ -196,7 +280,11 @@ function cadastrarEnvio(patrocinadorId, dados) {
     return novoEnvio;
 }
 
-//rbs envia relatorio demidia e link de post
+
+// ============================================================
+// 5. MÍDIA E PUBLICAÇÕES ENVIADAS PELA RBS
+// ============================================================
+
 const MIDIA_RBS_KEY = "rbs_midia_rbs";
 
 function listarMidiaRBS() {
@@ -223,6 +311,7 @@ function salvarMidiaRBS(registro) {
 }
 
 
+// Cria a área administrativa para adicionar e consultar mídia da RBS.
 function criarAreaMidiaRBS(patrocinador) {
     const secao = document.createElement("div");
     secao.className = "midia-rbs";
@@ -291,6 +380,7 @@ function criarAreaMidiaRBS(patrocinador) {
                 registrarHistorico(
                     `Admin RBS enviou o arquivo "${arquivo.name}" para ${patrocinador.nome}.`
                 );
+
                 renderizarPatrocinadores();
             } catch (erro) {
                 console.error(erro);
@@ -321,10 +411,10 @@ function criarAreaMidiaRBS(patrocinador) {
                 criadoEm: new Date().toISOString()
             });
 
-            // Registra quem adicionou o link e a qual empresa ele pertence.
             registrarHistorico(
                 `Admin RBS adicionou o link "${endereco.href}" para ${patrocinador.nome}.`
             );
+
             renderizarPatrocinadores();
         } catch (erro) {
             alert(erro.message || "Informe um link válido.");
@@ -350,6 +440,7 @@ function criarAreaMidiaRBS(patrocinador) {
             linkArquivo.target = "_blank";
             linkArquivo.rel = "noopener noreferrer";
             linkArquivo.textContent = "Visualizar relatório: " + registro.nome;
+
             linkArquivo.addEventListener("click", function () {
                 registrarHistorico(
                     `Arquivo "${registro.nome}" visualizado por ${patrocinador.nome}.`
@@ -360,6 +451,7 @@ function criarAreaMidiaRBS(patrocinador) {
             baixarArquivo.href = registro.arquivoData;
             baixarArquivo.download = registro.nome;
             baixarArquivo.textContent = "Baixar";
+
             baixarArquivo.addEventListener("click", function () {
                 registrarHistorico(
                     `Arquivo "${registro.nome}" baixado por ${patrocinador.nome}.`
@@ -393,7 +485,10 @@ function criarAreaMidiaRBS(patrocinador) {
 
     return secao;
 }
- 
+
+// ============================================================
+// 6. FILTROS E NORMALIZAÇÃO DE TEXTO
+// ============================================================
 
 function normalizarTexto(valor) {
     return String(valor || "")
@@ -411,6 +506,7 @@ function configurarFiltrosPatrocinadores() {
 
     // Preenche o filtro com as cotas existentes.
     const cotaAnterior = filtroCota.value;
+
     const cotas = [...new Set(
         listarPatrocinadores()
             .map(patrocinador => patrocinador.cota)
@@ -483,7 +579,11 @@ function configurarFiltrosPatrocinadores() {
     aplicarFiltros();
 }
 
-// FUNÇÃO QUE GERA OS CARDS DOS PATROCINADORES
+
+// ============================================================
+// 7. RENDERIZAÇÃO DOS CARDS DOS PATROCINADORES
+// ============================================================
+
 function renderizarPatrocinadores() {
     const grid = document.getElementById("patrocinadoresGrid");
 
@@ -522,9 +622,9 @@ function renderizarPatrocinadores() {
         botaoRecolherTudo.textContent = "⌄";
         botaoRecolherTudo.setAttribute("aria-expanded", "false");
         botaoRecolherTudo.setAttribute(
-        "aria-label",
-        "Recolher conteúdo do patrocinador"
-    );
+            "aria-label",
+            "Recolher conteúdo do patrocinador"
+        );
 
         header.append(nome, botaoRecolherTudo, cota);
 
@@ -552,7 +652,7 @@ function renderizarPatrocinadores() {
             patrocinador.arquivo
         );
 
-                // Busca as contas vinculadas a este patrocinador.
+        // Busca as contas vinculadas a este patrocinador.
         const usuarios = JSON.parse(
             localStorage.getItem("rbs_usuarios") || "[]"
         );
@@ -561,21 +661,20 @@ function renderizarPatrocinadores() {
             usuario => usuario.patrocinadorId === patrocinador.id
         );
 
-        // Exibe o e-mail e a senha de cada conta.
+        // Comportamento original: exibe o e-mail e a senha de cada conta.
         contasPatrocinador.forEach(conta => {
             adicionarInformacao(
                 `Senha (${conta.email})`,
                 conta.senha
             );
         });
-        
+
         // Busca os envios vinculados a esta empresa pelo ID.
         const envios = listarEnviosPorPatrocinador(patrocinador.id);
 
         const secaoEnvios = document.createElement("div");
         secaoEnvios.className = "patrocinador-envios";
 
-        
         const cabecalhoEnvios = document.createElement("div");
         cabecalhoEnvios.className = "secao-cabecalho";
 
@@ -588,20 +687,20 @@ function renderizarPatrocinadores() {
         botaoEnvios.className = "botao-recolher";
         botaoEnvios.textContent = "⌄";
         botaoEnvios.setAttribute("aria-expanded", "false");
-        
+
         const conteudoEnvios = document.createElement("div");
         conteudoEnvios.className = "secao-conteudo";
         conteudoEnvios.hidden = true;
 
         const tituloMateriaisCliente = document.createElement("h5");
         tituloMateriaisCliente.className = "titulo-materiais-cliente";
-        tituloMateriaisCliente.textContent = "Materiais enviados pelo patrocinador";
+        tituloMateriaisCliente.textContent =
+            "Materiais enviados pelo patrocinador";
 
         conteudoEnvios.appendChild(tituloMateriaisCliente);
 
         cabecalhoEnvios.append(tituloEnvios, botaoEnvios);
         secaoEnvios.append(cabecalhoEnvios, conteudoEnvios);
-
 
         if (envios.length === 0) {
             const vazio = document.createElement("p");
@@ -613,7 +712,7 @@ function renderizarPatrocinadores() {
                 const item = document.createElement("div");
                 item.className = "envio-item";
 
-                // Conteúdo textual enviado
+                // Conteúdo textual enviado.
                 if (envio.texto) {
                     const texto = document.createElement("p");
                     texto.className = "envio-texto";
@@ -621,13 +720,12 @@ function renderizarPatrocinadores() {
                     item.appendChild(texto);
                 }
 
-                // Arquivo enviado
-                
+                // Arquivo enviado.
                 if (envio.arquivo) {
                     const linkArquivo = document.createElement("a");
                     linkArquivo.className = "envio-arquivo";
 
-                    // Compatibilidade com envios antigos, que guardavam
+                    // Compatibilidade com envios antigos que guardavam
                     // somente o nome do arquivo.
                     if (
                         typeof envio.arquivo === "object" &&
@@ -649,15 +747,14 @@ function renderizarPatrocinadores() {
                     item.appendChild(linkArquivo);
                 }
 
-
                 conteudoEnvios.appendChild(item);
             });
         }
 
-            const areaMidiaRBS = criarAreaMidiaRBS(patrocinador);
-            conteudoEnvios.appendChild(areaMidiaRBS);
+        const areaMidiaRBS = criarAreaMidiaRBS(patrocinador);
+        conteudoEnvios.appendChild(areaMidiaRBS);
 
-                botaoEnvios.addEventListener("click", function () {
+        botaoEnvios.addEventListener("click", function () {
             const vaiRecolher = !conteudoEnvios.hidden;
 
             conteudoEnvios.hidden = vaiRecolher;
@@ -668,7 +765,7 @@ function renderizarPatrocinadores() {
                 String(!vaiRecolher)
             );
         });
-             
+
         const acoes = document.createElement("div");
         acoes.className = "patrocinador-acoes";
 
@@ -693,66 +790,67 @@ function renderizarPatrocinadores() {
 
             if (!confirmar) return;
 
-            // Guarda a exclusão somente após a confirmação do usuário.
-           const sessaoAtual = JSON.parse(
-    localStorage.getItem("rbs_sessao") || "null"
-);
+            // Registra quem realizou a exclusão.
+            const sessaoAtual = JSON.parse(
+                localStorage.getItem("rbs_sessao") || "null"
+            );
 
-const usuarios = JSON.parse(
-    localStorage.getItem("rbs_usuarios") || "[]"
-);
+            const usuarios = JSON.parse(
+                localStorage.getItem("rbs_usuarios") || "[]"
+            );
 
-const usuarioAtual = usuarios.find(usuario =>
-    String(usuario.id) === String(sessaoAtual?.usuarioId)
-);
+            const usuarioAtual = usuarios.find(usuario =>
+                String(usuario.id) === String(sessaoAtual?.usuarioId)
+            );
 
-registrarHistorico(
-    `Admin RBS excluiu a empresa "${patrocinador.nome}".`,
-    usuarioAtual?.email || sessaoAtual?.email || "Conta não identificada"
-);
+            registrarHistorico(
+                `Admin RBS excluiu a empresa "${patrocinador.nome}".`,
+                usuarioAtual?.email ||
+                    sessaoAtual?.email ||
+                    "Conta não identificada"
+            );
+
             excluirPatrocinador(patrocinador.id);
             renderizarPatrocinadores();
         });
 
-        
-            
-            acoes.append(botaoEditar, botaoExcluir);
+        acoes.append(botaoEditar, botaoExcluir);
 
-            const secaoCortesias = criarSecaoCortesias(patrocinador);
+        const secaoCortesias = criarSecaoCortesias(patrocinador);
 
-            const conteudoPatrocinador = document.createElement("div");
-            conteudoPatrocinador.className = "patrocinador-conteudo";
-            conteudoPatrocinador.hidden = true;
+        const conteudoPatrocinador = document.createElement("div");
+        conteudoPatrocinador.className = "patrocinador-conteudo";
+        conteudoPatrocinador.hidden = true;
 
-            conteudoPatrocinador.append(
-                info,
-                secaoEnvios,
-                secaoCortesias,
-                acoes
+        conteudoPatrocinador.append(
+            info,
+            secaoEnvios,
+            secaoCortesias,
+            acoes
+        );
+
+        card.append(header, conteudoPatrocinador);
+
+        botaoRecolherTudo.addEventListener("click", function () {
+            const vaiRecolher = !conteudoPatrocinador.hidden;
+
+            conteudoPatrocinador.hidden = vaiRecolher;
+            botaoRecolherTudo.textContent = vaiRecolher ? "⌄" : "⌃";
+
+            botaoRecolherTudo.setAttribute(
+                "aria-expanded",
+                String(!vaiRecolher)
             );
 
-            card.append(header, conteudoPatrocinador);
+            botaoRecolherTudo.setAttribute(
+                "aria-label",
+                vaiRecolher
+                    ? "Expandir conteúdo do patrocinador"
+                    : "Recolher conteúdo do patrocinador"
+            );
+        });
 
-            botaoRecolherTudo.addEventListener("click", function () {
-                const vaiRecolher = !conteudoPatrocinador.hidden;
-
-                conteudoPatrocinador.hidden = vaiRecolher;
-                botaoRecolherTudo.textContent = vaiRecolher ? "⌄" : "⌃";
-
-                botaoRecolherTudo.setAttribute(
-                    "aria-expanded",
-                    String(!vaiRecolher)
-                );
-
-                botaoRecolherTudo.setAttribute(
-                    "aria-label",
-                    vaiRecolher
-                        ? "Expandir conteúdo do patrocinador"
-                        : "Recolher conteúdo do patrocinador"
-                );
-            });
-
-            grid.appendChild(card);
+        grid.appendChild(card);
     });
 
     configurarFiltrosPatrocinadores();
@@ -760,7 +858,11 @@ registrarHistorico(
 
 document.addEventListener("DOMContentLoaded", renderizarPatrocinadores);
 
-// FUNÇÃO QUE EDITA OS DADOS DE UM PATROCINADOR
+
+// ============================================================
+// 8. EDIÇÃO DE DADOS DO PATROCINADOR
+// ============================================================
+
 function editarPatrocinador(id, novosDados) {
     const patrocinadores = listarPatrocinadores();
 
@@ -788,7 +890,50 @@ function editarPatrocinador(id, novosDados) {
     return patrocinadores[indice];
 }
 
-    
+
+// Abre o formulário existente no HTML para editar uma empresa.
+function abrirEdicaoPatrocinador(id) {
+    const patrocinador = listarPatrocinadores().find(
+        item => item.id === id
+    );
+
+    if (!patrocinador) {
+        alert("Patrocinador não encontrado.");
+        return;
+    }
+
+    document.getElementById("sponsorName").value =
+        patrocinador.nome || "";
+
+    document.getElementById("sponsorCnpj").value =
+        patrocinador.cnpj || "";
+
+    document.getElementById("sponsorEmails").value =
+        patrocinador.email || "";
+
+    document.getElementById("sponsorQuota").value =
+        patrocinador.cota || "";
+
+    document.getElementById("sponsorComercialPlan").value = "";
+
+    document.getElementById("sponsorForm").dataset.editandoId = id;
+
+    document.querySelector("#sponsorForm [type='submit']")
+        .textContent = "Salvar alterações";
+
+    document.querySelector("#newSponsorForm h3").textContent =
+        "Editar patrocinador";
+
+    document.getElementById("newSponsorForm").classList.add("open");
+
+    document.getElementById("newSponsorButton")
+        .setAttribute("aria-expanded", "true");
+}
+
+// ============================================================
+// 9. GERENCIAMENTO E PERSISTÊNCIA DE CORTESIAS
+// ============================================================
+
 const CORTESIAS_KEY = "rbs_cortesias";
 
 const SETORES_CORTESIA = ["Arena", "Camarote", "Premium"];
@@ -847,13 +992,16 @@ function salvarCortesias(patrocinadorId, dados) {
     SETORES_CORTESIA.forEach(setor => {
         registro.setores[setor] = {
             passaporte: Math.max(
-                0, Number(dados.setores?.[setor]?.passaporte) || 0
+                0,
+                Number(dados.setores?.[setor]?.passaporte) || 0
             ),
             sexta: Math.max(
-                0, Number(dados.setores?.[setor]?.sexta) || 0
+                0,
+                Number(dados.setores?.[setor]?.sexta) || 0
             ),
             sabado: Math.max(
-                0, Number(dados.setores?.[setor]?.sabado) || 0
+                0,
+                Number(dados.setores?.[setor]?.sabado) || 0
             )
         };
     });
@@ -877,45 +1025,9 @@ function salvarCortesias(patrocinadorId, dados) {
 }
 
 
-
-function abrirEdicaoPatrocinador(id) {
-    const patrocinador = listarPatrocinadores().find(
-        item => item.id === id
-    );
-
-    if (!patrocinador) {
-        alert("Patrocinador não encontrado.");
-        return;
-    }
-
-    document.getElementById("sponsorName").value =
-        patrocinador.nome || "";
-
-    document.getElementById("sponsorCnpj").value =
-        patrocinador.cnpj || "";
-
-    document.getElementById("sponsorEmails").value =
-        patrocinador.email || "";
-
-    document.getElementById("sponsorQuota").value =
-        patrocinador.cota || "";
-
-    document.getElementById("sponsorComercialPlan").value = "";
-
-    document.getElementById("sponsorForm").dataset.editandoId = id;
-
-    document.querySelector("#sponsorForm [type='submit']")
-        .textContent = "Salvar alterações";
-
-    document.querySelector("#newSponsorForm h3").textContent =
-        "Editar patrocinador";
-
-    document.getElementById("newSponsorForm").classList.add("open");
-
-    document.getElementById("newSponsorButton")
-        .setAttribute("aria-expanded", "true");
-}
-
+// ============================================================
+// 10. INTERFACE E FORMULÁRIO DE CORTESIAS
+// ============================================================
 
 function criarSecaoCortesias(patrocinador) {
     const dados = obterCortesias(patrocinador.id);
@@ -923,7 +1035,6 @@ function criarSecaoCortesias(patrocinador) {
     const secao = document.createElement("section");
     secao.className = "patrocinador-cortesias";
 
-    
     const cabecalhoCortesias = document.createElement("div");
     cabecalhoCortesias.className = "secao-cabecalho";
 
@@ -945,22 +1056,22 @@ function criarSecaoCortesias(patrocinador) {
     const grade = document.createElement("div");
     grade.className = "cortesias-grade";
 
+    // Adiciona uma linha de informação de cortesia.
+    function adicionarResumo(pai, rotulo, valor) {
+        const linha = document.createElement("div");
+        linha.className = "cortesia-resumo";
 
-function adicionarResumo(pai, rotulo, valor) {
-    const linha = document.createElement("div");
-    linha.className = "cortesia-resumo";
+        const nome = document.createElement("span");
+        nome.textContent = rotulo;
 
-    const nome = document.createElement("span");
-    nome.textContent = rotulo;
+        const quantidade = document.createElement("strong");
+        quantidade.textContent = String(valor ?? 0);
 
-    const quantidade = document.createElement("strong");
-    quantidade.textContent = String(valor ?? 0);
+        linha.append(nome, quantidade);
+        pai.appendChild(linha);
+    }
 
-    linha.append(nome, quantidade);
-    pai.appendChild(linha);
-}
-
-
+    // Exibe os setores e suas quantidades de cortesias.
     SETORES_CORTESIA.forEach(setor => {
         const bloco = document.createElement("div");
         bloco.className = "cortesia-setor";
@@ -971,12 +1082,25 @@ function adicionarResumo(pai, rotulo, valor) {
 
         const quantidades = dados.setores[setor] || {};
 
-        adicionarResumo(bloco, "Passaporte", quantidades.passaporte);
-        adicionarResumo(bloco, "Sexta-feira", quantidades.sexta);
-        adicionarResumo(bloco, "Sábado", quantidades.sabado);
+        adicionarResumo(
+            bloco,
+            "Passaporte",
+            quantidades.passaporte
+        );
+
+        adicionarResumo(
+            bloco,
+            "Sexta-feira",
+            quantidades.sexta
+        );
+
+        adicionarResumo(
+            bloco,
+            "Sábado",
+            quantidades.sabado
+        );
 
         grade.appendChild(bloco);
-
     });
 
     // Informações próprias do Lounge.
@@ -992,6 +1116,7 @@ function adicionarResumo(pai, rotulo, valor) {
         dados.loungeInfo || "Nenhuma informação cadastrada.";
 
     lounge.append(tituloLounge, textoLounge);
+
     conteudoCortesias.append(grade, lounge);
 
     // Botão para abrir o formulário de edição.
@@ -1011,6 +1136,7 @@ function adicionarResumo(pai, rotulo, valor) {
 
     const campos = {};
 
+    // Cria os campos numéricos de cada setor.
     SETORES_CORTESIA.forEach(setor => {
         const subtitulo = document.createElement("h5");
         subtitulo.textContent = setor;
@@ -1035,11 +1161,13 @@ function adicionarResumo(pai, rotulo, valor) {
             input.value = dados.setores[setor]?.[tipo] ?? 0;
 
             campos[setor][tipo] = input;
+
             grupo.appendChild(input);
             formulario.appendChild(grupo);
         });
     });
 
+    // Campo de informações do Lounge.
     const labelLounge = document.createElement("label");
     labelLounge.className = "campo-cortesia";
     labelLounge.textContent = "Informações do Lounge";
@@ -1047,11 +1175,13 @@ function adicionarResumo(pai, rotulo, valor) {
     const inputLounge = document.createElement("textarea");
     inputLounge.rows = 3;
     inputLounge.value = dados.loungeInfo || "";
-    inputLounge.placeholder = "Descreva as informações do Lounge...";
+    inputLounge.placeholder =
+        "Descreva as informações do Lounge...";
 
     labelLounge.appendChild(inputLounge);
     formulario.appendChild(labelLounge);
 
+    // Botões de salvar e cancelar.
     const botoes = document.createElement("div");
     botoes.className = "cortesias-acoes";
 
@@ -1066,17 +1196,20 @@ function adicionarResumo(pai, rotulo, valor) {
     botoes.append(salvar, cancelar);
     formulario.appendChild(botoes);
 
+    // Abre o formulário.
     botaoEditar.addEventListener("click", function () {
         formulario.hidden = false;
         botaoEditar.hidden = true;
     });
 
+    // Cancela a edição.
     cancelar.addEventListener("click", function () {
         formulario.reset();
         formulario.hidden = true;
         botaoEditar.hidden = false;
     });
 
+    // Salva as cortesias.
     formulario.addEventListener("submit", function (event) {
         event.preventDefault();
 
@@ -1094,40 +1227,45 @@ function adicionarResumo(pai, rotulo, valor) {
             });
         });
 
-                try {
+        try {
             salvarCortesias(patrocinador.id, novosDados);
 
-            // Registra a alteração depois que as cortesias foram salvas.
             registrarHistorico(
                 `Admin RBS editou as cortesias da empresa "${patrocinador.nome}".`
             );
+
             alert("Cortesias salvas com sucesso!");
 
             renderizarPatrocinadores();
-
         } catch (erro) {
             console.error("Erro ao salvar cortesias:", erro);
-            alert(erro.message || "Não foi possível salvar as cortesias.");
+
+            alert(
+                erro.message ||
+                "Não foi possível salvar as cortesias."
+            );
         }
     });
 
-    
-        conteudoCortesias.append(botaoEditar, formulario);
+    conteudoCortesias.append(botaoEditar, formulario);
 
-        secao.append(cabecalhoCortesias, conteudoCortesias);
+    secao.append(
+        cabecalhoCortesias,
+        conteudoCortesias
+    );
 
-        botaoCortesias.addEventListener("click", function () {
-            const vaiRecolher = !conteudoCortesias.hidden;
+    // Expande ou recolhe a seção de cortesias.
+    botaoCortesias.addEventListener("click", function () {
+        const vaiRecolher = !conteudoCortesias.hidden;
 
-            conteudoCortesias.hidden = vaiRecolher;
-            botaoCortesias.textContent = vaiRecolher ? "⌄" : "⌃";
+        conteudoCortesias.hidden = vaiRecolher;
+        botaoCortesias.textContent = vaiRecolher ? "⌄" : "⌃";
 
-            botaoCortesias.setAttribute(
-                "aria-expanded",
-                String(!vaiRecolher)
-            );
-        });
+        botaoCortesias.setAttribute(
+            "aria-expanded",
+            String(!vaiRecolher)
+        );
+    });
 
-return secao;
-
+    return secao;
 }

@@ -18,18 +18,7 @@
 </head>
 
 <body>
-
-<script>
-    const sessaoAdmin = JSON.parse(
-        localStorage.getItem("rbs_sessao") || "null"
-    );
-
-    if (!sessaoAdmin || sessaoAdmin.perfil !== "funcionario") {
-        localStorage.removeItem("rbs_sessao");
-        window.location.replace("../Teladelogin/indexLogin.html");
-    }
-</script>
-
+  <script src="Js/auth-guard.js"></script>
     <!-- =========================================================
          APP SHELL
     ========================================================== -->
@@ -433,126 +422,19 @@
 
         </div>
     </div>
-
- <!--    SCRIPTS    -->
-
-    <script>
-document.addEventListener("DOMContentLoaded", function () {
-    const newSponsorButton = document.getElementById("newSponsorButton");
-    const newSponsorForm = document.getElementById("newSponsorForm");
-    const closeSponsorForm = document.getElementById("closeSponsorForm");
-    const cancelSponsor = document.getElementById("cancelSponsor");
-    const sponsorForm = document.getElementById("sponsorForm");
-
-    function closeForm() {
-        newSponsorForm.classList.remove("open");
-        newSponsorButton.setAttribute("aria-expanded", "false");
-    }
-
-    // Garante que o formulário comece fechado ao carregar a página.
-    closeForm();
-
-    newSponsorButton.addEventListener("click", function () {
-        const isOpen = newSponsorForm.classList.toggle("open");
-        newSponsorButton.setAttribute("aria-expanded", String(isOpen));
-    });
-
-    closeSponsorForm.addEventListener("click", closeForm);
-    cancelSponsor.addEventListener("click", closeForm);
-
-    document.addEventListener("click", function (event) {
-    const clicouFora = !newSponsorForm.parentElement.contains(event.target);
-    const clicouEmEditar = event.target.closest(".botao-editar");
-
-    if (clicouFora && !clicouEmEditar) {
-        closeForm();
-    }
-});
-
-});
-
-</script>
-
+    
+<!-- Histórico de atividades -->
 <script src="../Telahistorico/historico.js"></script>
+
+<!-- Operações e dados dos patrocinadores -->
 <script src="Js/patrocinadores.js"></script>
+
+<!-- Nome e avatar da conta -->
 <script src="Js/account-display.js"></script>
 
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const sponsorForm = document.getElementById("sponsorForm");
-    const newSponsorForm = document.getElementById("newSponsorForm");
-    const newSponsorButton = document.getElementById("newSponsorButton");
-    const submitButton = sponsorForm.querySelector("[type='submit']");
-    const tituloFormulario = newSponsorForm.querySelector("h3");
+<!-- Interações do dashboard -->
+<script src="Js/dashboard.js"></script>
 
-    sponsorForm.addEventListener("submit", function (event) {
-        event.preventDefault();
 
-        const nome = document.getElementById("sponsorName").value.trim();
-        const cnpj = document.getElementById("sponsorCnpj").value.trim();
-        const email = document.getElementById("sponsorEmails").value.trim();
-        const cota = document.getElementById("sponsorQuota").value;
-        const inputArquivo = document.getElementById("sponsorComercialPlan");
-        const arquivo = inputArquivo.files[0];
-
-        const dados = {
-            nome: nome,
-            cnpj: cnpj,
-            email: email,
-            cota: cota,
-            arquivo: arquivo ? arquivo.name : ""
-        };
-
-        try {
-            const idEdicao = sponsorForm.dataset.editandoId;
-
-            if (idEdicao) {
-                editarPatrocinador(idEdicao, dados);
-                alert("Patrocinador atualizado com sucesso!");
-                delete sponsorForm.dataset.editandoId;
-            
-            } else {
-                cadastrarPatrocinador(dados);
-                alert("Patrocinador cadastrado com sucesso!");
-            }
-
-            sponsorForm.reset();
-
-            newSponsorForm.classList.remove("open");
-            newSponsorButton.setAttribute("aria-expanded", "false");
-
-            submitButton.textContent = "Cadastrar patrocinador";
-            tituloFormulario.textContent = "Novo patrocinador";
-
-            renderizarPatrocinadores();
-
-        } catch (erro) {
-            console.error("Erro ao salvar patrocinador:", erro);
-            alert(erro.message || "Não foi possível salvar o patrocinador.");
-        }
-    });
-});
-
-document.addEventListener("DOMContentLoaded", function () {
-    const logoutButton = document.getElementById("logoutButton");
-
-    if (!logoutButton) return;
-
-    logoutButton.addEventListener("click", function () {
-        const confirmar = window.confirm(
-            "Deseja realmente sair da plataforma?"
-        );
-
-        if (!confirmar) return;
-
-        sessionStorage.removeItem("rbs_usuario_email");
-        localStorage.removeItem("rbs_sessao");
-
-        window.location.replace("../Teladelogin/indexLogin.html");
-    });
-});
-</script>
-
-</script>
 </body>
 </html>
