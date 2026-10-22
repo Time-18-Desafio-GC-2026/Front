@@ -2487,6 +2487,13 @@ body {
     padding: 2px 2px 24px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.12);
     margin-bottom: 18px;
+    text-decoration: none;
+}
+
+.sidebar-brand:hover,
+.sidebar-brand:focus,
+.sidebar-brand:visited {
+    text-decoration: none;
 }
 
 .brand-mark {
@@ -2495,7 +2502,7 @@ body {
     flex: 0 0 40px;
     border: 0;
     border-radius: 10px;
-    background: linear-gradient(135deg, #ffbd72, var(--rbs-orange));
+
     color: #19234b;
     box-shadow: 0 4px 12px rgba(244, 123, 32, 0.2);
     font-size: 14px;

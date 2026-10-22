@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RBS Patrocinadores | Relatórios</title>
+    <link rel="stylesheet" href="../Telainicial/css/style_rbs_final.css">
+    <link rel="stylesheet" href="../Telainicial/css/rbs-theme-aprimorado.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <img class="brand-mark" src="../Telainicial/Assets/logo-planeta.png" alt="Planeta Atlântida">
+                <div class="brand-copy">
+                    <strong>Portal do Patrocinador</strong>
+                </div>
+            </div>
+
+            <div class="workspace">
+                <span class="eyebrow">ÁREA DE TRABALHO</span>
+                <strong>Administração RBS</strong>
+                <span>Visão geral da operação</span>
+            </div>
+
+            <nav class="main-nav" aria-label="Navegação principal">
+                <span class="nav-label">NAVEGAÇÃO</span>
+
+                <a class="nav-item" href="../Telainicial/index.html#dashboard">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <rect x="3" y="3" width="7" height="7" rx="1"/>
+                        <rect x="14" y="3" width="7" height="7" rx="1"/>
+                        <rect x="3" y="14" width="7" height="7" rx="1"/>
+                        <rect x="14" y="14" width="7" height="7" rx="1"/>
+                    </svg>
+                    <span>Dashboard</span>
+                </a>
+
+                <a class="nav-item active" href="indexRelatorio.html" aria-current="page">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 19V9M10 19V5M16 19v-8M22 19H2"/>
+                    </svg>
+                    <span>Relatórios</span>
+                </a>
+
+                <a class="nav-item" href="../Telahistorico/index.html">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 3l8 3v5c0 5-3.4 8.3-8 10-4.6-1.7-8-5-8-10V6l8-3z"/>
+                        <path d="M9 12l2 2 4-4"/>
+                    </svg>
+                    <span>Auditoria</span>
+                </a>
+
+                <a class="nav-item" href="../teladeconfig/indexconfig.html#perfil">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="12" cy="8" r="4"/>
+                        <path d="M4 21a8 8 0 0 1 16 0"/>
+                    </svg>
+                    <span>Perfil</span>
+                </a>
+
+                <button class="nav-item nav-item-button" id="logoutButton" type="button">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M10 17l5-5-5-5M15 12H3"/>
+                        <path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"/>
+                    </svg>
+                    <span>Sair</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-note">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <rect x="6" y="10" width="12" height="10" rx="2"/>
+                    <path d="M9 10V7a3 3 0 0 1 6 0v3"/>
+                </svg>
+                <span>Acesso à gestão de todos os patrocinadores e cotas.</span>
+            </div>
+        </aside>
+
+        <div class="main-area">
+            <header class="topbar">
+                <div class="topbar-breadcrumb">
+                    <span class="breadcrumb">Administração RBS <b>/</b> Relatórios</span>
+                </div>
+
+                <a class="topbar-user topbar-user-link" href="../teladeconfig/indexconfig.html#perfil" aria-label="Abrir perfil da conta">
+                    <div class="user-text">
+                        <strong data-account-name>Otávio Fogaça</strong>
+                        <span>Equipe RBS</span>
+                    </div>
+                    <div class="avatar" data-account-avatar aria-hidden="true">OF</div>
+                </a>
+            </header>
+
+            <main class="content report-content" id="relatorios">
+                <section class="dashboard-header report-header">
+                    <div class="dashboard-title">
+                        <h1>Relatórios</h1>
+                        <p>Gere e baixe os dados das campanhas e entregas em um só lugar.</p>
+                    </div>
+
+                    <div class="header-actions"></div>
+                </section>
+
+                <section class="panel report-panel" aria-label="Gerenciamento de relatórios">
+                    <form id="reportForm" class="report-form active">
+                        <div class="field-grid">
+                            <label class="field">
+                                <span>Patrocinador</span>
+                                <select id="sponsorSelect">
+                                    <option value="Todos">Todos</option>
+                                </select>
+                            </label>
+
+                            <label class="field">
+                                <span>Tipo de relatório</span>
+                                <select id="reportType">
+                                    <option value="Todos">Todos</option>
+                                    <option value="Campanhas e entregas">Campanhas e entregas</option>
+                                    <option value="Cobertura de mídia">Cobertura de mídia</option>
+                                    <option value="Financeiro">Financeiro</option>
+                                </select>
+                            </label>
+
+                            <label class="field">
+                                <span>Edição do Planeta Atlântida</span>
+                                <select id="downloadFormat">
+                                    <option value="2026">2026</option>
+                                    <option value="2025">2025</option>
+                                    <option value="2024">2024</option>
+                                    <option value="2023">2023</option>
+                                    <option value="2022">2022</option>
+                                </select>
+                            </label>
+                        </div>
+
+                        <div class="form-actions report-actions">
+                            <button class="button button-primary" type="button" id="downloadReportButton">Baixar relatório</button>
+                        </div>
+                    </form>
+
+                    <div id="reportSummary" class="report-summary" aria-live="polite">
+                        Selecione os filtros e gere o relatório para visualizar o resultado.
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script src="../Telahistorico/historico.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
