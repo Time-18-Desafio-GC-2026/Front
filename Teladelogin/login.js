@@ -5,19 +5,72 @@ document.addEventListener("DOMContentLoaded", () => {
   const passwordInput = document.getElementById("password");
   const togglePassword = document.getElementById("toggle-password");
   const USERS_KEY = "rbs_usuarios";
-  const DEFAULT_USER = {
-    id: "usuario-admin-padrao",
-    nome: "Administrador RBS",
-    email: "adm1@gmail.com",
-    senha: "adm123",
-    perfil: "funcionario"
-  };
+  const PATROCINADORES_KEY = "rbs_patrocinadores";
+  const DEFAULT_USERS = [
+    {
+      id: "usuario-admin-padrao",
+      nome: "Administrador RBS",
+      email: "adm1@gmail.com",
+      senha: "adm123",
+      perfil: "funcionario"
+    },
+    {
+      id: "usuario-patrocinador-padrao",
+      nome: "Patrocinador RBS",
+      email: "patrocinador1@gmail.com",
+      senha: "patrocinador123",
+      perfil: "patrocinador",
+      patrocinadorId: "patrocinador-1"
+    }
+  ];
+
+  const DEFAULT_PATROCINADORES = [
+    {
+      id: "patrocinador-1",
+      nome: "Minha Empresa",
+      cota: "Master",
+      email: "patrocinador1@gmail.com"
+    }
+  ];
 
   const usuariosExistentes = JSON.parse(
     localStorage.getItem(USERS_KEY) || "[]"
   );
-  if (usuariosExistentes.length === 0) {
-    localStorage.setItem(USERS_KEY, JSON.stringify([DEFAULT_USER]));
+
+  const usuariosAtualizados = [...usuariosExistentes];
+
+  DEFAULT_USERS.forEach((usuarioPadrao) => {
+    const jaExiste = usuariosAtualizados.some(
+      (usuario) => usuario.email?.toLowerCase() === usuarioPadrao.email.toLowerCase()
+    );
+
+    if (!jaExiste) {
+      usuariosAtualizados.push(usuarioPadrao);
+    }
+  });
+
+  if (usuariosAtualizados.length !== usuariosExistentes.length) {
+    localStorage.setItem(USERS_KEY, JSON.stringify(usuariosAtualizados));
+  }
+
+  const patrocinadoresExistentes = JSON.parse(
+    localStorage.getItem(PATROCINADORES_KEY) || "[]"
+  );
+
+  const patrocinadoresAtualizados = [...patrocinadoresExistentes];
+
+  DEFAULT_PATROCINADORES.forEach((patrocinadorPadrao) => {
+    const jaExiste = patrocinadoresAtualizados.some(
+      (patrocinador) => String(patrocinador.id) === String(patrocinadorPadrao.id)
+    );
+
+    if (!jaExiste) {
+      patrocinadoresAtualizados.push(patrocinadorPadrao);
+    }
+  });
+
+  if (patrocinadoresAtualizados.length !== patrocinadoresExistentes.length) {
+    localStorage.setItem(PATROCINADORES_KEY, JSON.stringify(patrocinadoresAtualizados));
   }
 
   // Alterna entre mostrar e ocultar a senha.
@@ -28,7 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
   form.addEventListener("submit", (event) => {
     event.preventDefault();
 
-    const email = emailInput.value.trim().toLowerCase();
+    const email = emailInput.value.trim().toLowerCase().replace("@gamil.com", "@gmail.com");
     const senha = passwordInput.value;
 
     // Recupera as contas cadastradas no armazenamento local do protótipo.
@@ -38,7 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Confere as credenciais antes de abrir uma sessão.
     const usuario = usuarios.find((conta) =>
-      conta.email.toLowerCase() === email &&
+      (conta.email || "").toLowerCase().replace("@gamil.com", "@gmail.com") === email &&
       conta.senha === senha
     );
 
@@ -88,7 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
         patrocinadorId: patrocinador.id
       }));
 
-      window.location.href = "../Telainicial/indexPatrocinador.html";
+      window.location.href = "../Telainicial/TelaPatrocinador/indexPatrocinador.html";
       return;
     }
 

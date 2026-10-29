@@ -105,3 +105,4 @@ window.addEventListener("storage", function (event) {
         renderizarHistorico();
     }
 });
+

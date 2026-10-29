@@ -123,3 +123,264 @@
         font-size: 12px;
     }
 }
+
+.topbar-user-link {
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+    border-radius: 8px;
+    padding: 6px 8px;
+    transition: background-color 0.2s ease;
+}
+
+.topbar-user-link:hover {
+    background-color: var(--surface);
+}
+
+.topbar-user-link:focus-visible {
+    outline: 2px solid var(--border);
+    outline-offset: 2px;
+}
+
+:root {
+    --hist-orange: #f47b20;
+    --hist-orange-dark: #d95d0b;
+    --hist-yellow: #ffc247;
+    --hist-white: #ffffff;
+}
+
+/* Caixa dos filtros: laranja/amarelo, com campos brancos */
+.history-filters {
+    background: linear-gradient(110deg, var(--hist-yellow) 0%, var(--hist-orange) 100%);
+    border: 1px solid var(--hist-orange-dark);
+    border-radius: 10px;
+    padding: 14px;
+    box-shadow: 0 4px 12px rgba(217, 93, 11, 0.12);
+    gap: 12px;
+}
+
+/* Rótulos dos campos */
+.history-filters label {
+    color: var(--hist-white);
+    font-weight: 700;
+}
+
+/* Campos continuam brancos para facilitar a leitura e digitação */
+.history-filters input,
+.history-filters select {
+    background: var(--hist-white);
+    color: #344054;
+    border: 1px solid rgba(91, 62, 41, 0.18);
+    border-radius: 6px;
+}
+
+.history-filters input::placeholder {
+    color: #8993a1;
+}
+
+.history-filters input:focus,
+.history-filters select:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.9);
+    outline-offset: 1px;
+    border-color: var(--hist-orange-dark);
+}
+
+/* Botão limpar filtros */
+.history-filter-reset {
+    background: rgba(255, 255, 255, 0.96);
+    color: var(--hist-orange-dark);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    border-radius: 6px;
+    font-weight: 700;
+    transition: background 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.history-filter-reset:hover {
+    background: var(--hist-orange-dark);
+    color: var(--hist-white);
+    border-color: var(--hist-orange-dark);
+}
+
+/* Moldura externa da tabela */
+.history-table-wrapper {
+    overflow: hidden;
+    border: 1px solid #ead8c8;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 3px 12px rgba(22, 35, 58, 0.04);
+}
+
+/* Cabeçalho da tabela em laranja, com texto branco */
+.history-table thead {
+    background: linear-gradient(100deg, var(--hist-yellow) 0%, var(--hist-orange) 100%);
+}
+
+.history-table thead tr {
+    background: transparent;
+}
+
+.history-table thead th {
+    background: transparent;
+    color: var(--hist-white);
+    border-color: rgba(255, 255, 255, 0.28);
+    font-weight: 700;
+}
+
+/* Linhas do histórico permanecem claras para leitura */
+.history-table tbody tr {
+    background: #ffffff;
+    transition: background 150ms ease;
+}
+
+.history-table tbody tr:nth-child(even) {
+    background: #fffaf5;
+}
+
+.history-table tbody tr:hover {
+    background: #fff0df;
+}
+
+.history-table tbody td {
+    color: #52657b;
+    border-color: #f0e2d6;
+}
+
+/* Links, caso existam dentro das células */
+.history-table tbody td a {
+    color: var(--hist-orange-dark);
+}
+
+.history-table tbody td a:hover {
+    color: #a94306;
+}
+
+/* Responsividade */
+@media (max-width: 760px) {
+    .history-filters {
+        padding: 12px;
+    }
+
+    .history-table-wrapper {
+        overflow-x: auto;
+    }
+
+    .history-table {
+        min-width: 620px;
+    }
+}
+
+.nav-item-button {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    border: 0;
+    text-align: left;
+    background: transparent;
+    font: inherit;
+    cursor: pointer;
+}
+
+.nav-item-button:hover {
+    background: rgba(255, 255, 255, 0.09);
+}
+
+.nav-item-button:focus-visible {
+    outline: 2px solid #ffbd72;
+    outline-offset: 2px;
+}
+
+body[data-theme="dark"] .history-filters {
+    background: linear-gradient(110deg, #1555a5 0%, #1677d2 100%);
+    border-color: #52b2ff;
+    box-shadow: 0 4px 12px rgba(22, 119, 210, 0.2);
+}
+
+body[data-theme="dark"] .history-filters label {
+    color: #ffffff;
+}
+
+body[data-theme="dark"] .history-filters input,
+body[data-theme="dark"] .history-filters select {
+    background: #20252c;
+    color: #f1f5f9;
+    border-color: rgba(130, 170, 214, 0.35);
+}
+
+body[data-theme="dark"] .history-filters input:focus,
+body[data-theme="dark"] .history-filters select:focus {
+    outline-color: rgba(82, 178, 255, 0.55);
+    border-color: #52b2ff;
+}
+
+body[data-theme="dark"] .history-filter-reset {
+    background: #20252c;
+    color: #8bc7ff;
+    border-color: rgba(130, 170, 214, 0.45);
+}
+
+body[data-theme="dark"] .history-filter-reset:hover {
+    background: #1677d2;
+    color: #ffffff;
+    border-color: #52b2ff;
+}
+
+body[data-theme="dark"] .history-table-wrapper {
+    border-color: rgba(130, 170, 214, 0.3);
+}
+
+body[data-theme="dark"] .history-table thead {
+    background: linear-gradient(100deg, #1555a5 0%, #1677d2 100%);
+}
+
+body[data-theme="dark"] .history-table thead th {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+body[data-theme="dark"] .history-table tbody tr,
+body[data-theme="dark"] .history-table tbody tr:nth-child(even) {
+    background: #20252c;
+}
+
+body[data-theme="dark"] .history-table tbody tr:hover {
+    background: rgba(22, 119, 210, 0.16);
+}
+
+body[data-theme="dark"] .history-table tbody td {
+    color: #d4dceb;
+    border-color: rgba(143, 161, 188, 0.16);
+}
+
+body[data-theme="dark"] .history-table tbody td a {
+    color: #8bc7ff;
+}
+
+body[data-theme="dark"] .history-table tbody td a:hover {
+    color: #c2e3ff;
+}
+
+body[data-theme="dark"] .topbar {
+    border-top-color: #1677d2;
+}
+
+body[data-theme="dark"] .sidebar .nav-item.active {
+    background: linear-gradient(100deg, #1555a5 0%, #1677d2 100%);
+    border-color: #52b2ff;
+    color: #ffffff;
+    box-shadow: 0 5px 14px rgba(22, 119, 210, 0.28);
+}
+
+body[data-theme="dark"] .sidebar .nav-item.active svg,
+body[data-theme="dark"] .sidebar .nav-item.active .nav-chevron {
+    color: #ffffff;
+}
+
+body[data-theme="dark"] .sidebar button:focus-visible {
+    outline-color: #52b2ff;
+}
+
+body[data-theme="dark"] .sidebar a:focus-visible,
+body[data-theme="dark"] .history-filters input:focus-visible,
+body[data-theme="dark"] .history-filters select:focus-visible,
+body[data-theme="dark"] .history-filter-reset:focus-visible {
+    outline-color: #52b2ff;
+}
