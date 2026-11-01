@@ -3129,3 +3129,14 @@ body.sponsor-dashboard-page #newSponsorButton:hover {
 :root[data-theme="dark"] body .sidebar .main-nav .nav-item.active .nav-chevron {
     color: #ffffff;
 }
+
+/* Mantém todo o texto dos dashboards legível em branco no tema escuro. */
+:root[data-theme="dark"] body #dashboard,
+:root[data-theme="dark"] body #dashboard * {
+    color: #ffffff !important;
+}
+
+:root[data-theme="dark"] body #dashboard input::placeholder,
+:root[data-theme="dark"] body #dashboard textarea::placeholder {
+    color: #ffffff !important;
+}
