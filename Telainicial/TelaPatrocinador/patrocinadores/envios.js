@@ -103,10 +103,12 @@ function cadastrarEnvio(patrocinadorId, dados) {
 
 
 
-        const descricaoEnvio = dados.arquivo
+        const nomeArquivo = typeof dados.arquivo === "object"
+            ? dados.arquivo.nome
+            : dados.arquivo;
 
-            ? `o arquivo "${dados.arquivo}"`
-
+        const descricaoEnvio = nomeArquivo
+            ? `o arquivo "${nomeArquivo}"`
             : "um conteúdo em texto";
 
 

@@ -291,14 +291,13 @@
                     name="texto"
 
                     placeholder="Ex.: Dados releventas em texto de qualquer tipo, como informações de mídia, conteúdo ou outros dados importantes."
-
-                    required >
+                >
             </div>
 
         
             <!-- Arquivo -->
 
-            <div class="form-group">
+            <div class="form-group form-group-arquivo">
 
                 <label for="sponsorArchive">
 
@@ -320,23 +319,6 @@
             <!-- Botões -->
 
             <div class="form-actions">
-
-
-
-                <button
-
-                    type="button"
-
-                    class="form-cancel"
-
-                    id="cancelSponsor"
-
-                >
-
-                    Cancelar
-
-                </button>
-
                 <button
 
                     type="submit"
@@ -354,6 +336,10 @@
         </form>
 
     </div>
+            <section id="enviosPatrocinador" class="materiais-publicados-cliente" hidden>
+                <h2>Conteúdos enviados</h2>
+                <div id="listaEnviosPatrocinador" aria-live="polite"></div>
+            </section>
             <!-- Materiais publicados pela RBS -->
                                 <section id="materiaisPublicadosRBS" class="materiais-publicados-cliente" hidden>
                                     <h2>Materiais publicados pela RBS</h2>

@@ -261,13 +261,34 @@ function renderizarPatrocinadores() {
 
                 if (envio.texto) {
 
+                    const linhaTexto = document.createElement("div");
+
+                    linhaTexto.className = "envio-linha";
+
                     const texto = document.createElement("p");
 
                     texto.className = "envio-texto";
 
                     texto.textContent = `Arquivo em texto: ${envio.texto}`;
 
-                    item.appendChild(texto);
+                    const baixarTexto = document.createElement("a");
+
+                    baixarTexto.className = "envio-download";
+
+                    baixarTexto.href = URL.createObjectURL(
+                        new Blob([envio.texto], {
+                            type: "text/plain;charset=utf-8"
+                        })
+                    );
+
+                    baixarTexto.download =
+                        `conteudo-enviado-${envio.id || "patrocinador"}.txt`;
+
+                    baixarTexto.textContent = "Baixar conteúdo";
+
+                    linhaTexto.append(texto, baixarTexto);
+
+                    item.appendChild(linhaTexto);
 
                 }
 
@@ -277,14 +298,7 @@ function renderizarPatrocinadores() {
 
                 if (envio.arquivo) {
 
-                    const linkArquivo = document.createElement("a");
-
-                    linkArquivo.className = "envio-arquivo";
-
-
-
                     // Compatibilidade com envios antigos que guardavam
-
                     // somente o nome do arquivo.
 
                     if (
@@ -295,33 +309,38 @@ function renderizarPatrocinadores() {
 
                     ) {
 
-                        linkArquivo.href = envio.arquivo.arquivoData;
+                        const linhaArquivo = document.createElement("div");
+                        linhaArquivo.className = "envio-linha";
 
-                        linkArquivo.download =
+                        const nomeArquivo = document.createElement("p");
+                        nomeArquivo.className = "envio-arquivo-nome";
+                        nomeArquivo.textContent =
+                            `Mídia: ${envio.arquivo.nome || "Arquivo enviado"}`;
 
+                        const baixarArquivo = document.createElement("a");
+                        baixarArquivo.className = "envio-download";
+                        baixarArquivo.href = envio.arquivo.arquivoData;
+                        baixarArquivo.download =
                             envio.arquivo.nome || "arquivo-enviado";
+                        baixarArquivo.textContent = "Baixar mídia";
 
-                        linkArquivo.textContent =
-
-                            "Baixar arquivo: " + linkArquivo.download;
+                        linhaArquivo.append(nomeArquivo, baixarArquivo);
+                        item.appendChild(linhaArquivo);
 
                     } else {
 
                         // Registros antigos não possuem o conteúdo.
 
-                        linkArquivo.removeAttribute("href");
-
-                        linkArquivo.textContent =
+                        const arquivoAntigo = document.createElement("p");
+                        arquivoAntigo.className = "envio-arquivo";
+                        arquivoAntigo.textContent =
 
                             "Arquivo antigo (somente nome): " +
 
                             String(envio.arquivo);
 
+                        item.appendChild(arquivoAntigo);
                     }
-
-
-
-                    item.appendChild(linkArquivo);
 
                 }
 

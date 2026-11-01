@@ -26,7 +26,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const botaoNovoEnvio = document.getElementById("newSponsorButton");
     const formularioContainer = document.getElementById("newSponsorForm");
     const botaoFechar = document.getElementById("closeSponsorForm");
-    const botaoCancelar = document.getElementById("cancelSponsor");
     const formularioEnvio = document.getElementById("sponsorForm");
     const botaoLogout = document.getElementById("logoutButton");
 
@@ -44,6 +43,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const listaMateriais =
         document.getElementById("listaMateriaisRBS");
+
+    const listaEnviosPatrocinador =
+        document.getElementById("listaEnviosPatrocinador");
+
+    const secaoEnviosPatrocinador =
+        document.getElementById("enviosPatrocinador");
+
+    const urlsDownloadConteudo = new Set();
 
     // =======================================================
     // 2. SESSÃO E EMPRESA VINCULADA
@@ -128,6 +135,96 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         renderizarMateriaisPublicados(patrocinador.id);
+        renderizarEnviosPatrocinador(patrocinador.id);
+    }
+
+    function renderizarEnviosPatrocinador(patrocinadorId) {
+        if (!listaEnviosPatrocinador) return;
+
+        if (secaoEnviosPatrocinador) {
+            secaoEnviosPatrocinador.hidden = false;
+        }
+
+        urlsDownloadConteudo.forEach(url => URL.revokeObjectURL(url));
+        urlsDownloadConteudo.clear();
+        listaEnviosPatrocinador.replaceChildren();
+
+        const envios = listarEnviosPorPatrocinador(patrocinadorId)
+            .slice()
+            .reverse();
+
+        if (envios.length === 0) {
+            const vazio = document.createElement("p");
+            vazio.className = "envios-patrocinador-vazio";
+            vazio.textContent = "Você ainda não enviou conteúdos.";
+            listaEnviosPatrocinador.appendChild(vazio);
+            return;
+        }
+
+        envios.forEach(function (envio) {
+            const item = document.createElement("article");
+            item.className = "envio-patrocinador-item";
+
+            if (envio.texto) {
+                const texto = document.createElement("p");
+                texto.className = "envio-patrocinador-texto";
+                texto.textContent = envio.texto;
+                item.appendChild(texto);
+
+                const baixarTexto = document.createElement("a");
+                baixarTexto.className = "envio-patrocinador-download";
+                const urlTexto = URL.createObjectURL(
+                    new Blob([envio.texto], {
+                        type: "text/plain;charset=utf-8"
+                    })
+                );
+                urlsDownloadConteudo.add(urlTexto);
+                baixarTexto.href = urlTexto;
+                baixarTexto.download = `conteudo-enviado-${envio.id}.txt`;
+                baixarTexto.textContent = "Baixar conteúdo (.txt)";
+                item.appendChild(baixarTexto);
+            }
+
+            if (envio.arquivo) {
+                const arquivoLegado = typeof envio.arquivo !== "object";
+                const nomeArquivo = arquivoLegado
+                    ? String(envio.arquivo)
+                    : envio.arquivo.nome || "Arquivo enviado";
+
+                const arquivo = document.createElement("p");
+                arquivo.className = "envio-patrocinador-arquivo";
+                arquivo.textContent = arquivoLegado
+                    ? `Arquivo: ${nomeArquivo} (envio antigo; arquivo não disponível para baixar)`
+                    : `Arquivo: ${nomeArquivo}`;
+                item.appendChild(arquivo);
+
+                if (!arquivoLegado && envio.arquivo.arquivoData) {
+                    const baixarArquivo = document.createElement("a");
+                    baixarArquivo.className = "envio-patrocinador-download";
+                    baixarArquivo.href = envio.arquivo.arquivoData;
+                    baixarArquivo.download = nomeArquivo;
+                    baixarArquivo.textContent = "Baixar mídia";
+                    item.appendChild(baixarArquivo);
+                } else if (!arquivoLegado) {
+                    arquivo.textContent +=
+                        " (arquivo não disponível para baixar)";
+                }
+            }
+
+            const detalhes = document.createElement("p");
+            detalhes.className = "envio-patrocinador-detalhes";
+
+            const dataEnvio = new Date(envio.criadoEm);
+            const dataFormatada = Number.isNaN(dataEnvio.getTime())
+                ? "Data não informada"
+                : dataEnvio.toLocaleString("pt-BR");
+
+            detalhes.textContent =
+                `Status: ${envio.status || "Pendente"} - Enviado em: ${dataFormatada}`;
+            item.appendChild(detalhes);
+
+            listaEnviosPatrocinador.appendChild(item);
+        });
     }
 
     // =======================================================
@@ -163,35 +260,69 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 item.className = "material-publicado-item";
 
-                const link = document.createElement("a");
+                const titulo = document.createElement("p");
+                titulo.className = "material-publicado-titulo";
+                const acoes = document.createElement("div");
+                acoes.className = "material-publicado-acoes";
 
-                link.target = "_blank";
-                link.rel = "noopener noreferrer";
+                if (material.tipo === "relatorio") {
+                    titulo.textContent = material.nome || "Relatório";
 
-                if (
-                    material.tipo === "relatorio" &&
-                    material.arquivoData
-                ) {
-                    link.href = material.arquivoData;
+                    if (material.arquivoData) {
+                        const visualizar = document.createElement("a");
+                        visualizar.href = material.arquivoData;
+                        visualizar.target = "_blank";
+                        visualizar.rel = "noopener noreferrer";
+                        visualizar.textContent = "Visualizar";
+                        acoes.appendChild(visualizar);
 
-                    link.textContent =
-                        "Relatório: " + material.nome;
-
-                    link.download =
-                        material.nome || "relatorio";
+                        const baixar = document.createElement("a");
+                        baixar.href = material.arquivoData;
+                        baixar.download = material.nome || "relatorio";
+                        baixar.textContent = "Baixar arquivo";
+                        acoes.appendChild(baixar);
+                    } else {
+                        titulo.textContent += " (arquivo indisponível)";
+                    }
 
                 } else if (
                     material.tipo === "link" &&
                     material.url
                 ) {
-                    link.href = material.url;
-                    link.textContent = material.url;
+                    let endereco;
+
+                    try {
+                        endereco = new URL(material.url);
+                    } catch {
+                        titulo.textContent =
+                            `Publicação indisponível: ${material.url}`;
+                        item.appendChild(titulo);
+                        listaMateriais.appendChild(item);
+                        return;
+                    }
+
+                    if (!["http:", "https:"].includes(endereco.protocol)) {
+                        titulo.textContent =
+                            `Publicação indisponível: ${material.url}`;
+                        item.appendChild(titulo);
+                        listaMateriais.appendChild(item);
+                        return;
+                    }
+
+                    titulo.textContent = endereco.href;
+
+                    const abrir = document.createElement("a");
+                    abrir.href = endereco.href;
+                    abrir.target = "_blank";
+                    abrir.rel = "noopener noreferrer";
+                    abrir.textContent = "Abrir publicação";
+                    acoes.appendChild(abrir);
 
                 } else {
                     return;
                 }
 
-                item.appendChild(link);
+                item.append(titulo, acoes);
                 listaMateriais.appendChild(item);
             });
         }
@@ -235,11 +366,6 @@ document.addEventListener("DOMContentLoaded", function () {
             fecharFormulario
         );
 
-        botaoCancelar?.addEventListener(
-            "click",
-            fecharFormulario
-        );
-
         document.addEventListener("click", function (event) {
             const clicouFora =
                 !formularioContainer.contains(event.target) &&
@@ -258,27 +384,36 @@ document.addEventListener("DOMContentLoaded", function () {
     if (formularioEnvio) {
         formularioEnvio.addEventListener(
             "submit",
-            function (event) {
+            async function (event) {
                 event.preventDefault();
 
-                if (!patrocinadorSelecionado) {
-                    alert(
-                        "Identifique um patrocinador antes de enviar materiais."
-                    );
-
-                    return;
-                }
-
-                const texto = document
-                    .getElementById("sponsorTexto")
-                    .value.trim();
-
-                const arquivoInput =
-                    document.getElementById("sponsorArchive");
-
-                const arquivo = arquivoInput?.files?.[0];
+                const botaoEnviar = formularioEnvio.querySelector(
+                    "button[type='submit']"
+                );
+                botaoEnviar.disabled = true;
 
                 try {
+                    if (!patrocinadorSelecionado) {
+                        throw new Error(
+                            "Identifique um patrocinador antes de enviar materiais."
+                        );
+                    }
+
+                    const texto = document
+                        .getElementById("sponsorTexto")
+                        .value.trim();
+
+                    const arquivoInput =
+                        document.getElementById("sponsorArchive");
+
+                    const arquivo = arquivoInput?.files?.[0];
+
+                    if (!texto && !arquivo) {
+                        throw new Error(
+                            "Informe um conteúdo ou selecione um arquivo para enviar."
+                        );
+                    }
+
                     // Limite do protótipo: 1 MB por arquivo.
                     if (arquivo && arquivo.size > 1024 * 1024) {
                         throw new Error(
@@ -286,14 +421,59 @@ document.addEventListener("DOMContentLoaded", function () {
                         );
                     }
 
+                    const arquivoEnviado = arquivo
+                        ? {
+                            nome: arquivo.name,
+                            tipo: arquivo.type,
+                            arquivoData: await new Promise(
+                                function (resolve, reject) {
+                                    const leitor = new FileReader();
+
+                                    leitor.onload = function () {
+                                        if (typeof leitor.result === "string") {
+                                            resolve(leitor.result);
+                                        } else {
+                                            reject(
+                                                new Error(
+                                                    "Não foi possível ler o arquivo selecionado."
+                                                )
+                                            );
+                                        }
+                                    };
+
+                                    leitor.onerror = function () {
+                                        reject(
+                                            leitor.error ||
+                                            new Error(
+                                                "Não foi possível ler o arquivo selecionado."
+                                            )
+                                        );
+                                    };
+
+                                    leitor.onabort = function () {
+                                        reject(
+                                            new Error(
+                                                "A leitura do arquivo foi cancelada."
+                                            )
+                                        );
+                                    };
+
+                                    leitor.readAsDataURL(arquivo);
+                                }
+                            )
+                        }
+                        : null;
+
                     cadastrarEnvio(
                         patrocinadorSelecionado.id,
                         {
                             texto: texto,
-                            arquivo: arquivo
-                                ? arquivo.name
-                                : null
+                            arquivo: arquivoEnviado
                         }
+                    );
+
+                    renderizarEnviosPatrocinador(
+                        patrocinadorSelecionado.id
                     );
 
                     alert("Envio registrado com sucesso!");
@@ -311,6 +491,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         erro.message ||
                         "Não foi possível registrar o envio."
                     );
+                } finally {
+                    botaoEnviar.disabled = false;
                 }
             }
         );
