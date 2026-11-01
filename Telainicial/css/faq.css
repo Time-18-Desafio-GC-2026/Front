@@ -1,0 +1,275 @@
+/* Define o layout, as cores e os estados visuais da tela de perguntas frequentes. */
+.faq-content {
+    max-width: 900px;
+}
+
+.faq-header {
+    margin-bottom: 24px;
+}
+
+.faq-header h1 {
+    margin: 0 0 8px;
+    color: var(--text-strong);
+    font-size: 28px;
+}
+
+.faq-header p {
+    margin: 0;
+    color: var(--text-muted);
+}
+
+.faq-compose,
+.faq-card,
+.faq-empty {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+.faq-compose {
+    margin-bottom: 28px;
+    padding: 20px;
+}
+
+.faq-compose h2,
+.faq-list-heading h2 {
+    margin: 0;
+    color: var(--text-strong);
+    font-size: 18px;
+}
+
+.faq-compose h2 {
+    margin-bottom: 14px;
+}
+
+.faq-compose form,
+.faq-answer-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.faq-compose label,
+.faq-answer-form label {
+    color: var(--text-strong);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.faq-compose textarea,
+.faq-answer-form textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 10px 12px;
+    resize: vertical;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text-strong);
+    font: inherit;
+}
+
+.faq-compose textarea:focus,
+.faq-answer-form textarea:focus {
+    outline: 2px solid #71869d;
+    outline-offset: 1px;
+}
+
+.faq-compose textarea::placeholder,
+.faq-answer-form textarea::placeholder {
+    color: var(--text-muted);
+}
+
+.faq-form-footer,
+.faq-list-heading,
+.faq-card-header,
+.faq-answer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.faq-form-footer > span,
+.faq-card time,
+.faq-answer time,
+.faq-pending {
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.faq-list-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.faq-card,
+.faq-empty {
+    padding: 18px 20px;
+}
+
+:root:not([data-theme="dark"]) body .faq-card {
+    background: linear-gradient(110deg, #ffc247 0%, #f47b20 100%);
+    border-color: #d95d0b;
+}
+
+:root:not([data-theme="dark"]) body .faq-compose {
+    background: linear-gradient(110deg, #ffc247 0%, #f47b20 100%);
+    border-color: #d95d0b;
+}
+
+:root:not([data-theme="dark"]) body #questionForm .button-primary {
+    background: #ffffff;
+    border-color: #ffffff;
+    color: #000000;
+    box-shadow: none;
+}
+
+:root:not([data-theme="dark"]) body #questionForm .button-primary:hover {
+    background: #d95d0b;
+    border-color: #d95d0b;
+    color: #ffffff;
+}
+
+:root:not([data-theme="dark"]) body .faq-card,
+:root:not([data-theme="dark"]) body .faq-card .faq-question,
+:root:not([data-theme="dark"]) body .faq-card .faq-card-header strong,
+:root:not([data-theme="dark"]) body .faq-card .faq-card-header time,
+:root:not([data-theme="dark"]) body .faq-card .faq-answer-header strong,
+:root:not([data-theme="dark"]) body .faq-card .faq-answer-header time,
+:root:not([data-theme="dark"]) body .faq-card .faq-answer p,
+:root:not([data-theme="dark"]) body .faq-card .faq-pending {
+    color: #000000;
+}
+
+:root:not([data-theme="dark"]) body .faq-card .faq-delete-button {
+    color: #ffffff;
+}
+
+.faq-card-header strong,
+.faq-answer-header strong {
+    color: var(--text-strong);
+    font-size: 13px;
+}
+
+.faq-question,
+.faq-answer p {
+    margin: 12px 0 0;
+    color: var(--text);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.faq-question-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 12px;
+}
+
+.faq-delete-button {
+    padding: 4px 8px;
+    border: 1px solid #b42318;
+    border-radius: 5px;
+    background: #b42318;
+    color: #ffffff;
+    cursor: pointer;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.faq-delete-button:hover {
+    background: #b42318;
+    color: #ffffff;
+}
+
+.faq-answer {
+    margin-top: 16px;
+    padding: 14px;
+    border-left: 3px solid #71869d;
+    border-radius: 4px;
+    background: var(--surface-alt);
+}
+
+.faq-answer p {
+    margin-top: 8px;
+}
+
+.faq-answer-form {
+    margin-top: 16px;
+}
+
+.faq-answer-form textarea {
+    min-height: 82px;
+}
+
+.faq-answer-form .button {
+    align-self: flex-end;
+}
+
+.faq-pending {
+    margin: 14px 0 0;
+    font-style: italic;
+}
+
+.faq-empty {
+    margin: 0;
+    color: var(--text-muted);
+}
+
+.faq-message {
+    min-height: 1.4em;
+    margin: 0;
+    color: #287347;
+    font-size: 13px;
+}
+
+.faq-message.is-error {
+    color: #b42318;
+}
+
+:root[data-theme="dark"] body .faq-compose textarea,
+:root[data-theme="dark"] body .faq-answer-form textarea {
+    background: #2c2c2c;
+    border-color: #3f3f3f;
+    color: var(--text-strong);
+}
+
+:root[data-theme="dark"] body .faq-compose {
+    background: linear-gradient(110deg, #1555a5 0%, #1677d2 100%);
+    border-color: #52b2ff;
+}
+
+:root[data-theme="dark"] body .faq-card {
+    background: linear-gradient(110deg, #1555a5 0%, #1677d2 100%);
+    border-color: #52b2ff;
+}
+
+:root[data-theme="dark"] body #questionForm .button-primary:hover {
+    background: #1555a5;
+    border-color: #1555a5;
+    color: #ffffff;
+    box-shadow: 0 5px 14px rgba(22, 119, 210, 0.28);
+}
+
+@media (max-width: 600px) {
+    .faq-compose,
+    .faq-card,
+    .faq-empty {
+        padding: 15px;
+    }
+
+    .faq-card-header,
+    .faq-answer-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 4px;
+    }
+}

@@ -1,5 +1,6 @@
 // Portal RBS — módulo: cards.
 
+// INTEGRAÇÃO BACK-END: obter os dados de conta e sessão usados nas ações pelos serviços de autenticação.
 function renderizarPatrocinadores() {
 
     const grid = document.getElementById("patrocinadoresGrid");
@@ -412,47 +413,11 @@ function renderizarPatrocinadores() {
 
 
 
-            // Registra quem realizou a exclusão.
-
-            const sessaoAtual = JSON.parse(
-
-                localStorage.getItem("rbs_sessao") || "null"
-
-            );
-
-
-
-            const usuarios = JSON.parse(
-
-                localStorage.getItem("rbs_usuarios") || "[]"
-
-            );
-
-
-
-            const usuarioAtual = usuarios.find(usuario =>
-
-                String(usuario.id) === String(sessaoAtual?.usuarioId)
-
-            );
-
-
+            excluirPatrocinador(patrocinador.id);
 
             registrarHistorico(
-
-                `Admin RBS excluiu a empresa "${patrocinador.nome}".`,
-
-                usuarioAtual?.email ||
-
-                    sessaoAtual?.email ||
-
-                    "Conta não identificada"
-
+                `Admin RBS excluiu a empresa "${patrocinador.nome}".`
             );
-
-
-
-            excluirPatrocinador(patrocinador.id);
 
             renderizarPatrocinadores();
 

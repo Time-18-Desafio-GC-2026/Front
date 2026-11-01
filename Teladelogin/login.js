@@ -6,6 +6,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const togglePassword = document.getElementById("toggle-password");
   const USERS_KEY = "rbs_usuarios";
   const PATROCINADORES_KEY = "rbs_patrocinadores";
+
+  // INTEGRAÇÃO BACK-END: remover as contas de demonstração e carregar usuários pela API.
   const DEFAULT_USERS = [
     {
       id: "usuario-admin-padrao",
@@ -33,6 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   ];
 
+  // INTEGRAÇÃO BACK-END: substituir esta validação local de credenciais pelo endpoint de autenticação.
   const usuariosExistentes = JSON.parse(
     localStorage.getItem(USERS_KEY) || "[]"
   );
@@ -85,6 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const senha = passwordInput.value;
 
     // Recupera as contas cadastradas no armazenamento local do protótipo.
+    // INTEGRAÇÃO BACK-END: consultar a API de autenticação; nunca validar senhas no navegador.
     const usuarios = JSON.parse(
       localStorage.getItem("rbs_usuarios") || "[]"
     );
@@ -96,10 +100,14 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     if (!usuario) {
+      if (typeof registrarHistorico === "function") {
+        registrarHistorico("Tentativa de login malsucedida.", email);
+      }
       alert("E-mail ou senha inválidos.");
       return;
     }
 
+    // INTEGRAÇÃO BACK-END: trocar esta sessão local pelo mecanismo de sessão/token da API.
     // Mantém o e-mail do ator por aba, separado do contato da empresa.
     sessionStorage.setItem("rbs_usuario_email", usuario.email);
 
@@ -110,6 +118,10 @@ document.addEventListener("DOMContentLoaded", () => {
         email: usuario.email,
         perfil: usuario.perfil
       }));
+
+      if (typeof registrarHistorico === "function") {
+        registrarHistorico("Entrou na plataforma como equipe RBS.", usuario.email);
+      }
 
       window.location.href = "../Telainicial/index.html";
       return;
@@ -129,6 +141,12 @@ document.addEventListener("DOMContentLoaded", () => {
       );
 
       if (!patrocinador) {
+        if (typeof registrarHistorico === "function") {
+          registrarHistorico(
+            "Tentativa de login bloqueada: conta sem patrocinador válido.",
+            usuario.email
+          );
+        }
         alert("A conta não está vinculada a um patrocinador válido.");
         return;
       }
@@ -141,10 +159,17 @@ document.addEventListener("DOMContentLoaded", () => {
         patrocinadorId: patrocinador.id
       }));
 
+      if (typeof registrarHistorico === "function") {
+        registrarHistorico("Entrou na plataforma como patrocinador.", usuario.email);
+      }
+
       window.location.href = "../Telainicial/TelaPatrocinador/indexPatrocinador.html";
       return;
     }
 
+    if (typeof registrarHistorico === "function") {
+      registrarHistorico("Tentativa de login bloqueada: perfil inválido.", usuario.email);
+    }
     alert("Perfil de usuário inválido.");
   });
 });

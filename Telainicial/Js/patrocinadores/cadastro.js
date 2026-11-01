@@ -1,5 +1,6 @@
 // Portal RBS — módulo: cadastro.
 
+// INTEGRAÇÃO BACK-END: substituir persistência e exclusão local por endpoints de patrocinadores.
 function cadastrarPatrocinador(dados) {
 
     const patrocinadores = listarPatrocinadores();

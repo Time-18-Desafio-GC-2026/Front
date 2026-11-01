@@ -1,5 +1,6 @@
 // Portal RBS — módulo: storage.
 
+// INTEGRAÇÃO BACK-END: substituir esta leitura/gravação local por endpoints de patrocinadores.
 const PATROCINADORES_KEY = "rbs_patrocinadores";
 
 

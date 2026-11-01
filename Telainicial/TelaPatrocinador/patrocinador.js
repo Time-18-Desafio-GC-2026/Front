@@ -16,6 +16,7 @@
  * - account-display.js
  */
 
+// INTEGRAÇÃO BACK-END: carregar perfil, empresa e mídias a partir da API; substituir a sessão local.
 document.addEventListener("DOMContentLoaded", function () {
 
     // =======================================================
@@ -327,6 +328,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (!confirmar) return;
 
+            registrarHistorico(
+                "Encerrou a sessão de patrocinador.",
+                sessionStorage.getItem("rbs_usuario_email")
+            );
             sessionStorage.removeItem("rbs_usuario_email");
             localStorage.removeItem("rbs_sessao");
 

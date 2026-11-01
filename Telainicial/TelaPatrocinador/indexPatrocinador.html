@@ -12,13 +12,14 @@
 
     <title>Cliente | Dashboard</title>
 
+    <script src="../Js/theme-init.js"></script>
     <link rel="stylesheet" href="../css/style_rbs_final.css">
     <link rel="stylesheet" href="../css/rbs-theme-aprimorado.css">
 
 </head>
 
 
-<body>
+<body class="sponsor-dashboard-page">
 <script src="./auth-guard-patrocinador.js"></script>
     <!-- APP SHELL -->
 
@@ -93,7 +94,16 @@
 
                 </a>
 
-        <a class="nav-item" href="../../teladeconfig/indexconfig.html#perfil">
+                <a class="nav-item" href="../faq.html">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/>
+                        <path d="M12 17h.01"/>
+                        <circle cx="12" cy="12" r="9"/>
+                    </svg>
+                    <span>FAQ</span>
+                </a>
+
+                <a class="nav-item" href="../../teladeconfig/indexconfig.html#perfil">
             <svg viewBox="0 0 24 24" aria-hidden="true">
                 <circle cx="12" cy="8" r="4"/>
                 <path d="M4 21a8 8 0 0 1 16 0"/>
@@ -352,27 +362,6 @@
                                     </div>
                                 </section>
             </div>
-                <br>
-                <div class="dashboard-title">
-                        <h1>3 Perguntas </h1>
-                        <p>Perguntas personalizadas que tem direito de incluir na pesquisa oficial.</p>
-
-                        <div class="new-sponsor-wrapper">
-                            <button
-                                class="button button-primary"
-                                type="button"
-                                id="botaoPerguntas"
-                                aria-expanded="false"
-                                aria-controls="formPerguntas"
-                            >
-                                <svg viewBox="0 0 24 24" aria-hidden="true">
-                                    <path d="M12 5v14M5 12h14"/>
-                                </svg>
-                                Enviar Mídia ou Conteudo
-                            </button>
-
-                            <div class="new-sponsor-form" id="formPerguntas">
-
                 </section>
 
             </main>
@@ -401,6 +390,8 @@
 <!-- Comportamentos da área do patrocinador -->
 <script src="./patrocinador.js"></script>
 <script src="../Js/theme-toggle.js"></script>
+<script src="../Js/sidebar-navigation.js"></script>
+<script src="../Js/sidebar-active.js"></script>
 
 
 </body>

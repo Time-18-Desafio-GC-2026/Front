@@ -1,5 +1,6 @@
 // Portal RBS — módulo: midia-rbs.
 
+// INTEGRAÇÃO BACK-END: substituir o catálogo local de mídias por endpoints e armazenamento da API.
 const MIDIA_RBS_KEY = "rbs_midia_rbs";
 
 function listarMidiaRBS() {

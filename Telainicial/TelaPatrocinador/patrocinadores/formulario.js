@@ -1,5 +1,6 @@
 // Portal RBS — módulo: formulario.
 
+// INTEGRAÇÃO BACK-END: substituir a edição local por uma atualização via API.
 function editarPatrocinador(id, novosDados) {
 
     const patrocinadores = listarPatrocinadores();

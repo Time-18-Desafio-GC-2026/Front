@@ -12,6 +12,8 @@
 
     --surface: #ffffff;
 
+    --surface-alt: #f8fafc;
+
     --text-strong: #33465b;
 
     --text: #65778c;
@@ -31,6 +33,85 @@
     --radius: 6px;
 
     --transition: 160ms ease;
+
+}
+
+:root[data-theme="dark"] body {
+
+    --page-bg: #1b1b1b;
+
+    --surface: #242424;
+
+    --surface-alt: #2f2f2f;
+
+    --text-strong: #edf3ff;
+
+    --text: #d5dbe5;
+
+    --text-muted: #a7b1be;
+
+    --border: #3b3b3b;
+
+    --border-soft: #4a4a4a;
+
+    --nav-active: #2d2d2d;
+
+}
+
+:root[data-theme="dark"] body .app-shell,
+:root[data-theme="dark"] body .main-area,
+:root[data-theme="dark"] body .content,
+:root[data-theme="dark"] body .dashboard-header,
+:root[data-theme="dark"] body main {
+
+    background: var(--page-bg);
+
+}
+
+:root[data-theme="dark"] body .topbar {
+
+    background: #232323;
+
+    border-color: #3a3a3a;
+
+}
+
+:root[data-theme="dark"] body .button,
+:root[data-theme="dark"] body .new-sponsor-form,
+:root[data-theme="dark"] body .form-group input,
+:root[data-theme="dark"] body .form-group select,
+:root[data-theme="dark"] body #newSponsorForm,
+:root[data-theme="dark"] body .close-form {
+
+    background: #2c2c2c;
+
+    border-color: #3f3f3f;
+
+    color: var(--text-strong);
+
+}
+
+:root[data-theme="dark"] body .nav-item.active {
+
+    background: #2e2e2e;
+
+    border-color: #4a4a4a;
+
+}
+
+:root[data-theme="dark"] body .nav-item:hover {
+
+    background: rgba(255, 255, 255, 0.04);
+
+}
+
+:root[data-theme="dark"] body .notification {
+
+    background: #2a2a2a;
+
+    border-color: #3d3d3d;
+
+    color: var(--text-strong);
 
 }
 
@@ -71,6 +152,163 @@ body {
     -webkit-font-smoothing: antialiased;
 
     text-rendering: optimizeLegibility;
+
+    transition: background-color var(--transition), color var(--transition);
+
+}
+
+.theme-toggle {
+
+    width: 28px;
+
+    height: 28px;
+
+    border: 1px solid var(--rbs-orange);
+    border-radius: 50%;
+    background: var(--rbs-orange);
+    color: #ffffff;
+
+    display: grid;
+
+    place-items: center;
+
+    padding: 0;
+
+    cursor: pointer;
+
+    transition: background-color var(--transition), border-color var(--transition), transform var(--transition);
+
+}
+
+.theme-toggle:hover {
+
+    background: var(--rbs-orange-dark);
+    border-color: var(--rbs-orange-dark);
+
+}
+
+:root[data-theme="dark"] body .theme-toggle {
+
+    background: #1677d2;
+    border-color: #1677d2;
+
+}
+
+:root[data-theme="dark"] body .theme-toggle:hover {
+
+    background: #1555a5;
+    border-color: #1555a5;
+
+}
+
+.theme-toggle svg {
+
+    width: 14px;
+
+    height: 14px;
+
+    fill: none;
+
+    stroke: currentColor;
+
+    stroke-width: 1.6;
+
+    stroke-linecap: round;
+
+    stroke-linejoin: round;
+
+}
+
+:root[data-theme="dark"] body .sidebar,
+:root[data-theme="dark"] body .topbar,
+:root[data-theme="dark"] body .button,
+:root[data-theme="dark"] body .new-sponsor-form,
+:root[data-theme="dark"] body .form-group input,
+:root[data-theme="dark"] body .form-group select,
+:root[data-theme="dark"] body .close-form,
+:root[data-theme="dark"] body .nav-item,
+:root[data-theme="dark"] body .notification {
+
+    background: var(--surface);
+
+    color: var(--text-strong);
+
+    border-color: var(--border);
+
+}
+
+:root[data-theme="dark"] body .nav-item {
+
+    color: var(--text);
+
+}
+
+:root[data-theme="dark"] body .nav-item.active {
+
+    background: var(--nav-active);
+
+    color: var(--text-strong);
+
+}
+
+:root[data-theme="dark"] body .nav-item:hover {
+
+    background: rgba(148, 163, 184, 0.08);
+
+}
+
+:root[data-theme="dark"] body .user-text strong,
+:root[data-theme="dark"] body .brand-copy strong,
+:root[data-theme="dark"] body .workspace strong,
+:root[data-theme="dark"] body .dashboard-header h1,
+:root[data-theme="dark"] body .form-header h3,
+:root[data-theme="dark"] body .form-group label,
+:root[data-theme="dark"] body .dashboard-title h1,
+:root[data-theme="dark"] body .new-sponsor-form .form-header h3,
+:root[data-theme="dark"] body .form-group input,
+:root[data-theme="dark"] body .form-group select,
+:root[data-theme="dark"] body .button,
+:root[data-theme="dark"] body .button-primary,
+:root[data-theme="dark"] body .notification {
+
+    color: var(--text-strong);
+
+}
+
+:root[data-theme="dark"] body .brand-copy span,
+:root[data-theme="dark"] body .workspace > span:last-child,
+:root[data-theme="dark"] body .nav-label,
+:root[data-theme="dark"] body .nav-chevron,
+:root[data-theme="dark"] body .user-text span,
+:root[data-theme="dark"] body .sidebar-note,
+:root[data-theme="dark"] body .breadcrumb,
+:root[data-theme="dark"] body .breadcrumb b,
+:root[data-theme="dark"] body .dashboard-header p,
+:root[data-theme="dark"] body .form-header p,
+:root[data-theme="dark"] body .form-group input::placeholder {
+
+    color: var(--text-muted);
+
+}
+
+:root[data-theme="dark"] body .new-sponsor-form {
+
+    box-shadow: 0 18px 40px rgba(2, 6, 23, 0.55);
+
+}
+
+:root[data-theme="dark"] body .form-group input,
+:root[data-theme="dark"] body .form-group select {
+
+    background: rgba(15, 23, 42, 0.7);
+
+}
+
+:root[data-theme="dark"] body .button:hover,
+:root[data-theme="dark"] body .close-form:hover,
+:root[data-theme="dark"] body .notification:hover {
+
+    background: var(--surface-alt);
 
 }
 
@@ -2483,6 +2721,11 @@ body {
     box-shadow: 3px 0 16px rgba(8, 13, 45, 0.12);
 }
 
+:root[data-theme="dark"] body .sidebar {
+    background: linear-gradient(180deg, var(--rbs-blue-deep) 0%, var(--rbs-blue) 58%, var(--rbs-blue-light) 100%);
+    border-color: transparent;
+}
+
 .sidebar-brand {
     padding: 2px 2px 24px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.12);
@@ -2506,6 +2749,28 @@ body {
     color: #19234b;
     box-shadow: 0 4px 12px rgba(244, 123, 32, 0.2);
     font-size: 14px;
+}
+
+:root:not([data-theme="dark"]) .brand-mark {
+    content: url("../Assets/LogoPlanetaOrange.png");
+    width: 40px;
+    height: 40px;
+    flex-basis: 40px;
+    object-fit: contain;
+    object-position: center;
+    border-radius: 8px;
+    box-shadow: none;
+}
+
+:root[data-theme="dark"] .brand-mark {
+    content: url("../Assets/LogoPlanetaBlue.png");
+    width: 40px;
+    height: 40px;
+    flex-basis: 40px;
+    object-fit: contain;
+    object-position: center;
+    border-radius: 8px;
+    box-shadow: none;
 }
 
 .brand-copy strong,
@@ -2565,6 +2830,10 @@ body {
     background: #fff;
     border-top: 3px solid var(--rbs-orange);
     border-bottom: 1px solid #e8ebf0;
+}
+
+:root[data-theme="dark"] body .topbar {
+    border-top-color: #1677d2;
 }
 
 /* Área de conteúdo */
@@ -2753,25 +3022,110 @@ body {
     }
 }
 
-body:not([data-theme="dark"]) .sidebar .nav-item:not(.active):hover {
+:root:not([data-theme="dark"]) body .sidebar .nav-item:not(.active):hover {
     background: linear-gradient(100deg, #ffb34f 0%, var(--rbs-orange) 100%);
     border-color: var(--rbs-orange);
     color: #302044;
 }
 
-body[data-theme="dark"] .sidebar .nav-item:not(.active):hover {
+:root:not([data-theme="dark"]) body .sidebar .nav-item:not(.active):hover svg,
+:root:not([data-theme="dark"]) body .sidebar .nav-item:not(.active):hover .nav-chevron {
+    color: #302044;
+}
+
+.sidebar .main-nav .nav-item {
+    transition: color 160ms ease;
+}
+
+:root[data-theme="dark"] body .sidebar .main-nav .nav-item:not(.active) {
+    background: transparent;
+    background-image: none;
+    border-color: transparent;
+    color: #d4dcf1;
+    box-shadow: none;
+}
+
+:root[data-theme="dark"] body .sidebar .nav-item:not(.active):hover {
     background: linear-gradient(100deg, #1677d2 0%, #2496f3 100%);
     border-color: #52b2ff;
     color: #ffffff;
     box-shadow: 0 5px 14px rgba(22, 119, 210, 0.28);
 }
 
-body[data-theme="dark"] .patrocinadores-filtros {
+:root[data-theme="dark"] body .patrocinadores-filtros {
     background: linear-gradient(110deg, #1555a5 0%, #1677d2 100%);
     border-color: #52b2ff;
     box-shadow: 0 4px 12px rgba(22, 119, 210, 0.2);
 }
 
-body[data-theme="dark"] #patrocinadoresGrid .patrocinador-card-header h3 {
+:root[data-theme="dark"] body #patrocinadoresGrid .patrocinador-card-header h3 {
     color: #000000;
+}
+
+#dashboard #newSponsorButton,
+#dashboard #newSponsorButton:hover {
+    background: linear-gradient(100deg, #ffb64f 0%, var(--rbs-orange) 100%);
+    border-color: var(--rbs-orange);
+    color: #3b2440;
+    box-shadow: 0 4px 10px rgba(244, 123, 32, 0.16);
+}
+
+:root[data-theme="dark"] body #dashboard #newSponsorButton,
+:root[data-theme="dark"] body #dashboard #newSponsorButton:hover {
+    background: #1677d2;
+    border-color: #1677d2;
+    color: #ffffff;
+    box-shadow: 0 5px 14px rgba(22, 119, 210, 0.28);
+}
+
+body.sponsor-dashboard-page #newSponsorButton,
+body.sponsor-dashboard-page #newSponsorButton:hover {
+    background: #1677d2;
+    border-color: #1677d2;
+    color: #ffffff;
+    box-shadow: 0 5px 14px rgba(22, 119, 210, 0.28);
+}
+
+body.sponsor-dashboard-page #newSponsorButton:hover {
+    background: #1555a5;
+    border-color: #1555a5;
+}
+
+.sidebar .main-nav .nav-item.active,
+:root[data-theme="dark"] body .sidebar .main-nav .nav-item.active {
+    background: #1677d2;
+    background-image: none;
+    border-color: #1677d2;
+    color: #ffffff;
+    box-shadow: 0 3px 10px rgba(22, 119, 210, 0.28);
+    font-weight: 700;
+}
+
+:root:not([data-theme="dark"]) body .sidebar .main-nav .nav-item.active,
+:root:not([data-theme="dark"]) body .sidebar .main-nav .nav-item.active:hover {
+    background: linear-gradient(100deg, #ffb34f 0%, var(--rbs-orange) 100%);
+    background-image: linear-gradient(100deg, #ffb34f 0%, var(--rbs-orange) 100%);
+    border-color: var(--rbs-orange);
+    color: #302044;
+    box-shadow: 0 5px 14px rgba(244, 123, 32, 0.22);
+}
+
+.sidebar .main-nav .nav-item.active:hover,
+:root[data-theme="dark"] body .sidebar .main-nav .nav-item.active:hover {
+    background: #1677d2;
+    background-image: none;
+    border-color: #1677d2;
+    color: #ffffff;
+}
+
+:root:not([data-theme="dark"]) body .sidebar .main-nav .nav-item.active svg,
+:root:not([data-theme="dark"]) body .sidebar .main-nav .nav-item.active .nav-chevron {
+    color: #302044;
+}
+
+.sidebar .main-nav .nav-item.active svg,
+.sidebar .main-nav .nav-item.active .nav-chevron,
+:root[data-theme="dark"] body .sidebar .main-nav .nav-item.active svg,
+:root[data-theme="dark"] body .sidebar .main-nav .nav-item.active .nav-chevron {
+    color: #ffffff;
 }

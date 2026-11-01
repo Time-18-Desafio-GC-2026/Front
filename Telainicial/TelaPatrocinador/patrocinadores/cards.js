@@ -1,5 +1,6 @@
 // Portal RBS — módulo: cards.
 
+// INTEGRAÇÃO BACK-END: obter os dados de conta e sessão usados nas ações pelos serviços de autenticação.
 function renderizarPatrocinadores() {
 
     const grid = document.getElementById("patrocinadoresGrid");

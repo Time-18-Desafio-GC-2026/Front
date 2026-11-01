@@ -3,6 +3,7 @@
  * Protege o dashboard administrativo.
  * Somente usuários com o perfil "funcionario"
  * podem permanecer nesta página.
+ * INTEGRAÇÃO BACK-END: substituir a leitura local da sessão pela validação de sessão/token na API.
  */
 (function verificarAcessoAdmin() {
     const sessaoAdmin = JSON.parse(

@@ -1,3 +1,5 @@
+// Carrega os filtros de patrocinador e gera os arquivos de relatório para download.
+// INTEGRAÇÃO BACK-END: buscar patrocinadores e dados dos relatórios nos endpoints correspondentes.
 document.addEventListener('DOMContentLoaded', () => {
     const summary = document.getElementById('reportSummary');
     const sponsorSelect = document.getElementById('sponsorSelect');
@@ -8,6 +10,10 @@ document.addEventListener('DOMContentLoaded', () => {
     logoutButton?.addEventListener('click', () => {
         if (!window.confirm('Deseja realmente sair da plataforma?')) return;
 
+        registrarHistorico(
+            'Encerrou a sessão da equipe RBS.',
+            sessionStorage.getItem('rbs_usuario_email') || undefined
+        );
         sessionStorage.removeItem('rbs_usuario_email');
         localStorage.removeItem('rbs_sessao');
         window.location.replace('../Teladelogin/indexLogin.html');
@@ -65,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (typeof registrarHistorico === 'function') {
             registrarHistorico(
-                `Baixou o relatório de ${sponsor} (${type}) no ano ${format}.`,
+                `Baixou o relatório de ${sponsor} (${type}) em formato ${format.toUpperCase()}.`,
                 sessionStorage.getItem('rbs_usuario_email') || undefined
             );
         }
