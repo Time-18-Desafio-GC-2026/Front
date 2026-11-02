@@ -1,62 +1,41 @@
 // Portal RBS — módulo: storage.
 
-
+// INTEGRAÇÃO BACK-END: substituir esta leitura/gravação local por endpoints de patrocinadores.
 const PATROCINADORES_KEY = "rbs_patrocinadores";
 
+
+
+// Recupera os patrocinadores salvos no localStorage.
+
 function listarPatrocinadores() {
-    return lerListaLocalStorage(PATROCINADORES_KEY);
+
+    return JSON.parse(
+
+        localStorage.getItem(PATROCINADORES_KEY) || "[]"
+
+    );
+
 }
+
+
+
+// Salva a lista atualizada de patrocinadores.
 
 function salvarPatrocinadores(patrocinadores) {
-    salvarListaLocalStorage(
+
+    localStorage.setItem(
+
         PATROCINADORES_KEY,
-        patrocinadores
+
+        JSON.stringify(patrocinadores)
+
     );
+
 }
 
 
 
-/**
- * Lê uma lista do localStorage.
- * Retorna uma lista vazia quando a chave não existe.
- */
-function lerListaLocalStorage(chave) {
-    try {
-        const dados = JSON.parse(
-            localStorage.getItem(chave) || "[]"
-        );
 
-        if (!Array.isArray(dados)) {
-            console.error(
-                `O dado armazenado em "${chave}" não é uma lista.`
-            );
-
-            return [];
-        }
-
-        return dados;
-    } catch (erro) {
-        console.error(
-            `Erro ao ler "${chave}" do localStorage:`,
-            erro
-        );
-
-        return [];
-    }
-}
-
-/**
- * Salva uma lista no localStorage.
- */
-function salvarListaLocalStorage(chave, dados) {
-    if (!Array.isArray(dados)) {
-        throw new TypeError(
-            "O valor a ser salvo precisa ser uma lista."
-        );
-    }
-
-    localStorage.setItem(chave, JSON.stringify(dados));
-}
 
 // ============================================================
 

@@ -1,5 +1,6 @@
 // Portal RBS — módulo: cortesias.
 
+// INTEGRAÇÃO BACK-END: substituir a leitura/gravação local das cortesias por endpoints da API.
 const CORTESIAS_KEY = "rbs_cortesias";
 
 const SETORES_CORTESIA = ["Arena", "Camarote", "Premium"];

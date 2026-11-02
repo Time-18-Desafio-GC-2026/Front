@@ -1,5 +1,6 @@
 
 document.addEventListener("DOMContentLoaded", function () {
+    // INTEGRAÇÃO BACK-END: criar e editar patrocinadores deve chamar a API, não persistir no navegador.
     // =========================================================
     // 1. ELEMENTOS DO FORMULÁRIO DE PATROCINADORES
     // =========================================================
@@ -90,13 +91,21 @@ document.addEventListener("DOMContentLoaded", function () {
                 const idEdicao = sponsorForm.dataset.editandoId;
 
                 if (idEdicao) {
-                    editarPatrocinador(idEdicao, dados);
+                    const patrocinadorAtualizado = editarPatrocinador(idEdicao, dados);
+
+                    registrarHistorico(
+                        `Admin RBS editou o cadastro da empresa "${patrocinadorAtualizado.nome}".`
+                    );
 
                     alert("Patrocinador atualizado com sucesso!");
 
                     delete sponsorForm.dataset.editandoId;
                 } else {
-                    cadastrarPatrocinador(dados);
+                    const novoPatrocinador = cadastrarPatrocinador(dados);
+
+                    registrarHistorico(
+                        `Admin RBS cadastrou a empresa "${novoPatrocinador.nome}".`
+                    );
 
                     alert("Patrocinador cadastrado com sucesso!");
                 }
@@ -138,6 +147,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (!confirmar) return;
 
+            registrarHistorico("Encerrou a sessão da equipe RBS.");
             sessionStorage.removeItem("rbs_usuario_email");
             localStorage.removeItem("rbs_sessao");
 

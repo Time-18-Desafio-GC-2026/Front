@@ -3,6 +3,7 @@
  * Protege a área do patrocinador.
  * Somente usuários com o perfil "patrocinador"
  * e uma empresa vinculada podem acessar esta página.
+ * INTEGRAÇÃO BACK-END: substituir a leitura local da sessão pela validação de sessão/token na API.
  */
 (function verificarAcessoPatrocinador() {
     const sessao = JSON.parse(
@@ -10,12 +11,19 @@
     );
 
     if (
+        sessao?.perfil === "funcionario"
+    ) {
+        window.location.replace(
+            "../Telainicial/index.html"
+        );
+        return;
+    }
+
+    if (
         !sessao ||
         sessao.perfil !== "patrocinador" ||
         !sessao.patrocinadorId
     ) {
-        localStorage.removeItem("rbs_sessao");
-
         window.location.replace(
             "../Teladelogin/indexLogin.html"
         );

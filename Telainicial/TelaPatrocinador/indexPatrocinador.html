@@ -12,14 +12,15 @@
 
     <title>Cliente | Dashboard</title>
 
-    <link rel="stylesheet" href="css/style_rbs_final.css">
-    <link rel="stylesheet" href="css/rbs-theme-aprimorado.css">
+    <script src="../Js/theme-init.js"></script>
+    <link rel="stylesheet" href="../css/style_rbs_final.css">
+    <link rel="stylesheet" href="../css/rbs-theme-aprimorado.css">
 
 </head>
 
 
-<body>
-<script src="Js/auth-guard-patrocinador.js"></script>
+<body class="sponsor-dashboard-page">
+<script src="./auth-guard-patrocinador.js"></script>
     <!-- APP SHELL -->
 
     <div class="app-shell">
@@ -31,11 +32,12 @@
 
             <div class="sidebar-brand">
 
-                <div class="brand-mark">Cliente</div>
+                <img class="brand-mark" src="../Assets/logo-planeta.png" alt="Planeta Atlântida">
 
                 <div class="brand-copy">
 
                     <strong>Portal do Patrocinador</strong>
+
 
                 </div>
 
@@ -45,11 +47,14 @@
 
                 <span class="eyebrow">ÁREA DE TRABALHO</span>
 
-                <strong>Administração Cliente</strong>
+
+                <strong>Patrocinador RBS</strong>
 
                 <span>Visão geral da operação</span>
 
             </div>
+
+
 
             <nav class="main-nav" aria-label="Navegação principal">
 
@@ -75,14 +80,30 @@
 
                 </a>
 
-                 <a class="nav-item" href="../Telarelatorio/indexRelatorio.html">
+
+
+                <a class="nav-item" href="../../Telarelatorio/indexRelatorio.html">
+
                     <svg viewBox="0 0 24 24" aria-hidden="true">
+
                         <path d="M4 19V9M10 19V5M16 19v-8M22 19H2"/>
+
                     </svg>
+
                     <span>Relatórios</span>
+
                 </a>
 
-        <a class="nav-item" href="../teladeconfig/indexconfig.html#perfil">
+                <a class="nav-item" href="../faq.html">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/>
+                        <path d="M12 17h.01"/>
+                        <circle cx="12" cy="12" r="9"/>
+                    </svg>
+                    <span>FAQ</span>
+                </a>
+
+                <a class="nav-item" href="../../teladeconfig/indexconfig.html#perfil">
             <svg viewBox="0 0 24 24" aria-hidden="true">
                 <circle cx="12" cy="8" r="4"/>
                 <path d="M4 21a8 8 0 0 1 16 0"/>
@@ -132,7 +153,7 @@
 
                     <span class="breadcrumb">
 
-                        Administração Cliente <b>/</b> Dashboard <!-- Breadcrumbs, Mmanter isso quando funfar?-->
+                        Patrocinador RBS <b>/</b> Dashboard <!-- Breadcrumbs, Mmanter isso quando funfar?-->
 
                     </span>
 
@@ -140,21 +161,12 @@
 
                 <div class="topbar-user">
 
-
-
-                    <button class="notification" type="button" aria-label="Notificações">
-
+                    <button class="theme-toggle" type="button" data-theme-toggle aria-label="Alternar tema" aria-pressed="false" title="Ativar tema escuro">
                         <svg viewBox="0 0 24 24" aria-hidden="true">
-
-                            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
-
-                            <path d="M10 21h4"/>
-
+                            <circle cx="12" cy="12" r="4"/>
+                            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
                         </svg>
-
                     </button>
-
-
 
                     <div class="user-text">
 
@@ -279,14 +291,13 @@
                     name="texto"
 
                     placeholder="Ex.: Dados releventas em texto de qualquer tipo, como informações de mídia, conteúdo ou outros dados importantes."
-
-                    required >
+                >
             </div>
 
         
             <!-- Arquivo -->
 
-            <div class="form-group">
+            <div class="form-group form-group-arquivo">
 
                 <label for="sponsorArchive">
 
@@ -308,23 +319,6 @@
             <!-- Botões -->
 
             <div class="form-actions">
-
-
-
-                <button
-
-                    type="button"
-
-                    class="form-cancel"
-
-                    id="cancelSponsor"
-
-                >
-
-                    Cancelar
-
-                </button>
-
                 <button
 
                     type="submit"
@@ -342,6 +336,10 @@
         </form>
 
     </div>
+            <section id="enviosPatrocinador" class="materiais-publicados-cliente" hidden>
+                <h2>Conteúdos enviados</h2>
+                <div id="listaEnviosPatrocinador" aria-live="polite"></div>
+            </section>
             <!-- Materiais publicados pela RBS -->
                                 <section id="materiaisPublicadosRBS" class="materiais-publicados-cliente" hidden>
                                     <h2>Materiais publicados pela RBS</h2>
@@ -350,27 +348,6 @@
                                     </div>
                                 </section>
             </div>
-                <br>
-                <div class="dashboard-title">
-                        <h1>3 Perguntas </h1>
-                        <p>Perguntas personalizadas que tem direito de incluir na pesquisa oficial.</p>
-
-                        <div class="new-sponsor-wrapper">
-                            <button
-                                class="button button-primary"
-                                type="button"
-                                id="botaoPerguntas"
-                                aria-expanded="false"
-                                aria-controls="formPerguntas"
-                            >
-                                <svg viewBox="0 0 24 24" aria-hidden="true">
-                                    <path d="M12 5v14M5 12h14"/>
-                                </svg>
-                                Enviar Mídia ou Conteudo
-                            </button>
-
-                            <div class="new-sponsor-form" id="formPerguntas">
-
                 </section>
 
             </main>
@@ -379,25 +356,28 @@
 
     </div>
 <!-- Histórico de atividades -->
-<script src="../Telahistorico/historico.js"></script>
+<script src="../../Telahistorico/historico.js"></script>
 
 <!-- Módulos de gerenciamento de patrocinadores -->
-<script src="Js/patrocinadores/storage.js"></script>
-<script src="Js/patrocinadores/contas.js"></script>
-<script src="Js/patrocinadores/envios.js"></script>
-<script src="Js/patrocinadores/midia-rbs.js"></script>
-<script src="Js/patrocinadores/cortesias.js"></script>
-<script src="Js/patrocinadores/filtros.js"></script>
-<script src="Js/patrocinadores/cadastro.js"></script>
-<script src="Js/patrocinadores/formulario.js"></script>
-<script src="Js/patrocinadores/cards.js"></script>
-<script src="Js/patrocinadores.js"></script>
+<script src="./patrocinadores/storage.js"></script>
+<script src="./patrocinadores/contas.js"></script>
+<script src="./patrocinadores/envios.js"></script>
+<script src="./patrocinadores/midia-rbs.js"></script>
+<script src="./patrocinadores/cortesias.js"></script>
+<script src="./patrocinadores/filtros.js"></script>
+<script src="./patrocinadores/cadastro.js"></script>
+<script src="./patrocinadores/formulario.js"></script>
+<script src="./patrocinadores/cards.js"></script>
+<script src="./patrocinadores.js"></script>
 
 <!-- Nome e avatar da conta -->
-<script src="Js/account-display.js"></script>
+<script src="../Js/account-display.js"></script>
 
 <!-- Comportamentos da área do patrocinador -->
-<script src="Js/patrocinador.js"></script>
+<script src="./patrocinador.js"></script>
+<script src="../Js/theme-toggle.js"></script>
+<script src="../Js/sidebar-navigation.js"></script>
+<script src="../Js/sidebar-active.js"></script>
 
 
 </body>
