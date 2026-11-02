@@ -75,9 +75,14 @@
     font-size: 13px;
 }
 
+.profile-field input,
+.profile-field input::placeholder {
+    color: #1f2937;
+}
+
 .profile-field input[readonly] {
     background: #f8fafc;
-    color: var(--text);
+    color: #1f2937;
     cursor: not-allowed;
 }
 
@@ -123,7 +128,7 @@
     color: #53677d;
     font: inherit;
     font-size: 12px;
-    text-decoration: underline;
+   text-decoration: underline;
     cursor: pointer;
 }
 
@@ -221,4 +226,80 @@
 /* Exibe o perfil quando o JavaScript o habilitar. */
 .profile-view:not([hidden]) {
     display: block;
+}
+
+:root[data-theme="dark"] body .profile-form,
+:root[data-theme="dark"] body .username-form {
+    background: linear-gradient(110deg, #1555a5 0%, #1677d2 100%);
+    border-color: #52b2ff;
+}
+
+:root:not([data-theme="dark"]) body .profile-form,
+:root:not([data-theme="dark"]) body .username-form {
+    background: linear-gradient(110deg, #ffc247 0%, #f47b20 100%);
+    border-color: #d95d0b;
+    box-shadow: 0 4px 12px rgba(217, 93, 11, 0.12);
+}
+
+:root:not([data-theme="dark"]) body .profile-form h2,
+:root:not([data-theme="dark"]) body .profile-field label,
+:root:not([data-theme="dark"]) body .profile-field small {
+    color: #000000;
+}
+
+:root:not([data-theme="dark"]) body .profile-field input,
+:root:not([data-theme="dark"]) body .profile-message {
+    color: #000000;
+}
+
+:root:not([data-theme="dark"]) body .profile-forgot,
+:root:not([data-theme="dark"]) body .profile-forgot:hover {
+    color: #000000;
+}
+
+:root:not([data-theme="dark"]) body .profile-view .profile-actions button,
+:root:not([data-theme="dark"]) body .profile-view .password-input-wrapper .toggle-password {
+    background: #ffffff;
+    border: 1px solid #dfe5ec;
+    border-radius: 6px;
+    color: #000000;
+    box-shadow: none;
+    text-decoration: none;
+    transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+:root:not([data-theme="dark"]) body .profile-view .profile-actions button:hover,
+:root:not([data-theme="dark"]) body .profile-view .password-input-wrapper .toggle-password:hover {
+    background: #f47b20;
+    border-color: #d95d0b;
+    color: #ffffff;
+}
+
+:root[data-theme="dark"] body .profile-view .profile-actions button:hover,
+:root[data-theme="dark"] body .profile-view .password-input-wrapper .toggle-password:hover {
+    background: #1555a5;
+    border-color: #1555a5;
+    color: #ffffff;
+}
+
+:root[data-theme="dark"] body .profile-form h2,
+:root[data-theme="dark"] body .profile-field label,
+:root[data-theme="dark"] body .profile-field small,
+:root[data-theme="dark"] body .profile-forgot,
+:root[data-theme="dark"] body .profile-forgot:hover {
+    color: #ffffff;
+}
+
+:root[data-theme="dark"] body .profile-view .profile-actions .profile-forgot {
+    padding: 8px 14px;
+    background: #2c2c2c;
+    border: 1px solid #3f3f3f;
+    border-radius: 999px;
+    color: #ffffff;
+    text-decoration: underline;
+}
+
+:root[data-theme="dark"] body .profile-view .profile-actions .profile-forgot:hover {
+    background: #1555a5;
+    border-color: #1555a5;
 }

@@ -1,4 +1,6 @@
 
+// Gerencia os dados do perfil, as atualizações de conta e o encerramento da sessão.
+// INTEGRAÇÃO BACK-END: substituir leitura/gravação de usuário e sessão locais por endpoints autenticados.
 var EMAIL_SESSION_KEY = "rbs_usuario_email";
 var SESSION_KEY = "rbs_sessao";
 var USERS_KEY = "rbs_usuarios";
@@ -228,6 +230,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (!confirmar) return;
 
+            if (typeof registrarHistorico === "function") {
+                registrarHistorico(
+                    "Encerrou a sessão.",
+                    currentUser?.email || email
+                );
+            }
             sessionStorage.removeItem(EMAIL_SESSION_KEY);
             localStorage.removeItem(SESSION_KEY);
 
@@ -328,6 +336,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
             profileMessage.textContent =
                 `A recuperação de senha por e-mail ainda precisa ser implementada para ${email}.`;
+
+            if (typeof registrarHistorico === "function") {
+                registrarHistorico(
+                    "Consultou a opção de recuperação de senha.",
+                    currentUser?.email || email
+                );
+            }
         });
     }
 });

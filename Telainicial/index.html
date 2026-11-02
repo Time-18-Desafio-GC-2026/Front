@@ -12,8 +12,9 @@
 
     <title>RBS Patrocinadores | Dashboard</title>
 
-    <link rel="stylesheet" href="../Telainicial/css/style_rbs_final.css">
-    <link rel="stylesheet" href="../Telainicial/css/rbs-theme-aprimorado.css">
+    <script src="Js/theme-init.js"></script>
+    <link rel="stylesheet" href="css/style_rbs_final.css">
+    <link rel="stylesheet" href="css/rbs-theme-aprimorado.css">
 
 </head>
 
@@ -104,6 +105,15 @@
                     </svg>
                     <span>Auditoria</span>
                 </a>
+
+                <a class="nav-item" href="faq.html">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/>
+                        <path d="M12 17h.01"/>
+                        <circle cx="12" cy="12" r="9"/>
+                    </svg>
+                    <span>FAQ</span>
+                </a>
                 
                 <a class="nav-item" href="../teladeconfig/indexconfig.html#perfil">
                     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -163,17 +173,26 @@
                     </span>
 
                             </div>
-            <a class="topbar-user topbar-user-link"
-            href="../teladeconfig/indexconfig.html#perfil"
-            aria-label="Abrir perfil da conta">
+            <div class="topbar-user">
+                <button class="theme-toggle" type="button" data-theme-toggle aria-label="Alternar tema" aria-pressed="false" title="Ativar tema escuro">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="12" cy="12" r="4"/>
+                        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+                    </svg>
+                </button>
 
-                <div class="user-text">
-                    <strong data-account-name>Otávio Fogaça</strong>
-                    <span>Equipe RBS</span>
-                </div>
+                <a class="topbar-user-link"
+                href="../teladeconfig/indexconfig.html#perfil"
+                aria-label="Abrir perfil da conta">
 
-                <div class="avatar" data-account-avatar aria-hidden="true">OF</div>
-            </a>
+                    <div class="user-text">
+                        <strong data-account-name>Otávio Fogaça</strong>
+                        <span>Equipe RBS</span>
+                    </div>
+
+                    <div class="avatar" data-account-avatar aria-hidden="true">OF</div>
+                </a>
+            </div>
 
 
             </header>
@@ -443,7 +462,8 @@
 
 <!-- Interações do dashboard -->
 <script src="Js/dashboard.js"></script>
-
-
+<script src="Js/theme-toggle.js"></script>
+<script src="Js/sidebar-navigation.js"></script>
+<script src="Js/sidebar-active.js"></script>
 </body>
 </html>

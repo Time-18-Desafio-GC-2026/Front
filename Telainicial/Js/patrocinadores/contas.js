@@ -1,5 +1,6 @@
 // Portal RBS — módulo: contas.
 
+// INTEGRAÇÃO BACK-END: mover validação e criação de contas vinculadas para endpoints administrativos.
 const USUARIOS_KEY = "rbs_usuarios";
 
 

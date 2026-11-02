@@ -1,5 +1,6 @@
 // Portal RBS — módulo: envios.
 
+// INTEGRAÇÃO BACK-END: substituir a leitura/gravação local dos envios por endpoints da API.
 const ENVIOS_KEY = "rbs_envios";
 
 

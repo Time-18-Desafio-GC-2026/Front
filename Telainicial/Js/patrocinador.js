@@ -16,6 +16,7 @@
  * - account-display.js
  */
 
+// INTEGRAÇÃO BACK-END: carregar perfil, empresa e mídias a partir da API; substituir a sessão local.
 document.addEventListener("DOMContentLoaded", function () {
 
     // =======================================================

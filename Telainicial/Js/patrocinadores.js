@@ -7,7 +7,7 @@
 function inicializarPatrocinadores() {
     if (typeof renderizarPatrocinadores !== "function") {
         console.error(
-            "Erro: a função renderizarPatrocinadores não foi carregada."
+            "Erro: a função renderizar Patrocinadores não foi carregada."
         );
         return;
     }

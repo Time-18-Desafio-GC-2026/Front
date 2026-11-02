@@ -1,33 +1,22 @@
+// Carrega os filtros de patrocinador e gera os arquivos de relatório para download.
+// INTEGRAÇÃO BACK-END: buscar patrocinadores e dados dos relatórios nos endpoints correspondentes.
 document.addEventListener('DOMContentLoaded', () => {
     const summary = document.getElementById('reportSummary');
     const sponsorSelect = document.getElementById('sponsorSelect');
     const reportForm = document.getElementById('reportForm');
     const downloadReportButton = document.getElementById('downloadReportButton');
-    const actionButtons = document.querySelectorAll('.report-panel .button');
+    const logoutButton = document.getElementById('logoutButton');
 
-    const aplicarEstadoBotao = (button, ativo) => {
-        if (!button) return;
+    logoutButton?.addEventListener('click', () => {
+        if (!window.confirm('Deseja realmente sair da plataforma?')) return;
 
-        if (ativo) {
-            button.style.background = '#ff8a1d';
-            button.style.color = '#ffffff';
-            button.style.border = 'none';
-            button.style.boxShadow = 'none';
-            button.style.transform = 'translateY(-1px)';
-            return;
-        } 
-
-        button.style.background = '#ffffff';
-        button.style.color = '#111111';
-        button.style.border = '1px solid #ff8a1d';
-        button.style.boxShadow = 'none';
-        button.style.transform = 'none';
-    };
-
-    actionButtons.forEach((button) => {
-        aplicarEstadoBotao(button, false);
-        button.addEventListener('mouseenter', () => aplicarEstadoBotao(button, true));
-        button.addEventListener('mouseleave', () => aplicarEstadoBotao(button, false));
+        registrarHistorico(
+            'Encerrou a sessão da equipe RBS.',
+            sessionStorage.getItem('rbs_usuario_email') || undefined
+        );
+        sessionStorage.removeItem('rbs_usuario_email');
+        localStorage.removeItem('rbs_sessao');
+        window.location.replace('../Teladelogin/indexLogin.html');
     });
 
     const carregarPatrocinadores = () => {
@@ -82,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (typeof registrarHistorico === 'function') {
             registrarHistorico(
-                `Baixou o relatório de ${sponsor} (${type}) no ano ${format}.`,
+                `Baixou o relatório de ${sponsor} (${type}) em formato ${format.toUpperCase()}.`,
                 sessionStorage.getItem('rbs_usuario_email') || undefined
             );
         }

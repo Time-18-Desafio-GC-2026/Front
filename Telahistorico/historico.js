@@ -1,22 +1,33 @@
 // Mantém o histórico no mesmo armazenamento local usado pelo portal.
+// INTEGRAÇÃO BACK-END: trocar leitura/gravação local por endpoints de auditoria centralizados.
 var HISTORICO_KEY = "rbs_historico";
 var USUARIO_EMAIL_KEY = "rbs_usuario_email";
 
 
 function registrarHistorico(acao, emailAtor) {
-    var historico = JSON.parse(
-        localStorage.getItem(HISTORICO_KEY) || "[]"
-    );
+    try {
+        var historico = JSON.parse(
+            localStorage.getItem(HISTORICO_KEY) || "[]"
+        );
 
-    historico.push({
-        email: emailAtor
-            || sessionStorage.getItem(USUARIO_EMAIL_KEY)
-            || "Conta não identificada",
-        acao,
-        dataHora: new Date().toISOString()
-    });
+        if (!Array.isArray(historico)) {
+            throw new TypeError("O formato do histórico salvo é inválido.");
+        }
 
-    localStorage.setItem(HISTORICO_KEY, JSON.stringify(historico));
+        historico.push({
+            email: emailAtor
+                || sessionStorage.getItem(USUARIO_EMAIL_KEY)
+                || "Conta não identificada",
+            acao,
+            dataHora: new Date().toISOString()
+        });
+
+        localStorage.setItem(HISTORICO_KEY, JSON.stringify(historico));
+        return true;
+    } catch (error) {
+        console.error("Não foi possível registrar a atividade no histórico:", error);
+        return false;
+    }
 }
 
 // Filtro do Historico
@@ -105,4 +116,3 @@ window.addEventListener("storage", function (event) {
         renderizarHistorico();
     }
 });
-

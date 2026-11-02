@@ -1,3 +1,5 @@
+// Mantém o nome e o avatar da conta sincronizados com a sessão atual.
+// INTEGRAÇÃO BACK-END: carregar os dados de usuário e a sessão pelo serviço de autenticação.
 function renderAccountDisplay() {
     var session = JSON.parse(localStorage.getItem("rbs_sessao") || "null");
     var sessionEmail = sessionStorage.getItem("rbs_usuario_email") || session?.email || "";
