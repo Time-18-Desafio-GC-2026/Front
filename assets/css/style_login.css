@@ -1,4 +1,4 @@
-/* Cores da página. */
+﻿/* Cores da página. */
 :root {
   --bg-start: #d8dde7;
   --bg-end: #0b174d;
@@ -26,7 +26,7 @@ body {
   font-family: Arial, Helvetica, sans-serif;
   background:
     linear-gradient(rgba(11, 23, 77, 0.25), rgba(11, 23, 77, 0.25)),
-    url("PAfundo1.png") center / cover no-repeat fixed;
+    url('../img/PAFundo1.png') center / cover no-repeat fixed;
   color: var(--text);
 }
 
@@ -209,3 +209,4 @@ button:hover {
     align-items: flex-start;
   }
 }
+

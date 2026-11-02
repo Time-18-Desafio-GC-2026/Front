@@ -1,14 +1,24 @@
+<<<<<<< HEAD:src/pages/historico.js
+﻿// indexHistorico.html/historico.js
+=======
 // Mantém o histórico no mesmo armazenamento local usado pelo portal.
 // INTEGRAÇÃO BACK-END: trocar leitura/gravação local por endpoints de auditoria centralizados.
+>>>>>>> origin/main:Telahistorico/historico.js
 var HISTORICO_KEY = "rbs_historico";
 var USUARIO_EMAIL_KEY = "rbs_usuario_email";
 
+// Cache em memória dos logs vindos do PostgreSQL (Supabase)
+var historicoServidorCache = [];
 
 function registrarHistorico(acao, emailAtor) {
+<<<<<<< HEAD:src/pages/historico.js
+    var historico = JSON.parse(localStorage.getItem(HISTORICO_KEY) || "[]");
+=======
     try {
         var historico = JSON.parse(
             localStorage.getItem(HISTORICO_KEY) || "[]"
         );
+>>>>>>> origin/main:Telahistorico/historico.js
 
         if (!Array.isArray(historico)) {
             throw new TypeError("O formato do histórico salvo é inválido.");
@@ -30,11 +40,40 @@ function registrarHistorico(acao, emailAtor) {
     }
 }
 
-// Filtro do Historico
+/**
+ * Busca a trilha de auditoria real no Back-end Java (GET /auditoria)
+ */
+async function carregarAuditoriaDoBackend() {
+    if (typeof apiRequest !== "function" || !localStorage.getItem("rbs_token")) {
+        return;
+    }
+
+    try {
+        const logsApi = await apiRequest("/auditoria", "GET");
+        if (Array.isArray(logsApi)) {
+            historicoServidorCache = logsApi.map(function (log) {
+                return {
+                    id: log.id,
+                    email: log.atorNome || "Sistema / RBS",
+                    acao: log.detalhe || log.acao,
+                    dataHora: log.criadoEm
+                };
+            });
+        }
+    } catch (erro) {
+        console.error("Erro ao carregar auditoria do servidor:", erro);
+    }
+}
+
+// Filtro do Histórico
 function filtrarHistorico(historico) {
-    var email = document.getElementById("filterEmail").value.trim().toLowerCase();
-    var data = document.getElementById("filterDate").value;
-    var hora = document.getElementById("filterTime").value;
+    var emailInput = document.getElementById("filterEmail");
+    var dateInput = document.getElementById("filterDate");
+    var timeInput = document.getElementById("filterTime");
+
+    var email = emailInput ? emailInput.value.trim().toLowerCase() : "";
+    var data = dateInput ? dateInput.value : "";
+    var hora = timeInput ? timeInput.value : "";
 
     return historico.filter(function (registro) {
         var dataHora = new Date(registro.dataHora);
@@ -57,12 +96,16 @@ function filtrarHistorico(historico) {
 // Exibe as atividades filtradas, começando pelas mais recentes.
 function renderizarHistorico() {
     var linhas = document.getElementById("historyRows");
-
     if (!linhas) return;
 
-    var historico = filtrarHistorico(JSON.parse(
-        localStorage.getItem(HISTORICO_KEY) || "[]"
-    ).sort((a, b) => new Date(b.dataHora) - new Date(a.dataHora)));
+    // Prioriza os logs oficiais do banco no Supabase; usa o local apenas se o banco estiver vazio
+    var baseCompleta = historicoServidorCache.length > 0
+        ? historicoServidorCache
+        : JSON.parse(localStorage.getItem(HISTORICO_KEY) || "[]");
+
+    var historico = filtrarHistorico(
+        [...baseCompleta].sort((a, b) => new Date(b.dataHora) - new Date(a.dataHora))
+    );
 
     linhas.replaceChildren();
 
@@ -95,8 +138,12 @@ function renderizarHistorico() {
     });
 }
 
-// Renderiza a tabela e atualiza os resultados ao mexer nos filtros.
-document.addEventListener("DOMContentLoaded", function () {
+// Renderiza a tabela puxando do Back-end e atualiza os resultados ao mexer nos filtros.
+document.addEventListener("DOMContentLoaded", async function () {
+    var linhas = document.getElementById("historyRows");
+    if (!linhas) return; // Só busca se estivermos na tela de Histórico
+
+    await carregarAuditoriaDoBackend();
     renderizarHistorico();
 
     var filtros = document.getElementById("historyFilters");
@@ -105,14 +152,16 @@ document.addEventListener("DOMContentLoaded", function () {
     filtros.addEventListener("input", renderizarHistorico);
     filtros.addEventListener("change", renderizarHistorico);
     filtros.addEventListener("reset", function () {
-        // Aguarda o navegador restaurar os campos antes de refazer a busca.
         window.setTimeout(renderizarHistorico, 0);
     });
 });
 
+<<<<<<< HEAD:src/pages/historico.js
+=======
 // Atualiza a tabela quando outra aba registrar uma nova atividade.
 window.addEventListener("storage", function (event) {
     if (event.key === HISTORICO_KEY) {
         renderizarHistorico();
     }
 });
+>>>>>>> origin/main:Telahistorico/historico.js
