@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Perguntas frequentes dos patrocinadores e respostas da equipe RBS">
+    <title>RBS Patrocinadores | FAQ</title>
+    <script src="../src/shared/theme.js"></script>
+    <script src="../src/guards/security.js"></script>
+    <link rel="stylesheet" href="../assets/css/style_portal.css">
+</head>
+
+<body>
+    <div class="app-shell">
+        <aside class="sidebar" id="sidebar"></aside>
+
+        <div class="main-area">
+            <header class="topbar"></header>
+
+            <main class="content faq-content">
+                <section class="faq-header">
+                    <div>
+                        <h1>Perguntas frequentes</h1>
+                        <p id="faqIntro">Envie uma pergunta e consulte as dúvidas compartilhadas pelos patrocinadores
+                            (ordenadas pelas mais acessadas).</p>
+                    </div>
+                </section>
+
+                <section class="faq-compose" id="questionSection" aria-labelledby="questionHeading">
+                    <h2 id="questionHeading">Faça uma pergunta</h2>
+                    <form id="questionForm">
+                        <label for="questionCategory">Categoria do assunto</label>
+                        <select id="questionCategory" name="categoria" required
+                            style="margin-bottom: 8px; height: 38px; border-radius: 6px; padding: 0 10px; border: 1px solid var(--border);">
+                            <option value="GERAL">Geral / Operação</option>
+                            <option value="MIDIA">Mídia e Marca</option>
+                            <option value="CORTESIAS">Cortesias e Lounge</option>
+                            <option value="ATIVACAO">Pesquisa e Ativação</option>
+                            <option value="CONTRATO">Plano Comercial e Contrato</option>
+                        </select>
+
+                        <label for="questionInput">Sua pergunta</label>
+                        <textarea id="questionInput" name="question" maxlength="500" required
+                            placeholder="Escreva sua dúvida (até 500 caracteres)"></textarea>
+                        <div class="faq-form-footer">
+                            <span id="questionCounter">0/500</span>
+                            <button class="button button-primary" type="submit">Publicar pergunta</button>
+                        </div>
+                    </form>
+                </section>
+
+                <section class="faq-list-section" aria-labelledby="questionsHeading">
+                    <div class="faq-list-heading">
+                        <h2 id="questionsHeading">Perguntas da comunidade</h2>
+                        <span id="questionCount" aria-live="polite"></span>
+                    </div>
+                    <p class="faq-message" id="faqMessage" role="status" aria-live="polite"></p>
+                    <div class="faq-list" id="faqList"></div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script src="../src/services/api.js"></script>
+    <script src="../src/shared/layout.js"></script>
+    <script src="../src/pages/faq.js"></script>
+</body>
+
+</html>

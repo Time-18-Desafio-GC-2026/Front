@@ -1,0 +1,89 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RBS Patrocinadores | Relatórios</title>
+    <link rel="stylesheet" href="../assets/css/style_portal.css">
+    <script src="../src/shared/theme.js"></script>
+    <script src="../src/guards/security.js"></script>
+</head>
+
+<body>
+    <div class="app-shell">
+        <aside class="sidebar" id="sidebar"></aside>
+
+        <div class="main-area">
+            <header class="topbar"></header>
+
+            <main class="content report-content" id="relatorios">
+                <section class="dashboard-header report-header">
+                    <div class="dashboard-title">
+                        <h1>Relatórios</h1>
+                        <p>Gere e baixe os dados das campanhas e entregas em um só lugar.</p>
+                    </div>
+
+                    <div class="header-actions"></div>
+                </section>
+
+                <section class="panel report-panel" aria-label="Gerenciamento de relatórios">
+                    <form id="reportForm" class="report-form active">
+                        <div class="field-grid">
+                            <label class="field">
+                                <span>Patrocinador</span>
+                                <select id="sponsorSelect">
+                                    <option value="Todos">Todos</option>
+                                </select>
+                            </label>
+
+                            <label class="field">
+                                <span>Tipo de relatório</span>
+                                <select id="reportType">
+                                    <option value="Todos">Todos</option>
+                                    <option value="Campanhas e entregas">Campanhas e entregas</option>
+                                    <option value="Cobertura de mídia">Cobertura de mídia</option>
+                                    <option value="Financeiro">Financeiro</option>
+                                </select>
+                            </label>
+
+                            <label class="field">
+                                <span>Edição do Planeta Atlântida</span>
+                                <select id="downloadFormat">
+                                    <option value="2026">2026</option>
+                                    <option value="2025">2025</option>
+                                    <option value="2024">2024</option>
+                                    <option value="2023">2023</option>
+                                    <option value="2022">2022</option>
+                                </select>
+                            </label>
+                        </div>
+
+                        <div class="form-actions report-actions">
+                            <button class="button button-primary" type="button" id="downloadReportButton">Baixar
+                                relatório</button>
+                        </div>
+                    </form>
+
+                    <div id="reportSummary" class="report-summary" aria-live="polite">
+                        Selecione os filtros e gere o relatório para visualizar o resultado.
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- 1. Camada HTTP para comunicar com o Back-end Java -->
+    <script src="../src/services/api.js"></script>
+    <!-- 2. Histórico e Auditoria -->
+    <script src="../src/pages/historico.js"></script>
+    <!-- 3. Atualização automática do nome e avatar do usuário logado -->
+    <script src="../src/shared/layout.js"></script>
+    <!-- 4. Lógica da tela de Relatórios -->
+    <script src="../src/pages/relatorios.js"></script>
+</body>
+
+</html>
+
+
+

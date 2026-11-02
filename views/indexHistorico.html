@@ -1,0 +1,98 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Histórico de atividades do Portal RBS">
+    <title>RBS Patrocinadores | Auditoria</title>
+    <link rel="stylesheet" href="../assets/css/style_portal.css">
+    <script src="../src/shared/theme.js"></script>
+    <script src="../src/guards/security.js"></script>
+</head>
+
+<body>
+    <div class="app-shell">
+        <!-- Menu lateral para navegar pelo portal sem sair da estrutura visual. -->
+        <aside class="sidebar" id="sidebar"></aside>
+
+        <div class="main-area">
+            <!-- Barra superior mantém a identidade da página principal. -->
+            <header class="topbar"></header>
+
+            <!-- Tabela com as atividades gravadas no navegador. -->
+            <main class="content">
+                <header class="history-header">
+                    <h1>Histórico</h1>
+                    <p>Consulte as atividades realizadas no portal.</p>
+                </header>
+
+                <!-- Filtros combináveis para localizar uma atividade. -->
+                <form class="history-filters" id="historyFilters">
+                    <label for="filterEmail">
+                        E-mail
+                        <input id="filterEmail" type="search" placeholder="Filtrar por e-mail">
+                    </label>
+                    <label for="filterDate">
+                        Data
+                        <input id="filterDate" type="date">
+                    </label>
+                    <label for="filterTime">
+                        Hora
+                        <input id="filterTime" type="time">
+                    </label>
+                    <button class="history-filter-reset" type="reset">Limpar filtros</button>
+                </form>
+
+                <div class="history-table-wrapper">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">E-mail</th>
+                                <th scope="col">Data</th>
+                                <th scope="col">Hora</th>
+                                <th scope="col">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyRows">
+                            <tr>
+                                <td colspan="4">Ainda não há atividades registradas.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const logoutButton = document.getElementById("logoutButton");
+            if (!logoutButton) return;
+
+            logoutButton.addEventListener("click", function () {
+                if (!window.confirm("Deseja realmente sair da plataforma?")) {
+                    return;
+                }
+
+                sessionStorage.removeItem("rbs_usuario_email");
+                localStorage.removeItem("rbs_sessao");
+                localStorage.removeItem("rbs_token");
+
+                window.location.replace("indexLogin.html");
+            });
+        });
+    </script>
+
+    <!-- Camada HTTP para buscar a auditoria real do Back-end Java -->
+    <script src="../src/services/api.js"></script>
+    <!-- Carrega a leitura e o registro compartilhado do histórico. -->
+    <script src="../src/pages/historico.js"></script>
+    <script src="../src/shared/layout.js"></script>
+
+</body>
+
+</html>
+
+
+

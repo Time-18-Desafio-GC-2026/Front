@@ -1,0 +1,107 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Perfil e configurações da conta RBS">
+    <title>RBS Patrocinadores | Configurações</title>
+    <link rel="stylesheet" href="../assets/css/style_portal.css">
+    <script src="../src/shared/theme.js"></script>
+    <script src="../src/guards/security.js"></script>
+</head>
+
+<body>
+    <div class="app-shell">
+        <!-- Sidebar principal compartilhada com o dashboard RBS -->
+        <aside class="sidebar" id="sidebar"></aside>
+
+        <div class="main-area">
+            <header class="topbar"></header>
+
+            <main class="content">
+                <section class="settings-welcome" id="settingsWelcome">
+                    <h1>Configurações</h1>
+                    <p>Escolha Perfil no menu para gerenciar sua conta.</p>
+                </section>
+
+                <!-- Perfil com e-mail bloqueado e preferências editáveis. -->
+                <section class="profile-view" id="profileView" hidden>
+                    <header class="profile-header">
+                        <h1>Perfil</h1>
+                        <p>Atualize seu nome de usuário e gerencie os dados da conta.</p>
+                    </header>
+
+                    <form class="username-form" id="usernameForm">
+                        <div class="profile-field">
+                            <label for="profileUsername">Nome de usuário</label>
+                            <input id="profileUsername" name="username" type="text" maxlength="80" required>
+                            <small>Este nome será exibido no cabeçalho da tela inicial.</small>
+                        </div>
+                        <p class="profile-message" id="usernameMessage" role="status" aria-live="polite"></p>
+                        <div class="profile-actions">
+                            <button class="button button-primary profile-save" type="submit">Salvar nome</button>
+                        </div>
+                    </form>
+
+                    <form class="profile-form" id="profileForm">
+                        <div class="profile-field">
+                            <label for="profileEmail">E-mail da conta</label>
+                            <input id="profileEmail" name="email" type="email" readonly>
+                            <small>O e-mail usado no login não pode ser alterado.</small>
+                        </div>
+
+                        <div class="profile-divider"></div>
+                        <h2>Trocar senha</h2>
+
+
+                        <div class="profile-field">
+                            <label for="currentPassword">Senha atual</label>
+
+                            <div class="password-input-wrapper">
+                                <input id="currentPassword" name="currentPassword" type="password"
+                                    autocomplete="current-password" required>
+
+                                <button type="button" class="toggle-password" data-target="currentPassword"
+                                    aria-label="Mostrar senha atual" aria-pressed="false">
+                                    Mostrar
+                                </button>
+                            </div>
+                        </div>
+
+
+                        <div class="profile-field">
+                            <label for="newPassword">Nova senha</label>
+                            <input id="newPassword" name="newPassword" type="password" minlength="6"
+                                autocomplete="new-password" required>
+                        </div>
+
+                        <div class="profile-field">
+                            <label for="confirmPassword">Confirmar nova senha</label>
+                            <input id="confirmPassword" name="confirmPassword" type="password" minlength="6"
+                                autocomplete="new-password" required>
+                        </div>
+
+                        <p class="profile-message" id="profileMessage" role="status" aria-live="polite"></p>
+                        <div class="profile-actions">
+                            <button class="button button-primary profile-save" type="submit">Atualizar senha</button>
+                            <button class="profile-forgot" id="forgotPasswordButton" type="button">Esqueci
+                                senha</button>
+                        </div>
+                    </form>
+
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script src="../src/services/api.js"></script>
+    <script src="../src/pages/historico.js"></script>
+    <script src="../src/shared/layout.js"></script>
+    <script src="../src/pages/perfil.js"></script>
+</body>
+
+</html>
+
+
+

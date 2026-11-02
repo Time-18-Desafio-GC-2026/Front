@@ -1,0 +1,248 @@
+﻿<!DOCTYPE html>
+
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="description" content="Portal de gestão RBS - Dashboard administrativo">
+
+    <title>Cliente | Dashboard</title>
+    <link rel="stylesheet" href="../assets/css/style_portal.css">
+
+    <script src="../src/shared/theme.js"></script>
+    <script src="../src/guards/security.js"></script>
+</head>
+
+
+<body>
+    <!-- APP SHELL -->
+
+    <div class="app-shell">
+
+
+        <!-- SIDEBAR -->
+
+        <aside class="sidebar" id="sidebar"></aside>
+
+        <!-- =====================================================
+
+             MAIN AREA
+
+        ====================================================== -->
+
+        <div class="main-area">
+
+            <!-- TOPBAR -->
+
+            <header class="topbar"></header>
+
+
+
+            <main class="content" id="dashboard">
+
+
+
+                <!-- DASHBOARD HEADER -->
+
+                <section class="dashboard-header">
+
+                    <section class="identificacao-patrocinador">
+                        <div class="identificacao-cabecalho">
+                            <div>
+                                <span class="identificacao-legenda">ÁREA DO PATROCINADOR</span>
+                                <h1 id="nomePatrocinador">Minha empresa</h1>
+                            </div>
+                        </div>
+
+                        <p class="identificacao-descricao">
+                            Acompanhe os materiais, os conteúdos e as informações
+                            vinculados à sua empresa no Portal do Patrocinador.
+                        </p>
+
+                        <div class="cota-destaque" id="detalheCota">
+                            <span class="cota-status-icone" aria-hidden="true">✓</span>
+                            <div>
+                                <strong id="tituloCota">Carregando sua categoria...</strong>
+                                <p id="mensagemPatrocinador" role="status">
+                                    Consultando informações da sua conta.
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+
+
+
+                    <div class="dashboard-title">
+                        <h1>Mídia e conteúdo</h1>
+                        <p>Envie materiais em arquivo ou em texto</p>
+
+                        <div class="new-sponsor-wrapper">
+                            <button class="button button-primary" type="button" id="newSponsorButton"
+                                aria-expanded="false" aria-controls="newSponsorForm">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M12 5v14M5 12h14" />
+                                </svg>
+                                Enviar Mídia ou Conteudo
+                            </button>
+
+
+                            <div class="new-sponsor-form" id="newSponsorForm">
+                                <div class="form-header">
+                                    <div>
+
+                                        <h3>Enviar Mídia ou Conteúdo</h3>
+                                        <p>Registar novos dados em texto ou imagem na plataforma.</p>
+
+                                    </div>
+
+                                    <button type="button" class="close-form" id="closeSponsorForm" aria-label="Fechar">
+                                        ×
+                                    </button>
+
+                                </div>
+
+                                <form id="sponsorForm">
+                                    <!-- Envio Texto -->
+                                    <div class="form-group">
+                                        <label for="sponsorActorEmail">
+                                            Conta conectada
+                                        </label>
+                                        <input type="email" id="sponsorActorEmail" autocomplete="email" readonly
+                                            required>
+
+                                        <label for="sponsorTexto">Texto</label>
+
+                                        <input type="text" id="sponsorTexto" name="texto"
+                                            placeholder="Ex.: Dados releventas em texto de qualquer tipo, como informações de mídia, conteúdo ou outros dados importantes.">
+                                    </div>
+
+
+                                    <!-- Arquivo -->
+
+                                    <div class="form-group form-group-arquivo">
+
+                                        <label for="sponsorArchive">
+
+                                            Arquivo (Imagem, PDF, Vídeo, etc.)
+
+                                        </label>
+
+                                        <input type="file" id="sponsorArchive" name="arquivo">
+
+                                    </div>
+                                    <!-- Botões -->
+
+                                    <div class="form-actions">
+
+
+
+                                        <button type="button" class="form-cancel" id="cancelSponsor">
+
+                                            Cancelar
+
+                                        </button>
+
+                                        <button type="submit" class="form-submit">
+
+                                            Enviar Dados
+
+                                        </button>
+
+                                    </div>
+
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Materiais publicados pela RBS (Agora fora do form oculto, sempre visível!) -->
+                    <section id="materiaisPublicadosRBS" class="materiais-publicados-cliente" hidden>
+                        <h2>Materiais publicados pela RBS</h2>
+                        <div id="listaMateriaisRBS"></div>
+                    </section>
+
+                    <!-- Materiais enviados pelo próprio Patrocinador -->
+                    <section id="meusEnviosSection" class="materiais-publicados-cliente" style="margin-top: 1.5rem;">
+                        <h2>Meus Materiais Enviados</h2>
+                        <div id="listaMeusEnvios"></div>
+                    </section>
+
+                    <!-- Quadro de Cortesias da Marca (Somente Leitura para o Patrocinador) -->
+                    <section id="cortesiasClienteSection" class="materiais-publicados-cliente"
+                        style="margin-top: 1.5rem;">
+                        <h2>Minhas Cortesias e Lounge</h2>
+                        <div id="resumoCortesiasCliente"></div>
+                    </section>
+        </div>
+
+        <br>
+
+        <!-- SEÇÃO DAS 3 PERGUNTAS PERSONALIZADAS -->
+        <div class="dashboard-title">
+            <h1>3 Perguntas da Pesquisa Oficial</h1>
+            <p>Cadastre até 3 perguntas personalizadas que sua marca tem direito de incluir na pesquisa do evento.</p>
+
+            <div class="new-sponsor-wrapper">
+                <button class="button button-primary" type="button" id="botaoPerguntas" aria-expanded="false"
+                    aria-controls="formPerguntas">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 5v14M5 12h14" />
+                    </svg>
+                    Definir 3 Perguntas da Pesquisa
+                </button>
+
+                <div class="new-sponsor-form" id="formPerguntas">
+                    <div class="form-header">
+                        <div>
+                            <h3>Perguntas da Pesquisa Oficial</h3>
+                            <p>Defina as 3 perguntas exclusivas da sua marca.</p>
+                        </div>
+                        <button type="button" class="close-form" id="closePerguntasForm" aria-label="Fechar">×</button>
+                    </div>
+
+                    <form id="questionsForm">
+                        <div class="form-group">
+                            <label for="pergunta1">Pergunta 1</label>
+                            <input type="text" id="pergunta1"
+                                placeholder="Ex.: Você consumiu produtos da nossa marca no evento?" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="pergunta2">Pergunta 2</label>
+                            <input type="text" id="pergunta2"
+                                placeholder="Ex.: Como você avalia nossa ativação no Planeta Atlântida?">
+                        </div>
+                        <div class="form-group">
+                            <label for="pergunta3">Pergunta 3</label>
+                            <input type="text" id="pergunta3"
+                                placeholder="Ex.: Qual brinde você mais gostou no nosso estande?">
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="form-cancel" id="cancelPerguntas">Cancelar</button>
+                            <button type="submit" class="form-submit">Salvar Perguntas</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div id="listaPerguntasSalvas" style="margin-top: 1rem;"></div>
+        </div>
+        </section>
+        </main>
+    </div>
+    </div>
+
+    <!-- Camada central de serviço HTTP (conecta com o Back-end Java) -->
+    <script src="../src/services/api.js"></script>
+
+    <!-- Nome e avatar da conta -->
+    <script src="../src/shared/layout.js"></script>
+
+    <!-- Comportamentos exclusivos da área do patrocinador conectados à API -->
+    <script src="../src/pages/patrocinador.js"></script>
+</body>
+
+</html>
