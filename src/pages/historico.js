@@ -1,4 +1,9 @@
+<<<<<<< HEAD:src/pages/historico.js
 ﻿// indexHistorico.html/historico.js
+=======
+// Mantém o histórico no mesmo armazenamento local usado pelo portal.
+// INTEGRAÇÃO BACK-END: trocar leitura/gravação local por endpoints de auditoria centralizados.
+>>>>>>> origin/main:Telahistorico/historico.js
 var HISTORICO_KEY = "rbs_historico";
 var USUARIO_EMAIL_KEY = "rbs_usuario_email";
 
@@ -6,17 +11,33 @@ var USUARIO_EMAIL_KEY = "rbs_usuario_email";
 var historicoServidorCache = [];
 
 function registrarHistorico(acao, emailAtor) {
+<<<<<<< HEAD:src/pages/historico.js
     var historico = JSON.parse(localStorage.getItem(HISTORICO_KEY) || "[]");
+=======
+    try {
+        var historico = JSON.parse(
+            localStorage.getItem(HISTORICO_KEY) || "[]"
+        );
+>>>>>>> origin/main:Telahistorico/historico.js
 
-    historico.push({
-        email: emailAtor
-            || sessionStorage.getItem(USUARIO_EMAIL_KEY)
-            || "Conta não identificada",
-        acao,
-        dataHora: new Date().toISOString()
-    });
+        if (!Array.isArray(historico)) {
+            throw new TypeError("O formato do histórico salvo é inválido.");
+        }
 
-    localStorage.setItem(HISTORICO_KEY, JSON.stringify(historico));
+        historico.push({
+            email: emailAtor
+                || sessionStorage.getItem(USUARIO_EMAIL_KEY)
+                || "Conta não identificada",
+            acao,
+            dataHora: new Date().toISOString()
+        });
+
+        localStorage.setItem(HISTORICO_KEY, JSON.stringify(historico));
+        return true;
+    } catch (error) {
+        console.error("Não foi possível registrar a atividade no histórico:", error);
+        return false;
+    }
 }
 
 /**
@@ -135,3 +156,12 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
 });
 
+<<<<<<< HEAD:src/pages/historico.js
+=======
+// Atualiza a tabela quando outra aba registrar uma nova atividade.
+window.addEventListener("storage", function (event) {
+    if (event.key === HISTORICO_KEY) {
+        renderizarHistorico();
+    }
+});
+>>>>>>> origin/main:Telahistorico/historico.js

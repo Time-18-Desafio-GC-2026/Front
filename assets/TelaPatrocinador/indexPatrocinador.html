@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="description" content="Portal de gestão RBS - Dashboard administrativo">
+
+    <title>Cliente | Dashboard</title>
+
+    <script src="../Js/theme-init.js"></script>
+    <link rel="stylesheet" href="../css/style_rbs_final.css">
+    <link rel="stylesheet" href="../css/rbs-theme-aprimorado.css">
+
+</head>
+
+
+<body class="sponsor-dashboard-page">
+<script src="./auth-guard-patrocinador.js"></script>
+    <!-- APP SHELL -->
+
+    <div class="app-shell">
+
+
+        <!-- SIDEBAR -->
+
+        <aside class="sidebar" id="sidebar">
+
+            <div class="sidebar-brand">
+
+                <img class="brand-mark" src="../Assets/logo-planeta.png" alt="Planeta Atlântida">
+
+                <div class="brand-copy">
+
+                    <strong>Portal do Patrocinador</strong>
+
+
+                </div>
+
+            </div>
+
+            <div class="workspace">
+
+                <span class="eyebrow">ÁREA DE TRABALHO</span>
+
+
+                <strong>Patrocinador RBS</strong>
+
+                <span>Visão geral da operação</span>
+
+            </div>
+
+
+
+            <nav class="main-nav" aria-label="Navegação principal">
+
+                <span class="nav-label">NAVEGAÇÃO</span>
+
+                <a class="nav-item active" href="#dashboard">
+
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+
+                        <rect x="3" y="3" width="7" height="7" rx="1"/>
+
+                        <rect x="14" y="3" width="7" height="7" rx="1"/>
+
+                        <rect x="3" y="14" width="7" height="7" rx="1"/>
+
+                        <rect x="14" y="14" width="7" height="7" rx="1"/>
+
+                    </svg>
+
+                    <span>Dashboard</span>
+
+                    <span class="nav-chevron">−</span>
+
+                </a>
+
+
+
+                <a class="nav-item" href="../../Telarelatorio/indexRelatorio.html">
+
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+
+                        <path d="M4 19V9M10 19V5M16 19v-8M22 19H2"/>
+
+                    </svg>
+
+                    <span>Relatórios</span>
+
+                </a>
+
+                <a class="nav-item" href="../faq.html">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/>
+                        <path d="M12 17h.01"/>
+                        <circle cx="12" cy="12" r="9"/>
+                    </svg>
+                    <span>FAQ</span>
+                </a>
+
+                <a class="nav-item" href="../../teladeconfig/indexconfig.html#perfil">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="8" r="4"/>
+                <path d="M4 21a8 8 0 0 1 16 0"/>
+            </svg>
+            <span>Perfil</span>
+        </a>
+
+        <button class="nav-item nav-item-button" id="logoutButton" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M10 17l5-5-5-5M15 12H3"/>
+                <path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"/>
+            </svg>
+            <span>Sair</span>
+        </button>
+
+            </nav>
+
+            <div class="sidebar-note">
+
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+
+                    <rect x="6" y="10" width="12" height="10" rx="2"/>
+
+                    <path d="M9 10V7a3 3 0 0 1 6 0v3"/>
+
+                </svg>
+
+                <span>Acesso à gestão de todos os patrocinadores e cotas.</span>
+
+            </div>
+
+        </aside>
+
+        <!-- =====================================================
+
+             MAIN AREA
+
+        ====================================================== -->
+
+        <div class="main-area">
+
+            <!-- TOPBAR -->
+
+            <header class="topbar">
+
+                <div class="topbar-breadcrumb">
+
+                    <span class="breadcrumb">
+
+                        Patrocinador RBS <b>/</b> Dashboard <!-- Breadcrumbs, Mmanter isso quando funfar?-->
+
+                    </span>
+
+                </div>
+
+                <div class="topbar-user">
+
+                    <button class="theme-toggle" type="button" data-theme-toggle aria-label="Alternar tema" aria-pressed="false" title="Ativar tema escuro">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="12" cy="12" r="4"/>
+                            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+                        </svg>
+                    </button>
+
+                    <div class="user-text">
+
+                        <strong data-account-name>Otávio Fogaça</strong>
+
+                        <span>Equipe Cliente</span>
+
+                    </div>
+
+
+
+                    <div class="avatar" data-account-avatar>OF</div>
+
+
+
+                </div>
+
+            </header>
+
+
+
+            <main class="content" id="dashboard">
+
+
+
+                <!-- DASHBOARD HEADER -->
+
+                <section class="dashboard-header">
+                         
+                <section class="identificacao-patrocinador">
+                    <div class="identificacao-cabecalho">
+                        <div>
+                            <span class="identificacao-legenda">ÁREA DO PATROCINADOR</span>
+                            <h1 id="nomePatrocinador">Minha empresa</h1>
+                        </div>
+                    </div>
+
+                    <p class="identificacao-descricao">
+                        Acompanhe os materiais, os conteúdos e as informações
+                        vinculados à sua empresa no Portal do Patrocinador.
+                    </p>
+
+                    <div class="cota-destaque" id="detalheCota">
+                        <span class="cota-status-icone" aria-hidden="true">✓</span>
+                        <div>
+                            <strong id="tituloCota">Carregando sua categoria...</strong>
+                            <p id="mensagemPatrocinador" role="status">
+                                Consultando informações da sua conta.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+
+
+                    <div class="dashboard-title">
+                        <h1>Mídia e conteúdo</h1>
+                        <p>Envie materiais em arquivo ou em texto</p>
+
+                        <div class="new-sponsor-wrapper">
+                            <button
+                                class="button button-primary"
+                                type="button"
+                                id="newSponsorButton"
+                                aria-expanded="false"
+                                aria-controls="newSponsorForm"
+                            >
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M12 5v14M5 12h14"/>
+                                </svg>
+                                Enviar Mídia ou Conteudo
+                            </button>
+
+
+                            <div class="new-sponsor-form" id="newSponsorForm">
+        <div class="form-header">
+            <div>
+
+                <h3>Enviar Mídia ou Conteúdo</h3>
+                <p>Registar novos dados em texto ou imagem na plataforma.</p>
+
+            </div>
+
+            <button
+
+                type="button"
+
+                class="close-form"
+
+                id="closeSponsorForm"
+
+                aria-label="Fechar"
+
+            >
+                ×
+            </button>
+
+        </div>
+
+        <form id="sponsorForm">
+            <!-- Envio Texto -->
+            <div class="form-group">
+                <label for="sponsorActorEmail">
+                    Conta conectada
+                </label>
+                <input
+                    type="email"
+                    id="sponsorActorEmail"
+                    autocomplete="email"
+                    readonly
+                    required
+                >
+
+                <label for="sponsorTexto">Texto</label>
+
+                <input
+
+                    type="text"
+
+                    id="sponsorTexto"
+
+                    name="texto"
+
+                    placeholder="Ex.: Dados releventas em texto de qualquer tipo, como informações de mídia, conteúdo ou outros dados importantes."
+                >
+            </div>
+
+        
+            <!-- Arquivo -->
+
+            <div class="form-group form-group-arquivo">
+
+                <label for="sponsorArchive">
+
+                    Arquivo (Imagem, PDF, Vídeo, etc.)
+
+                </label>
+
+                <input
+
+                    type="file"
+
+                    id="sponsorArchive"
+
+                    name="arquivo"
+
+                >
+
+            </div>
+            <!-- Botões -->
+
+            <div class="form-actions">
+                <button
+
+                    type="submit"
+
+                    class="form-submit"
+
+                >
+
+                    Enviar Dados
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+            <section id="enviosPatrocinador" class="materiais-publicados-cliente" hidden>
+                <h2>Conteúdos enviados</h2>
+                <div id="listaEnviosPatrocinador" aria-live="polite"></div>
+            </section>
+            <!-- Materiais publicados pela RBS -->
+                                <section id="materiaisPublicadosRBS" class="materiais-publicados-cliente" hidden>
+                                    <h2>Materiais publicados pela RBS</h2>
+                                    <div id="listaMateriaisRBS">
+                                        <!-- Os materiais serão inseridos pelo JavaScript -->
+                                    </div>
+                                </section>
+            </div>
+                </section>
+
+            </main>
+
+        </div>
+
+    </div>
+<!-- Histórico de atividades -->
+<script src="../../Telahistorico/historico.js"></script>
+
+<!-- Módulos de gerenciamento de patrocinadores -->
+<script src="./patrocinadores/storage.js"></script>
+<script src="./patrocinadores/contas.js"></script>
+<script src="./patrocinadores/envios.js"></script>
+<script src="./patrocinadores/midia-rbs.js"></script>
+<script src="./patrocinadores/cortesias.js"></script>
+<script src="./patrocinadores/filtros.js"></script>
+<script src="./patrocinadores/cadastro.js"></script>
+<script src="./patrocinadores/formulario.js"></script>
+<script src="./patrocinadores/cards.js"></script>
+<script src="./patrocinadores.js"></script>
+
+<!-- Nome e avatar da conta -->
+<script src="../Js/account-display.js"></script>
+
+<!-- Comportamentos da área do patrocinador -->
+<script src="./patrocinador.js"></script>
+<script src="../Js/theme-toggle.js"></script>
+<script src="../Js/sidebar-navigation.js"></script>
+<script src="../Js/sidebar-active.js"></script>
+
+
+</body>
+</html>

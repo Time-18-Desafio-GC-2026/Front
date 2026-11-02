@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login</title>
+    
+    <link rel="stylesheet" href="style_login.css" />
+  </head>
+  <body>
+    
+    <main class="login-card">
+      
+      <img class="logo" src="LogoPlanetaBlue.png" />
+      <h1>Portal do Patrocinador</h1>
+      <p class="subtitle">Acesse sua conta para continuar</p>
+
+      <!-- Formulário de e-mail e senha. -->
+      <form>
+        <div class="field">
+          <label for="email">E-mail</label>
+          <input id="email" type="email" placeholder="seu@email.com" required />
+        </div>
+
+        <div class="field">
+          <label for="password">Senha</label>
+          <!-- Campo obrigatório que começa ocultando os caracteres. -->
+          <input id="password" type="password" placeholder="Digite sua senha" required />
+
+          <!-- Opção para alternar entre exibir e ocultar a senha. -->
+          <label class="password-visibility" for="toggle-password">
+            <input id="toggle-password" type="checkbox" />
+            Mostrar senha
+          </label>
+        </div>
+
+        <!-- Link para recuperar o acesso. -->
+        <div class="options">
+          <a href="#">Esqueci minha senha</a>
+        </div>
+
+        <!-- Envia os dados para validação pelo JavaScript. -->
+        <button type="submit">Entrar</button>
+      </form>
+
+      <!-- Link de solicitação de cadastro. -->
+      <p class="register">
+        Não tem uma conta?
+        <a href="#">Solicitar Cadastro</a>
+      </p>
+    </main>
+
+    <!-- Carrega as interações do formulário. -->
+    <script src="../Telahistorico/historico.js"></script>
+    <script src="login.js"></script>
+  </body>
+</html>
