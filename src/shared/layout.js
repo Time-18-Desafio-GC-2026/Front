@@ -150,12 +150,7 @@ function inicializarLayoutPortal() {
                 <span class="breadcrumb">${textoWorkspace} <b>/</b> <span id="breadcrumbTitle">${tituloBreadcrumb}</span></span>
             </div>
             <div class="topbar-user">
-                <button class="theme-toggle" type="button" data-theme-toggle aria-label="Alternar tema" aria-pressed="false" title="Alternar tema">
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <circle cx="12" cy="12" r="4"/>
-                        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
-                    </svg>
-                </button>
+
                 <a class="topbar-user-link" href="indexPerfil.html#perfil" aria-label="Abrir perfil da conta">
                     <div class="user-text">
                         <strong id="accountName" data-account-name>Carregando...</strong>
