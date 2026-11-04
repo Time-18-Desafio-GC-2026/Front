@@ -23,7 +23,7 @@
     const routes = {
         dashboard: isSponsor
             ? "TelaPatrocinador/indexPatrocinador.html"
-            : "index.html#dashboard",
+            : "../Telainicial/index.html#dashboard",
         reports: "../Telarelatorio/indexRelatorio.html",
         audit: "../Telahistorico/index.html",
         faq: "faq.html",
@@ -44,7 +44,9 @@
         link.href = new URL(route, portalRoot).href;
         const currentPath = window.location.pathname.replace(/\/+$/, "").toLowerCase();
         const linkPath = new URL(link.href).pathname.replace(/\/+$/, "").toLowerCase();
-        if (linkPath === currentPath) {
+        const isCompanyDetail = currentPath.endsWith("/telainicial/detalhes-patrocinador.html");
+        const isDashboardPage = icon === "dashboard" && linkPath.endsWith("/telainicial/index.html");
+        if (linkPath === currentPath || (isCompanyDetail && isDashboardPage)) {
             link.classList.add("active");
             link.setAttribute("aria-current", "page");
         }

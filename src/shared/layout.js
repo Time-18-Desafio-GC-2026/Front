@@ -45,7 +45,7 @@ function inicializarLayoutPortal() {
     if (sidebarEl) {
         sidebarEl.innerHTML = `
             <a class="sidebar-brand" href="${linkDashboard}">
-                <img class="brand-mark" src="${logoInicial}" alt="Planeta Atlântida">
+                <img class="brand-mark" src="${logoInicial}" data-theme-light="../assets/img/LogoPlanetaOrange.png" data-theme-dark="../assets/img/LogoPlanetaBlue.png" alt="Planeta Atlântida">
                 <div class="brand-copy">
                     <strong>Portal do Patrocinador</strong>
                 </div>

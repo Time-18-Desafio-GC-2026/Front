@@ -18,11 +18,9 @@ function cadastrarPatrocinador(dados) {
         email: dados.email,
 
         cota: dados.cota,
-
         texto: dados.texto,
-
         arquivo: dados.arquivo,
-
+        foto: dados.foto || "",
         criadoEm: new Date().toISOString()
 
     };

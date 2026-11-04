@@ -17,6 +17,12 @@
         if (document.body) {
             document.body.setAttribute("data-theme", theme);
         }
+        document.querySelectorAll(".sidebar-brand .brand-mark").forEach((logo) => {
+            const logoTema = theme === "dark" ? logo.dataset.themeDark : logo.dataset.themeLight;
+            if (logoTema) {
+                logo.src = logoTema;
+            }
+        });
         document.querySelectorAll("[data-theme-toggle]").forEach((button) => {
             const dark = theme === "dark";
             button.setAttribute("aria-pressed", String(dark));

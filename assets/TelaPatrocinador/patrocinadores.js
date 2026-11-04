@@ -13,6 +13,7 @@ function inicializarPatrocinadores() {
     }
 
     renderizarPatrocinadores();
+    observarAtualizacoesPatrocinadores(renderizarPatrocinadores);
 }
 
 if (document.readyState === "loading") {

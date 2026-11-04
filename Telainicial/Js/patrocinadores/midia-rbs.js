@@ -90,6 +90,9 @@ function criarAreaMidiaRBS(patrocinador) {
     const botaoLink = document.createElement("button");
 
     botaoLink.type = "submit";
+    if (document.body.classList.contains("sponsor-detail-page")) {
+        botaoLink.classList.add("button", "button-primary");
+    }
 
     botaoLink.textContent = "Adicionar link";
 
@@ -118,6 +121,9 @@ function criarAreaMidiaRBS(patrocinador) {
     const botaoArquivo = document.createElement("button");
 
     botaoArquivo.type = "button";
+    if (document.body.classList.contains("sponsor-detail-page")) {
+        botaoArquivo.classList.add("button", "button-primary");
+    }
 
     botaoArquivo.textContent = "Adicionar relatório de mídia";
 
@@ -321,6 +327,8 @@ function criarAreaMidiaRBS(patrocinador) {
 
             const baixarArquivo = document.createElement("a");
 
+            baixarArquivo.className = "envio-download button button-primary";
+
             baixarArquivo.href = registro.arquivoData;
 
             baixarArquivo.download = registro.nome;
@@ -339,9 +347,11 @@ function criarAreaMidiaRBS(patrocinador) {
 
             });
 
-
-
-            item.append(linkArquivo, baixarArquivo);
+            const linhaRelatorio = document.createElement("div");
+            linhaRelatorio.className = "envio-linha";
+            linkArquivo.className = "envio-arquivo-nome";
+            linhaRelatorio.append(linkArquivo, baixarArquivo);
+            item.appendChild(linhaRelatorio);
 
         }
 

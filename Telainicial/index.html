@@ -12,9 +12,8 @@
 
     <title>RBS Patrocinadores | Dashboard</title>
 
-    <script src="Js/theme-init.js"></script>
-    <link rel="stylesheet" href="css/style_rbs_final.css">
-    <link rel="stylesheet" href="css/rbs-theme-aprimorado.css">
+    <script src="../assets/Js/theme-init.js"></script>
+    <link rel="stylesheet" href="../assets/css/style_portal.css">
 
 </head>
 
@@ -36,7 +35,9 @@
 
                         <img
             class="brand-mark"
-            src="../Telainicial/Assets/logo-planeta.png"
+            src="../assets/img/LogoPlanetaOrange.png"
+            data-theme-light="../assets/img/LogoPlanetaOrange.png"
+            data-theme-dark="../assets/img/LogoPlanetaBlue.png"
             alt="Planeta Atlântida"
                         >
 
@@ -106,7 +107,7 @@
                     <span>Auditoria</span>
                 </a>
 
-                <a class="nav-item" href="faq.html">
+                <a class="nav-item" href="../assets/faq.html">
                     <svg viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/>
                         <path d="M12 17h.01"/>
@@ -381,6 +382,16 @@
                 >
 
             </div>
+            <div class="form-group">
+                <label for="sponsorPhoto">Foto da empresa</label>
+                <input
+                    type="file"
+                    id="sponsorPhoto"
+                    name="foto"
+                    accept="image/png,image/jpeg,image/webp"
+                >
+                <small>JPG, PNG ou WEBP; até 2 MB.</small>
+            </div>
             <!-- Botões -->
 
             <div class="form-actions">
@@ -451,7 +462,7 @@
 <script src="Js/patrocinadores/envios.js"></script>
 <script src="Js/patrocinadores/midia-rbs.js"></script>
 <script src="Js/patrocinadores/cortesias.js"></script>
-<script src="Js/patrocinadores/filtros.js"></script>
+<script src="../assets/TelaPatrocinador/patrocinadores/filtros.js"></script>
 <script src="Js/patrocinadores/cadastro.js"></script>
 <script src="Js/patrocinadores/formulario.js"></script>
 <script src="Js/patrocinadores/cards.js"></script>
@@ -462,8 +473,8 @@
 
 <!-- Interações do dashboard -->
 <script src="Js/dashboard.js"></script>
-<script src="Js/theme-toggle.js"></script>
-<script src="Js/sidebar-navigation.js"></script>
-<script src="Js/sidebar-active.js"></script>
+<script src="../assets/Js/theme-toggle.js"></script>
+<script src="../assets/Js/sidebar-navigation.js"></script>
+<script src="../assets/Js/sidebar-active.js"></script>
 </body>
 </html>
