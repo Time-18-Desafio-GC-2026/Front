@@ -48,16 +48,13 @@ function inicializarLayoutPortal() {
     const isFaqActive = paginaAtual === "indexFaq.html";
     const isCfgActive = paginaAtual === "indexPerfil.html";
 
-    const temaAtual = document.documentElement.getAttribute("data-theme") || "light";
-    const logoInicial = temaAtual === "dark"
-        ? "../assets/img/LogoPlanetaBlue.png"
-        : "../assets/img/LogoPlanetaOrange.png";
+    const logoInicial = "../assets/img/LogoPlanetaOrange.png";
 
     const sidebarEl = document.getElementById("sidebar");
     if (sidebarEl) {
         sidebarEl.innerHTML = `
             <a class="sidebar-brand" href="${linkDashboard}">
-                <img class="brand-mark" src="${logoInicial}" data-theme-light="../assets/img/LogoPlanetaOrange.png" data-theme-dark="../assets/img/LogoPlanetaBlue.png" alt="Planeta Atlântida">
+                <img class="brand-mark" src="${logoInicial}" data-theme-light="../assets/img/LogoPlanetaOrange.png">
                 <div class="brand-copy">
                     <strong>Portal do Patrocinador</strong>
                 </div>
@@ -164,40 +161,16 @@ function inicializarLayoutPortal() {
                         <strong id="accountName" data-account-name>Carregando...</strong>
                         <span id="accountRole">${textoEquipe}</span>
                     </div>
-                    <div class="avatar" data-account-avatar aria-hidden="true">--</div>
                 </a>
             </div>
         `;
     }
-
-    if (typeof window.vincularControlesDeTema === "function") {
-        window.vincularControlesDeTema();
-    }
-
-    function aplicarNomeEAvatar(nome) {
-        const nomeLimpo = String(nome || "Conta").trim();
-        document.querySelectorAll("[data-account-name]").forEach(el => {
-            el.textContent = nomeLimpo;
-        });
-        const iniciais = nomeLimpo
-            .split(/\s+/)
-            .slice(0, 2)
-            .map(parte => parte[0])
-            .join("")
-            .toUpperCase();
-        document.querySelectorAll("[data-account-avatar]").forEach(el => {
-            el.textContent = iniciais || "US";
-        });
-    }
-
-    aplicarNomeEAvatar(sessao.nome || sessao.email || "Usuário");
 
     if (typeof apiRequest === "function" && localStorage.getItem("rbs_token")) {
         apiRequest("/auth/eu", "GET")
             .then(eu => {
                 if (eu && (eu.nome || eu.email)) {
                     const nomeReal = (eu.nome || eu.email).trim();
-                    aplicarNomeEAvatar(nomeReal);
                     const mudouCotaOuPerfil =
                         (eu.marcaCota && eu.marcaCota !== sessao.marcaCota) ||
                         (eu.perfil && eu.perfil !== sessao.perfilApi);
