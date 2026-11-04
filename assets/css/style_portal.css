@@ -788,7 +788,7 @@ svg {
     margin-bottom: 4px;
 }
 
-.sponsor-detail-page .patrocinador-acoes > .button {
+.sponsor-detail-page .patrocinador-acoes>.button {
     flex: 0 0 121px;
     width: 121px;
     min-width: 121px;
@@ -796,7 +796,7 @@ svg {
     padding: 0 12px;
 }
 
-.sponsor-detail-page .patrocinador-acoes > .botao-editar-cortesias {
+.sponsor-detail-page .patrocinador-acoes>.botao-editar-cortesias {
     margin-top: 0;
 }
 
@@ -2291,4 +2291,52 @@ svg {
     background: #2c2c2c;
     border-color: #3f3f3f;
     color: var(--text-strong);
+}
+
+/* ==========================================================================
+   8. COMPLEMENTOS VISUAIS DO TEMA CLARO (PERFIL, RELATÓRIOS E FOTO EMPRESA)
+   ========================================================================== */
+.form-group small {
+    color: var(--text-muted);
+    font-size: 11px;
+}
+
+.form-group input[type="file"] {
+    padding: 5px 9px;
+    height: auto;
+}
+
+:root:not([data-theme="dark"]) body .profile-form,
+:root:not([data-theme="dark"]) body .username-form,
+:root:not([data-theme="dark"]) body .report-panel,
+:root:not([data-theme="dark"]) body .report-summary {
+    background: linear-gradient(110deg, var(--rbs-yellow) 0%, var(--rbs-orange) 100%);
+    border-color: var(--rbs-orange-dark);
+    box-shadow: 0 4px 12px rgba(217, 93, 11, 0.12);
+}
+
+:root:not([data-theme="dark"]) body .profile-form h2,
+:root:not([data-theme="dark"]) body .profile-field label,
+:root:not([data-theme="dark"]) body .profile-field small,
+:root:not([data-theme="dark"]) body .profile-message,
+:root:not([data-theme="dark"]) body .profile-forgot,
+:root:not([data-theme="dark"]) body .report-panel .field,
+:root:not([data-theme="dark"]) body .report-summary {
+    color: #000000;
+}
+
+:root:not([data-theme="dark"]) body .profile-view .profile-actions button,
+:root:not([data-theme="dark"]) body .profile-view .password-input-wrapper .toggle-password {
+    background: #ffffff;
+    border: 1px solid #dfe5ec;
+    border-radius: 6px;
+    color: #000000;
+    box-shadow: none;
+}
+
+:root:not([data-theme="dark"]) body .profile-view .profile-actions button:hover,
+:root:not([data-theme="dark"]) body .profile-view .password-input-wrapper .toggle-password:hover {
+    background: var(--rbs-orange);
+    border-color: var(--rbs-orange-dark);
+    color: #ffffff;
 }

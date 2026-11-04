@@ -19,9 +19,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const carregarPatrocinadores = async () => {
         try {
-            marcasCarregadas = (await apiRequest("/marcas", "GET")) || [];
-            sponsorSelect.innerHTML = "";
+            if (ehPatrocinador && sessao.patrocinadorId) {
+                const minhaMarca = await apiRequest(`/marcas/${sessao.patrocinadorId}`, "GET");
+                marcasCarregadas = minhaMarca ? [minhaMarca] : [];
+            } else {
+                marcasCarregadas = (await apiRequest("/marcas", "GET")) || [];
+            }
 
+            sponsorSelect.innerHTML = "";
             if (marcasCarregadas.length === 0) {
                 const optVazio = document.createElement("option");
                 optVazio.value = "";
@@ -207,4 +212,4 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     downloadReportButton?.addEventListener("click", processarRelatorioDaMarca);
-});
+}); 

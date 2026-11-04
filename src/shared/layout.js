@@ -13,6 +13,7 @@ function inicializarLayoutPortal() {
 
     const titulosPaginas = {
         "indexAdministrador.html": "Dashboard",
+        "detalhes-patrocinador.html": "Detalhes da empresa",
         "indexPatrocinador.html": "Dashboard",
         "indexRelatorio.html": "Relatórios",
         "indexHistorico.html": "Auditoria",
@@ -29,7 +30,10 @@ function inicializarLayoutPortal() {
         : "Acesso à gestão de todos os patrocinadores e cotas.";
     const textoEquipe = ehPatrocinador ? "Equipe Cliente" : "Equipe RBS";
 
-    const isDashActive = paginaAtual === "indexAdministrador.html" || paginaAtual === "indexPatrocinador.html";
+    const isDashActive =
+        paginaAtual === "indexAdministrador.html" ||
+        paginaAtual === "detalhes-patrocinador.html" ||
+        paginaAtual === "indexPatrocinador.html";
     const isRelActive = paginaAtual === "indexRelatorio.html";
     const isAudActive = paginaAtual === "indexHistorico.html";
     const isFaqActive = paginaAtual === "indexFaq.html";

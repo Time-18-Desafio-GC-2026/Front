@@ -56,4 +56,16 @@
         window.location.replace("indexAdministrador.html");
         return;
     }
+
+    // Bloqueia Patrocinador de tentar acessar o Dashboard Geral RBS, Detalhes Admin ou Auditoria Geral
+    if (
+        ehPatrocinador &&
+        (paginaAtual === "indexAdministrador.html" ||
+            paginaAtual === "detalhes-patrocinador.html" ||
+            paginaAtual === "indexHistorico.html")
+    ) {
+        window.location.replace("indexPatrocinador.html");
+        return;
+    }
+
 })();

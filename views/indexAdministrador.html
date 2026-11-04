@@ -166,6 +166,14 @@
                                         <input type="file" id="sponsorComercialPlan" name="plano_comercial">
 
                                     </div>
+
+                                    <!-- Foto da Empresa -->
+                                    <div class="form-group">
+                                        <label for="sponsorPhoto">Foto da empresa</label>
+                                        <input type="file" id="sponsorPhoto" name="foto"
+                                            accept="image/png,image/jpeg,image/webp">
+                                        <small>JPG, PNG ou WEBP; até 2 MB.</small>
+                                    </div>
                                     <!-- Botões -->
 
                                     <div class="form-actions">
@@ -182,32 +190,32 @@
                                 </form>
                             </div>
                         </div>
+                    </div>
+                </section>
 
+                <section class="secao-patrocinadores">
+                    <div class="patrocinadores-topo">
+                        <div class="patrocinadores-titulos">
+                            <h1>Patrocinadores</h1>
+                            <p>Visualize os patrocinadores cadastrados.</p>
+                        </div>
 
-                        <section class="secao-patrocinadores">
-                            <div class="patrocinadores-topo">
-                                <div class="patrocinadores-titulos">
-                                    <h1>Patrocinadores</h1>
-                                    <p>Visualize os patrocinadores cadastrados.</p>
-                                </div>
-
-                                <div class="patrocinadores-filtros">
-                                    <div class="campo-busca">
-                                        <input type="search" id="buscarPatrocinador"
-                                            placeholder="Buscar por nome ou CNPJ..."
-                                            aria-label="Buscar por nome ou CNPJ">
-                                    </div>
-
-                                    <select id="filtrarCota" aria-label="Filtrar por cota">
-                                        <option value="">Todas as cotas</option>
-                                    </select>
-                                </div>
+                        <div class="patrocinadores-filtros">
+                            <div class="campo-busca">
+                                <input type="search" id="buscarPatrocinador" placeholder="Buscar por nome ou CNPJ..."
+                                    aria-label="Buscar por nome ou CNPJ">
                             </div>
 
-                            <div id="patrocinadoresGrid" class="patrocinadores-grid">
-                                <!-- Cards dos patrocinadores -->
-                            </div>
-                        </section>
+                            <select id="filtrarCota" aria-label="Filtrar por cota">
+                                <option value="">Todas as cotas</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="patrocinadoresGrid" class="patrocinadores-grid">
+                        <!-- Cards dos patrocinadores -->
+                    </div>
+                </section>
 
             </main>
 
@@ -233,6 +241,3 @@
 </body>
 
 </html>
-
-
-

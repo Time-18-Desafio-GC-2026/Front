@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Detalhes do patrocinador">
+    <title>RBS Patrocinadores | Detalhes da empresa</title>
+    <link rel="stylesheet" href="../assets/css/style_portal.css">
+    <script src="../src/shared/theme.js"></script>
+    <script src="../src/guards/security.js"></script>
+</head>
+
+<body class="sponsor-detail-page">
+    <div class="app-shell">
+        <aside class="sidebar" id="sidebar"></aside>
+        <div class="main-area">
+            <header class="topbar"></header>
+            <main class="content">
+                <div class="sponsor-detail-toolbar">
+                    <button class="button button-primary" id="backToDashboard" type="button">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="m15 18-6-6 6-6M9 12h12" />
+                        </svg>
+                        Voltar
+                    </button>
+                    <div class="dashboard-title">
+                        <h1>Detalhes da empresa</h1>
+                        <p>Informações cadastradas e atividades desta empresa.</p>
+                    </div>
+                </div>
+                <div id="patrocinadoresGrid" class="patrocinadores-grid" aria-live="polite"></div>
+            </main>
+        </div>
+    </div>
+    <script src="../src/services/api.js"></script>
+    <script src="../src/pages/historico.js"></script>
+    <script src="../src/shared/layout.js"></script>
+    <script src="../src/pages/dashboard.js"></script>
+</body>
+
+</html>

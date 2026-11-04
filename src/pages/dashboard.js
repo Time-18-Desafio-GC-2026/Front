@@ -1,7 +1,6 @@
 ﻿// ==========================================================================
 // PORTAL RBS — CONTROLADOR CONSOLIDADO DO PAINEL ADMIN (DRY + SUPABASE STORAGE)
 // ==========================================================================
-
 const PATROCINADORES_KEY = "rbs_patrocinadores";
 const USUARIOS_KEY = "rbs_usuarios";
 const ENVIOS_KEY = "rbs_envios";
@@ -54,6 +53,16 @@ function salvarPatrocinadores(patrocinadores) {
     salvarListaLocalStorage(PATROCINADORES_KEY, patrocinadores);
 }
 
+function validarArquivoFoto(arquivo) {
+    if (!arquivo) return;
+    if (!["image/jpeg", "image/png", "image/webp"].includes(arquivo.type)) {
+        throw new Error("A foto deve estar no formato JPG, PNG ou WEBP.");
+    }
+    if (arquivo.size > 2 * 1024 * 1024) {
+        throw new Error("A foto deve ter no máximo 2 MB.");
+    }
+}
+
 /**
  * Sincroniza o estado do Front-end buscando Marcas, Allow-list e Materiais reais do PostgreSQL + Supabase Storage.
  */
@@ -63,12 +72,10 @@ async function sincronizarDadosComBackend() {
             apiRequest("/marcas", "GET"),
             apiRequest("/usuarios", "GET").catch(() => [])
         ]);
-
         if (!Array.isArray(marcasApi)) return;
 
         const cacheAnterior = listarPatrocinadores();
         const senhasTemporarias = JSON.parse(localStorage.getItem("rbs_senhas_padrao") || "{}");
-
         const patrocinadoresSincronizados = [];
         const enviosCliente = [];
         const midiasRbs = [];
@@ -76,11 +83,9 @@ async function sincronizarDadosComBackend() {
 
         for (const m of marcasApi) {
             const anterior = cacheAnterior.find(item => item.id === m.id) || {};
-
             const contasDaMarca = (usuariosApi || []).filter(
                 u => String(u.marcaId) === String(m.id)
             );
-
             const emailsFormatados = contasDaMarca.length > 0
                 ? contasDaMarca.map(u => u.email).join(", ")
                 : (anterior.email || "");
@@ -116,10 +121,10 @@ async function sincronizarDadosComBackend() {
             }
 
             const planoComercial = (materiaisApi || []).find(mat => mat.tipoMaterial === "PLANO_COMERCIAL");
+            const fotoEmpresaMat = (materiaisApi || []).find(mat => mat.tipoMaterial === "FOTO_EMPRESA");
 
             (materiaisApi || []).forEach(mat => {
                 const urlArquivoNuvem = mat.caminhoStorage || mat.urlExterna || null;
-
                 if (mat.autorPerfil === "PATROCINADOR") {
                     enviosCliente.push({
                         id: mat.id,
@@ -129,7 +134,7 @@ async function sincronizarDadosComBackend() {
                         status: mat.status,
                         criadoEm: mat.criadoEm
                     });
-                } else if (mat.tipoMaterial !== "PLANO_COMERCIAL") {
+                } else if (mat.tipoMaterial !== "PLANO_COMERCIAL" && mat.tipoMaterial !== "FOTO_EMPRESA") {
                     midiasRbs.push({
                         id: mat.id,
                         patrocinadorId: m.id,
@@ -151,6 +156,9 @@ async function sincronizarDadosComBackend() {
                 arquivo: planoComercial ? planoComercial.titulo : (anterior.arquivo || ""),
                 planoComercialUrl: planoComercial ? (planoComercial.caminhoStorage || planoComercial.urlExterna) : null,
                 planoComercialId: planoComercial ? planoComercial.id : null,
+                foto: fotoEmpresaMat
+                    ? (fotoEmpresaMat.caminhoStorage || fotoEmpresaMat.urlExterna)
+                    : (anterior.foto || ""),
                 criadoEm: m.criadoEm
             });
         }
@@ -169,7 +177,6 @@ async function sincronizarDadosComBackend() {
         localStorage.setItem(ENVIOS_KEY, JSON.stringify(enviosCliente));
         localStorage.setItem(MIDIA_RBS_KEY, JSON.stringify(midiasRbs));
         localStorage.setItem(CORTESIAS_KEY, JSON.stringify(cortesiasBanco));
-
     } catch (erro) {
         console.error("Erro ao sincronizar com o Back-end:", erro);
     }
@@ -187,18 +194,14 @@ function normalizarEmailsPatrocinador(valor) {
 
 function validarEmailsPatrocinador(valor) {
     const emails = normalizarEmailsPatrocinador(valor);
-
     if (emails.length === 0) {
         throw new Error("Informe pelo menos um e-mail.");
     }
-
     const formatoEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const invalido = emails.find(email => !formatoEmail.test(email));
-
     if (invalido) {
         throw new Error(`E-mail inválido: ${invalido}`);
     }
-
     return emails;
 }
 
@@ -223,54 +226,47 @@ function listarMidiaRBSPorPatrocinador(patrocinadorId) {
 }
 
 function criarAreaMidiaRBS(patrocinador) {
+    const modoDetalhes = document.body.classList.contains("sponsor-detail-page");
     const secao = document.createElement("div");
     secao.className = "midia-rbs";
-
     const titulo = document.createElement("h5");
     titulo.textContent = "Materiais publicados pela RBS";
-
     const lista = document.createElement("div");
     lista.className = "midia-rbs-lista";
 
     const formularioLink = document.createElement("form");
     formularioLink.className = "midia-rbs-form";
-
     const campoLink = document.createElement("input");
     campoLink.type = "url";
     campoLink.placeholder = "https://link-da-publicacao.com";
     campoLink.required = true;
     campoLink.setAttribute("aria-label", "Link da publicação");
-
     const botaoLink = document.createElement("button");
     botaoLink.type = "submit";
+    if (modoDetalhes) botaoLink.classList.add("button", "button-primary");
     botaoLink.textContent = "Adicionar link";
-
     formularioLink.append(campoLink, botaoLink);
 
     const formularioArquivo = document.createElement("div");
     formularioArquivo.className = "midia-rbs-arquivo";
-
     const campoArquivo = document.createElement("input");
     campoArquivo.type = "file";
     campoArquivo.accept = ".pdf,.jpg,.jpeg,.png,.xlsx,.xls";
     campoArquivo.hidden = true;
-
     const botaoArquivo = document.createElement("button");
     botaoArquivo.type = "button";
+    if (modoDetalhes) botaoArquivo.classList.add("button", "button-primary");
     botaoArquivo.textContent = "Adicionar relatório de mídia";
-
     botaoArquivo.addEventListener("click", function () {
         campoArquivo.click();
     });
 
-    // Upload real de arquivo pela RBS para o Supabase Storage (até 20 MB)
+    // Upload real de arquivo pela RBS para o Supabase Storage (até 20 MB) + Gatilho Python se for .xlsx
     campoArquivo.addEventListener("change", async function () {
         const arquivo = campoArquivo.files[0];
         if (!arquivo) return;
-
         botaoArquivo.disabled = true;
         botaoArquivo.textContent = "Enviando para a nuvem...";
-
         try {
             await apiUploadMaterial(patrocinador.id, {
                 titulo: arquivo.name,
@@ -280,10 +276,9 @@ function criarAreaMidiaRBS(patrocinador) {
                 caminhoStorage: null,
                 urlExterna: null
             }, arquivo);
-
             alert("Relatório de mídia enviado com sucesso para o Supabase Storage!");
             await sincronizarDadosComBackend();
-            renderizarPatrocinadores();
+            atualizarTelaPatrocinadores(patrocinador.id);
         } catch (erro) {
             console.error(erro);
             alert(erro.message || "Não foi possível salvar o relatório.");
@@ -298,13 +293,11 @@ function criarAreaMidiaRBS(patrocinador) {
     formularioLink.addEventListener("submit", async function (event) {
         event.preventDefault();
         const url = campoLink.value.trim();
-
         try {
             const endereco = new URL(url);
             if (!["http:", "https:"].includes(endereco.protocol)) {
                 throw new Error("Use um endereço HTTP ou HTTPS.");
             }
-
             await apiUploadMaterial(patrocinador.id, {
                 titulo: "Link de Publicação RBS",
                 descricao: endereco.href,
@@ -313,16 +306,14 @@ function criarAreaMidiaRBS(patrocinador) {
                 caminhoStorage: null,
                 urlExterna: endereco.href
             }, null);
-
             await sincronizarDadosComBackend();
-            renderizarPatrocinadores();
+            atualizarTelaPatrocinadores(patrocinador.id);
         } catch (erro) {
             alert(erro.message || "Informe um link válido.");
         }
     });
 
     const registros = listarMidiaRBSPorPatrocinador(patrocinador.id);
-
     if (registros.length === 0) {
         const vazio = document.createElement("p");
         vazio.textContent = "Nenhum relatório ou link adicionado pela RBS.";
@@ -333,45 +324,55 @@ function criarAreaMidiaRBS(patrocinador) {
     registros.forEach(function (registro) {
         const item = document.createElement("div");
         item.className = "midia-rbs-item";
-
         if (registro.tipo === "relatorio") {
             const linkArquivo = document.createElement("a");
+            linkArquivo.className = "envio-arquivo-nome";
             linkArquivo.href = registro.arquivoData;
             linkArquivo.target = "_blank";
             linkArquivo.rel = "noopener noreferrer";
-            linkArquivo.textContent = "Abrir arquivo na nuvem: " + registro.nome;
-
+            linkArquivo.textContent = "Visualizar relatório: " + registro.nome;
             linkArquivo.addEventListener("click", function () {
                 if (registro.id) {
                     apiRequest(`/materiais/${registro.id}/acessar`, "POST").catch(() => { });
                 }
             });
 
-            item.appendChild(linkArquivo);
-        }
+            const baixarArquivo = document.createElement("a");
+            baixarArquivo.className = "envio-download button button-primary";
+            baixarArquivo.href = registro.arquivoData;
+            baixarArquivo.target = "_blank";
+            baixarArquivo.rel = "noopener noreferrer";
+            baixarArquivo.download = registro.nome;
+            baixarArquivo.textContent = "Baixar";
+            baixarArquivo.addEventListener("click", function () {
+                if (registro.id) {
+                    apiRequest(`/materiais/${registro.id}/acessar`, "POST").catch(() => { });
+                }
+            });
 
+            const linhaRelatorio = document.createElement("div");
+            linhaRelatorio.className = "envio-linha";
+            linhaRelatorio.append(linkArquivo, baixarArquivo);
+            item.appendChild(linhaRelatorio);
+        }
         if (registro.tipo === "link") {
             const linkPost = document.createElement("a");
             linkPost.href = registro.url;
             linkPost.target = "_blank";
             linkPost.rel = "noopener noreferrer";
             linkPost.textContent = registro.url;
-
             linkPost.addEventListener("click", function () {
                 if (registro.id) {
                     apiRequest(`/materiais/${registro.id}/acessar`, "POST").catch(() => { });
                 }
             });
-
             item.appendChild(linkPost);
         }
-
         lista.appendChild(item);
     });
 
     formularioArquivo.append(botaoArquivo, campoArquivo);
     secao.append(titulo, lista, formularioLink, formularioArquivo);
-
     return secao;
 }
 
@@ -383,52 +384,42 @@ function listarCortesias() {
 function obterCortesias(patrocinadorId) {
     const registro = listarCortesias().find(item => item.patrocinadorId === patrocinadorId);
     if (registro) return registro;
-
     const setores = {};
     SETORES_CORTESIA.forEach(setor => {
         setores[setor] = { passaporte: 0, sexta: 0, sabado: 0 };
     });
-
     return { patrocinadorId, setores, loungeInfo: "" };
 }
 
 function criarSecaoCortesias(patrocinador) {
+    const modoDetalhes = document.body.classList.contains("sponsor-detail-page");
     const dados = obterCortesias(patrocinador.id);
-
     const secao = document.createElement("section");
     secao.className = "patrocinador-cortesias";
-
     const cabecalhoCortesias = document.createElement("div");
     cabecalhoCortesias.className = "secao-cabecalho";
-
     const titulo = document.createElement("h4");
     titulo.textContent = "Cortesias";
-
     const botaoCortesias = document.createElement("button");
     botaoCortesias.type = "button";
     botaoCortesias.className = "botao-recolher";
     botaoCortesias.textContent = "⌄";
     botaoCortesias.setAttribute("aria-expanded", "false");
-
     cabecalhoCortesias.append(titulo, botaoCortesias);
 
     const conteudoCortesias = document.createElement("div");
     conteudoCortesias.className = "secao-conteudo";
     conteudoCortesias.hidden = true;
-
     const grade = document.createElement("div");
     grade.className = "cortesias-grade";
 
     function adicionarResumo(pai, rotulo, valor) {
         const linha = document.createElement("div");
         linha.className = "cortesia-resumo";
-
         const nome = document.createElement("span");
         nome.textContent = rotulo;
-
         const quantidade = document.createElement("strong");
         quantidade.textContent = String(valor ?? 0);
-
         linha.append(nome, quantidade);
         pai.appendChild(linha);
     }
@@ -436,54 +427,45 @@ function criarSecaoCortesias(patrocinador) {
     SETORES_CORTESIA.forEach(setor => {
         const bloco = document.createElement("div");
         bloco.className = "cortesia-setor";
-
         const nomeSetor = document.createElement("h5");
         nomeSetor.textContent = setor;
         bloco.appendChild(nomeSetor);
-
         const quantidades = dados.setores[setor] || {};
         adicionarResumo(bloco, "Passaporte", quantidades.passaporte);
         adicionarResumo(bloco, "Sexta-feira", quantidades.sexta);
         adicionarResumo(bloco, "Sábado", quantidades.sabado);
-
         grade.appendChild(bloco);
     });
 
     const lounge = document.createElement("div");
     lounge.className = "cortesia-setor";
-
     const tituloLounge = document.createElement("h5");
     tituloLounge.textContent = "Lounge";
-
     const textoLounge = document.createElement("p");
     textoLounge.className = "lounge-info";
     textoLounge.textContent = dados.loungeInfo || "Nenhuma informação cadastrada.";
-
     lounge.append(tituloLounge, textoLounge);
     conteudoCortesias.append(grade, lounge);
 
     const botaoEditar = document.createElement("button");
     botaoEditar.type = "button";
     botaoEditar.className = "botao-editar-cortesias";
+    if (modoDetalhes) botaoEditar.classList.add("button", "button-primary");
     botaoEditar.textContent = "Editar cortesias";
 
     const formulario = document.createElement("form");
     formulario.className = "form-cortesias";
     formulario.hidden = true;
-
     const tituloFormulario = document.createElement("h5");
     tituloFormulario.textContent = "Definir quantidades";
     formulario.appendChild(tituloFormulario);
 
     const campos = {};
-
     SETORES_CORTESIA.forEach(setor => {
         const subtitulo = document.createElement("h5");
         subtitulo.textContent = setor;
         formulario.appendChild(subtitulo);
-
         campos[setor] = {};
-
         [
             ["passaporte", "Passaporte"],
             ["sexta", "Sexta-feira"],
@@ -492,14 +474,12 @@ function criarSecaoCortesias(patrocinador) {
             const grupo = document.createElement("label");
             grupo.className = "campo-cortesia";
             grupo.textContent = rotulo;
-
             const input = document.createElement("input");
             input.type = "number";
             input.min = "0";
             input.step = "1";
             input.required = true;
             input.value = dados.setores[setor]?.[tipo] ?? 0;
-
             campos[setor][tipo] = input;
             grupo.appendChild(input);
             formulario.appendChild(grupo);
@@ -509,26 +489,22 @@ function criarSecaoCortesias(patrocinador) {
     const labelLounge = document.createElement("label");
     labelLounge.className = "campo-cortesia";
     labelLounge.textContent = "Informações do Lounge";
-
     const inputLounge = document.createElement("textarea");
     inputLounge.rows = 3;
     inputLounge.value = dados.loungeInfo || "";
     inputLounge.placeholder = "Descreva as informações do Lounge...";
-
     labelLounge.appendChild(inputLounge);
     formulario.appendChild(labelLounge);
 
     const botoes = document.createElement("div");
     botoes.className = "cortesias-acoes";
-
     const salvar = document.createElement("button");
     salvar.type = "submit";
+    if (modoDetalhes) salvar.classList.add("button", "button-primary");
     salvar.textContent = "Salvar";
-
     const cancelar = document.createElement("button");
     cancelar.type = "button";
     cancelar.textContent = "Cancelar";
-
     botoes.append(salvar, cancelar);
     formulario.appendChild(botoes);
 
@@ -545,7 +521,6 @@ function criarSecaoCortesias(patrocinador) {
 
     formulario.addEventListener("submit", async function (event) {
         event.preventDefault();
-
         const payloadApi = {
             arenaPassaporte: Number(campos["Arena"]["passaporte"].value) || 0,
             arenaSexta: Number(campos["Arena"]["sexta"].value) || 0,
@@ -558,12 +533,11 @@ function criarSecaoCortesias(patrocinador) {
             premiumSabado: Number(campos["Premium"]["sabado"].value) || 0,
             loungeInfo: inputLounge.value.trim()
         };
-
         try {
             await apiRequest(`/marcas/${patrocinador.id}/cortesias`, "PUT", payloadApi);
             alert("Cortesias salvas com sucesso no banco de dados!");
             await sincronizarDadosComBackend();
-            renderizarPatrocinadores();
+            atualizarTelaPatrocinadores(patrocinador.id);
         } catch (erro) {
             console.error("Erro ao salvar cortesias:", erro);
             alert(erro.message || "Não foi possível salvar as cortesias.");
@@ -572,14 +546,12 @@ function criarSecaoCortesias(patrocinador) {
 
     conteudoCortesias.append(botaoEditar, formulario);
     secao.append(cabecalhoCortesias, conteudoCortesias);
-
     botaoCortesias.addEventListener("click", function () {
         const vaiRecolher = !conteudoCortesias.hidden;
         conteudoCortesias.hidden = vaiRecolher;
         botaoCortesias.textContent = vaiRecolher ? "⌄" : "⌃";
         botaoCortesias.setAttribute("aria-expanded", String(!vaiRecolher));
     });
-
     return secao;
 }
 
@@ -595,7 +567,6 @@ function normalizarTexto(valor) {
 function configurarFiltrosPatrocinadores() {
     const campoBusca = document.getElementById("buscarPatrocinador");
     const filtroCota = document.getElementById("filtrarCota");
-
     if (!campoBusca || !filtroCota) return;
 
     const cotaAnterior = filtroCota.value;
@@ -606,7 +577,6 @@ function configurarFiltrosPatrocinadores() {
     )].sort((a, b) => a.localeCompare(b, "pt-BR"));
 
     filtroCota.replaceChildren();
-
     const opcaoTodas = document.createElement("option");
     opcaoTodas.value = "";
     opcaoTodas.textContent = "Todas as cotas";
@@ -618,45 +588,36 @@ function configurarFiltrosPatrocinadores() {
         opcao.textContent = cota;
         filtroCota.appendChild(opcao);
     });
-
     filtroCota.value = cotas.includes(cotaAnterior) ? cotaAnterior : "";
 
     function aplicarFiltros() {
         const busca = normalizarTexto(campoBusca.value);
         const cotaSelecionada = filtroCota.value;
-
         const cards = document.querySelectorAll("#patrocinadoresGrid .patrocinador-card");
-
         cards.forEach(card => {
             const nome = normalizarTexto(
                 card.querySelector(".patrocinador-card-header h3")?.textContent
             );
-
             const cnpj = normalizarTexto(
                 [...card.querySelectorAll(".patrocinador-info-item")]
                     .find(item => normalizarTexto(item.querySelector("strong")?.textContent) === "cnpj")
                     ?.querySelector("span")?.textContent
             );
-
             const cota = card.querySelector(".patrocinador-cota")?.textContent.trim() || "";
-
             const correspondeBusca = !busca || nome.includes(busca) || cnpj.includes(busca);
             const correspondeCota = !cotaSelecionada || cota === cotaSelecionada;
-
             card.hidden = !(correspondeBusca && correspondeCota);
         });
     }
 
     campoBusca.addEventListener("input", aplicarFiltros);
     filtroCota.addEventListener("change", aplicarFiltros);
-
     aplicarFiltros();
 }
 
 // --- MODULO: Cadastro, Edição e Exclusão com Upload Físico para o Supabase Storage ---
 async function cadastrarPatrocinador(dados) {
     const emailsValidos = validarEmailsPatrocinador(dados.email);
-
     const prefixoLimpo = dados.nome.replace(/[^a-zA-Z0-9]/g, "").slice(0, 6) || "Marca";
     const senhaPadraoInicial = `${prefixoLimpo}@2026`;
 
@@ -678,7 +639,6 @@ async function cadastrarPatrocinador(dados) {
         });
     }
 
-    // Se selecionou arquivo físico do Plano Comercial, envia os bytes reais ao Supabase Storage
     if (dados.arquivoFisico) {
         await apiUploadMaterial(marcaCriada.id, {
             titulo: dados.arquivoFisico.name,
@@ -688,6 +648,17 @@ async function cadastrarPatrocinador(dados) {
             caminhoStorage: null,
             urlExterna: null
         }, dados.arquivoFisico);
+    }
+
+    if (dados.fotoFisica) {
+        await apiUploadMaterial(marcaCriada.id, {
+            titulo: dados.fotoFisica.name,
+            descricao: "Foto / Logo da Empresa",
+            abaDestino: "ABA_1_PERFIL",
+            tipoMaterial: "FOTO_EMPRESA",
+            caminhoStorage: null,
+            urlExterna: null
+        }, dados.fotoFisica);
     }
 
     await sincronizarDadosComBackend();
@@ -703,7 +674,6 @@ async function editarPatrocinador(id, novosDados) {
 
     const emailsDigitados = normalizarEmailsPatrocinador(novosDados.email);
     const usuariosAtuais = JSON.parse(localStorage.getItem(USUARIOS_KEY) || "[]");
-
     for (const email of emailsDigitados) {
         const jaExiste = usuariosAtuais.some(
             u => String(u.email || "").toLowerCase() === email
@@ -716,7 +686,6 @@ async function editarPatrocinador(id, novosDados) {
         }
     }
 
-    // Se anexou um novo arquivo físico de Plano Comercial, envia ao Supabase Storage
     if (novosDados.arquivoFisico) {
         await apiUploadMaterial(id, {
             titulo: novosDados.arquivoFisico.name,
@@ -726,6 +695,17 @@ async function editarPatrocinador(id, novosDados) {
             caminhoStorage: null,
             urlExterna: null
         }, novosDados.arquivoFisico);
+    }
+
+    if (novosDados.fotoFisica) {
+        await apiUploadMaterial(id, {
+            titulo: novosDados.fotoFisica.name,
+            descricao: "Foto / Logo da Empresa",
+            abaDestino: "ABA_1_PERFIL",
+            tipoMaterial: "FOTO_EMPRESA",
+            caminhoStorage: null,
+            urlExterna: null
+        }, novosDados.fotoFisica);
     }
 
     await sincronizarDadosComBackend();
@@ -739,19 +719,18 @@ async function excluirPatrocinador(id) {
 }
 
 function abrirEdicaoPatrocinador(id) {
-    const patrocinador = listarPatrocinadores().find(item => item.id === id);
-
+    const patrocinador = listarPatrocinadores().find(item => String(item.id) === String(id));
     if (!patrocinador) {
         alert("Patrocinador não encontrado.");
         return;
     }
-
     document.getElementById("sponsorName").value = patrocinador.nome || "";
     document.getElementById("sponsorCnpj").value = patrocinador.cnpj || "";
     document.getElementById("sponsorEmails").value = patrocinador.email || "";
     document.getElementById("sponsorQuota").value = patrocinador.cota || "";
     document.getElementById("sponsorComercialPlan").value = "";
-
+    const inputFoto = document.getElementById("sponsorPhoto");
+    if (inputFoto) inputFoto.value = "";
     document.getElementById("sponsorForm").dataset.editandoId = id;
     document.querySelector("#sponsorForm [type='submit']").textContent = "Salvar alterações";
     document.querySelector("#newSponsorForm h3").textContent = "Editar patrocinador";
@@ -759,12 +738,21 @@ function abrirEdicaoPatrocinador(id) {
     document.getElementById("newSponsorButton").setAttribute("aria-expanded", "true");
 }
 
-// --- MODULO: Renderização dos Cards ---
-function renderizarPatrocinadores() {
+function atualizarTelaPatrocinadores(patrocinadorId) {
+    if (document.body.classList.contains("sponsor-detail-page")) {
+        const idAlvo = patrocinadorId || new URLSearchParams(window.location.search).get("id");
+        renderizarDetalhePatrocinador(idAlvo);
+    } else {
+        renderizarPatrocinadores();
+    }
+}
+
+// --- MODULO: Renderização dos Cards (Listagem Geral e Modo Detalhes da Empresa) ---
+function renderizarPatrocinadores(patrocinadoresParaExibir, modoDetalhes = false) {
     const grid = document.getElementById("patrocinadoresGrid");
     if (!grid) return;
 
-    const patrocinadores = listarPatrocinadores();
+    const patrocinadores = patrocinadoresParaExibir || listarPatrocinadores();
     grid.replaceChildren();
 
     if (patrocinadores.length === 0) {
@@ -778,13 +766,88 @@ function renderizarPatrocinadores() {
     patrocinadores.forEach(function (patrocinador) {
         const card = document.createElement("article");
         card.className = "patrocinador-card";
+        card.dataset.patrocinadorId = String(patrocinador.id);
+
+        if (!modoDetalhes) {
+            card.setAttribute("role", "link");
+            card.tabIndex = 0;
+            card.setAttribute("aria-label", `Abrir detalhes de ${patrocinador.nome || "empresa"}`);
+            function abrirDetalhes() {
+                const url = new URL("detalhes-patrocinador.html", window.location.href);
+                url.searchParams.set("id", String(patrocinador.id));
+                window.location.href = url.href;
+            }
+            card.addEventListener("click", event => {
+                if (event.target.closest("button, a, input, select, textarea, label")) return;
+                abrirDetalhes();
+            });
+            card.addEventListener("keydown", event => {
+                if (event.target !== card || !["Enter", " "].includes(event.key)) return;
+                event.preventDefault();
+                abrirDetalhes();
+            });
+        }
 
         const header = document.createElement("div");
         header.className = "patrocinador-card-header";
 
+        // Bloco de Foto / Logo da empresa adicionado pelo seu colega
+        const foto = document.createElement("div");
+        foto.className = "patrocinador-foto";
+        if (patrocinador.foto) {
+            const imagem = document.createElement("img");
+            imagem.src = patrocinador.foto;
+            imagem.alt = `Foto de ${patrocinador.nome || "empresa"}`;
+            foto.appendChild(imagem);
+        } else {
+            foto.classList.add("patrocinador-foto-vazia");
+            foto.textContent = "Foto não cadastrada";
+            if (modoDetalhes) {
+                const seletorFoto = document.createElement("input");
+                seletorFoto.type = "file";
+                seletorFoto.accept = "image/jpeg,image/png,image/webp";
+                seletorFoto.hidden = true;
+                seletorFoto.setAttribute("aria-label", `Selecionar foto de ${patrocinador.nome || "empresa"}`);
+                foto.setAttribute("role", "button");
+                foto.tabIndex = 0;
+                foto.setAttribute("aria-label", `Adicionar foto para ${patrocinador.nome || "empresa"}`);
+                foto.title = "Clique para adicionar uma foto";
+                foto.appendChild(seletorFoto);
+
+                foto.addEventListener("click", event => {
+                    event.stopPropagation();
+                    seletorFoto.click();
+                });
+                seletorFoto.addEventListener("keydown", event => {
+                    if (!["Enter", " "].includes(event.key)) return;
+                    event.preventDefault();
+                    event.stopPropagation();
+                    seletorFoto.click();
+                });
+                seletorFoto.addEventListener("change", async () => {
+                    const arquivo = seletorFoto.files?.[0];
+                    if (!arquivo) return;
+                    try {
+                        validarArquivoFoto(arquivo);
+                        await apiUploadMaterial(patrocinador.id, {
+                            titulo: arquivo.name,
+                            descricao: "Foto / Logo da Empresa",
+                            abaDestino: "ABA_1_PERFIL",
+                            tipoMaterial: "FOTO_EMPRESA",
+                            caminhoStorage: null,
+                            urlExterna: null
+                        }, arquivo);
+                        await sincronizarDadosComBackend();
+                        renderizarDetalhePatrocinador(patrocinador.id);
+                    } catch (erro) {
+                        alert(erro.message || "Não foi possível salvar a foto.");
+                    }
+                });
+            }
+        }
+
         const nome = document.createElement("h3");
         nome.textContent = patrocinador.nome || "Empresa sem nome";
-
         const cota = document.createElement("span");
         cota.className = "patrocinador-cota";
         cota.textContent = patrocinador.cota || "Cota não informada";
@@ -796,7 +859,7 @@ function renderizarPatrocinadores() {
         botaoRecolherTudo.setAttribute("aria-expanded", "false");
         botaoRecolherTudo.setAttribute("aria-label", "Recolher conteúdo do patrocinador");
 
-        header.append(nome, botaoRecolherTudo, cota);
+        header.append(foto, nome, botaoRecolherTudo, cota);
 
         const info = document.createElement("div");
         info.className = "patrocinador-info";
@@ -804,10 +867,8 @@ function renderizarPatrocinadores() {
         function adicionarInformacao(rotulo, valor, urlLink = null, materialId = null) {
             const item = document.createElement("div");
             item.className = "patrocinador-info-item";
-
             const titulo = document.createElement("strong");
             titulo.textContent = rotulo;
-
             const conteudo = document.createElement("span");
             if (urlLink) {
                 const link = document.createElement("a");
@@ -822,7 +883,6 @@ function renderizarPatrocinadores() {
             } else {
                 conteudo.textContent = valor || "Não informado";
             }
-
             item.append(titulo, conteudo);
             info.appendChild(item);
         }
@@ -838,22 +898,17 @@ function renderizarPatrocinadores() {
 
         const usuarios = JSON.parse(localStorage.getItem(USUARIOS_KEY) || "[]");
         const contasPatrocinador = usuarios.filter(usuario => usuario.patrocinadorId === patrocinador.id);
-
         contasPatrocinador.forEach(conta => {
             adicionarInformacao(`Senha (${conta.email})`, conta.senha);
         });
 
         const envios = listarEnviosPorPatrocinador(patrocinador.id);
-
         const secaoEnvios = document.createElement("div");
         secaoEnvios.className = "patrocinador-envios";
-
         const cabecalhoEnvios = document.createElement("div");
         cabecalhoEnvios.className = "secao-cabecalho";
-
         const tituloEnvios = document.createElement("h4");
         tituloEnvios.textContent = `Mídia e Conteúdo (${envios.length})`;
-
         const botaoEnvios = document.createElement("button");
         botaoEnvios.type = "button";
         botaoEnvios.className = "botao-recolher";
@@ -867,8 +922,8 @@ function renderizarPatrocinadores() {
         const tituloMateriaisCliente = document.createElement("h5");
         tituloMateriaisCliente.className = "titulo-materiais-cliente";
         tituloMateriaisCliente.textContent = "Materiais enviados pelo patrocinador";
-
         conteudoEnvios.appendChild(tituloMateriaisCliente);
+
         cabecalhoEnvios.append(tituloEnvios, botaoEnvios);
         secaoEnvios.append(cabecalhoEnvios, conteudoEnvios);
 
@@ -881,53 +936,45 @@ function renderizarPatrocinadores() {
             envios.forEach(function (envio) {
                 const item = document.createElement("div");
                 item.className = "envio-item";
-
                 if (envio.texto) {
                     const linhaTexto = document.createElement("div");
                     linhaTexto.className = "envio-linha";
-
                     const texto = document.createElement("p");
                     texto.className = "envio-texto";
                     texto.textContent = `Arquivo em texto: ${envio.texto}`;
-
                     const baixarTexto = document.createElement("a");
                     baixarTexto.className = "envio-download";
+                    if (modoDetalhes) baixarTexto.classList.add("button", "button-primary");
                     baixarTexto.href = URL.createObjectURL(
                         new Blob([envio.texto], { type: "text/plain;charset=utf-8" })
                     );
                     baixarTexto.download = `conteudo-enviado-${envio.id || "patrocinador"}.txt`;
                     baixarTexto.textContent = "Baixar conteúdo";
-
                     linhaTexto.append(texto, baixarTexto);
                     item.appendChild(linhaTexto);
                 }
-
                 if (envio.arquivo && envio.arquivo.arquivoData && envio.arquivo.arquivoData !== "#") {
                     const linhaArquivo = document.createElement("div");
                     linhaArquivo.className = "envio-linha";
-
                     const nomeArquivo = document.createElement("p");
                     nomeArquivo.className = "envio-arquivo-nome";
                     nomeArquivo.textContent = `Mídia: ${envio.arquivo.nome || "Arquivo enviado"}`;
-
                     const baixarArquivo = document.createElement("a");
                     baixarArquivo.className = "envio-download";
+                    if (modoDetalhes) baixarArquivo.classList.add("button", "button-primary");
                     baixarArquivo.href = envio.arquivo.arquivoData;
                     baixarArquivo.target = "_blank";
                     baixarArquivo.rel = "noopener noreferrer";
                     baixarArquivo.download = envio.arquivo.nome || "arquivo-enviado";
                     baixarArquivo.textContent = "Baixar mídia";
-
                     baixarArquivo.addEventListener("click", function () {
                         if (envio.id) {
                             apiRequest(`/materiais/${envio.id}/acessar`, "POST").catch(() => { });
                         }
                     });
-
                     linhaArquivo.append(nomeArquivo, baixarArquivo);
                     item.appendChild(linhaArquivo);
                 }
-
                 conteudoEnvios.appendChild(item);
             });
         }
@@ -948,28 +995,49 @@ function renderizarPatrocinadores() {
         const botaoEditar = document.createElement("button");
         botaoEditar.type = "button";
         botaoEditar.className = "botao-editar";
+        if (modoDetalhes) botaoEditar.classList.add("button", "button-primary");
         botaoEditar.textContent = "Editar";
         botaoEditar.addEventListener("click", function () {
+            if (modoDetalhes) {
+                const url = new URL("indexAdministrador.html", window.location.href);
+                url.searchParams.set("editar", String(patrocinador.id));
+                url.searchParams.set("voltarParaEmpresa", String(patrocinador.id));
+                url.hash = "dashboard";
+                window.location.href = url.href;
+                return;
+            }
             abrirEdicaoPatrocinador(patrocinador.id);
         });
 
         const botaoExcluir = document.createElement("button");
         botaoExcluir.type = "button";
         botaoExcluir.className = "botao-excluir";
+        if (modoDetalhes) botaoExcluir.classList.add("button", "button-primary");
         botaoExcluir.textContent = "Excluir";
         botaoExcluir.addEventListener("click", async function () {
             if (!confirm(`Deseja realmente excluir ${patrocinador.nome}?`)) return;
             try {
                 await excluirPatrocinador(patrocinador.id);
-                renderizarPatrocinadores();
+                if (modoDetalhes) {
+                    window.location.href = "indexAdministrador.html#dashboard";
+                } else {
+                    renderizarPatrocinadores();
+                }
             } catch (erro) {
                 alert(erro.message || "Não foi possível excluir o patrocinador.");
             }
         });
 
-        acoes.append(botaoEditar, botaoExcluir);
-
         const secaoCortesias = criarSecaoCortesias(patrocinador);
+        const botaoEditarCortesias = modoDetalhes
+            ? secaoCortesias.querySelector(".botao-editar-cortesias")
+            : null;
+
+        if (modoDetalhes && botaoEditarCortesias) {
+            acoes.append(botaoEditar, botaoEditarCortesias, botaoExcluir);
+        } else {
+            acoes.append(botaoEditar, botaoExcluir);
+        }
 
         const conteudoPatrocinador = document.createElement("div");
         conteudoPatrocinador.className = "patrocinador-conteudo";
@@ -991,9 +1059,61 @@ function renderizarPatrocinadores() {
     configurarFiltrosPatrocinadores();
 }
 
+function renderizarDetalhePatrocinador(id) {
+    const grid = document.getElementById("patrocinadoresGrid");
+    if (!grid) return;
+
+    const patrocinador = listarPatrocinadores().find(
+        item => String(item.id) === String(id)
+    );
+    if (!patrocinador) {
+        const mensagem = document.createElement("div");
+        mensagem.className = "patrocinadores-vazio";
+        mensagem.textContent = "Esta empresa não foi encontrada.";
+        grid.replaceChildren(mensagem);
+        return;
+    }
+
+    renderizarPatrocinadores([patrocinador], true);
+
+    const card = grid.querySelector(".patrocinador-card");
+    const conteudo = card?.querySelector(".patrocinador-conteudo");
+    const botaoPrincipal = card?.querySelector(".patrocinador-card-header .botao-recolher");
+    if (conteudo) conteudo.hidden = false;
+    if (botaoPrincipal) {
+        botaoPrincipal.textContent = "⌃";
+        botaoPrincipal.setAttribute("aria-expanded", "true");
+        botaoPrincipal.setAttribute("aria-label", "Recolher conteúdo do patrocinador");
+    }
+    card?.querySelectorAll(".secao-conteudo").forEach(secao => {
+        secao.hidden = false;
+        const botao = secao.previousElementSibling?.querySelector(".botao-recolher");
+        if (botao) {
+            botao.textContent = "⌃";
+            botao.setAttribute("aria-expanded", "true");
+        }
+    });
+}
+
 // --- Inicialização e Eventos do Formulário Principal ---
 document.addEventListener("DOMContentLoaded", async function () {
+    const isDetailPage = document.body.classList.contains("sponsor-detail-page");
+    const parametrosUrl = new URLSearchParams(window.location.search);
+    const idDetalhe = parametrosUrl.get("id");
+    const idParaEditar = parametrosUrl.get("editar");
+    const idParaVoltar = parametrosUrl.get("voltarParaEmpresa");
+    const retornarParaDetalheId = idParaEditar && idParaEditar === idParaVoltar ? idParaVoltar : null;
+
     await sincronizarDadosComBackend();
+
+    if (isDetailPage) {
+        renderizarDetalhePatrocinador(idDetalhe);
+        document.getElementById("backToDashboard")?.addEventListener("click", function () {
+            window.location.href = "indexAdministrador.html#dashboard";
+        });
+        return;
+    }
+
     renderizarPatrocinadores();
 
     const newSponsorButton = document.getElementById("newSponsorButton");
@@ -1010,15 +1130,12 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     if (newSponsorButton && newSponsorForm) {
         closeForm();
-
         newSponsorButton.addEventListener("click", function () {
             const isOpen = newSponsorForm.classList.toggle("open");
             newSponsorButton.setAttribute("aria-expanded", String(isOpen));
         });
-
         closeSponsorForm?.addEventListener("click", closeForm);
         cancelSponsor?.addEventListener("click", closeForm);
-
         document.addEventListener("click", function (event) {
             const clicouFora = !newSponsorForm.parentElement.contains(event.target);
             const clicouEmEditar = event.target.closest(".botao-editar");
@@ -1034,28 +1151,31 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         sponsorForm.addEventListener("submit", async function (event) {
             event.preventDefault();
-
             const nome = document.getElementById("sponsorName").value.trim();
             const cnpj = document.getElementById("sponsorCnpj").value.trim();
             const email = document.getElementById("sponsorEmails").value.trim();
             const cota = document.getElementById("sponsorQuota").value;
             const inputArquivo = document.getElementById("sponsorComercialPlan");
             const arquivoFisico = inputArquivo?.files?.[0] || null;
-
-            const dados = {
-                nome,
-                cnpj,
-                email,
-                cota,
-                arquivo: arquivoFisico ? arquivoFisico.name : "",
-                arquivoFisico
-            };
+            const inputFoto = document.getElementById("sponsorPhoto");
+            const fotoFisica = inputFoto?.files?.[0] || null;
 
             if (submitButton) submitButton.disabled = true;
 
             try {
-                const idEdicao = sponsorForm.dataset.editandoId;
+                validarArquivoFoto(fotoFisica);
 
+                const dados = {
+                    nome,
+                    cnpj,
+                    email,
+                    cota,
+                    arquivo: arquivoFisico ? arquivoFisico.name : "",
+                    arquivoFisico,
+                    fotoFisica
+                };
+
+                const idEdicao = sponsorForm.dataset.editandoId;
                 if (idEdicao) {
                     await editarPatrocinador(idEdicao, dados);
                     alert("Patrocinador atualizado com sucesso no banco de dados!");
@@ -1067,9 +1187,15 @@ document.addEventListener("DOMContentLoaded", async function () {
 
                 sponsorForm.reset();
                 closeForm();
-
                 if (submitButton) submitButton.textContent = "Cadastrar patrocinador";
                 if (tituloFormulario) tituloFormulario.textContent = "Novo patrocinador";
+
+                if (idEdicao && retornarParaDetalheId === idEdicao) {
+                    const detalheUrl = new URL("detalhes-patrocinador.html", window.location.href);
+                    detalheUrl.searchParams.set("id", idEdicao);
+                    window.location.replace(detalheUrl.href);
+                    return;
+                }
 
                 renderizarPatrocinadores();
             } catch (erro) {
@@ -1079,5 +1205,13 @@ document.addEventListener("DOMContentLoaded", async function () {
                 if (submitButton) submitButton.disabled = false;
             }
         });
+    }
+
+    if (idParaEditar) {
+        abrirEdicaoPatrocinador(idParaEditar);
+        const url = new URL(window.location.href);
+        url.searchParams.delete("editar");
+        url.searchParams.delete("voltarParaEmpresa");
+        window.history.replaceState(window.history.state, "", url);
     }
 });

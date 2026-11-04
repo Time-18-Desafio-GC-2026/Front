@@ -1,9 +1,6 @@
-<<<<<<< HEAD:src/pages/historico.js
-﻿// indexHistorico.html/historico.js
-=======
-// Mantém o histórico no mesmo armazenamento local usado pelo portal.
-// INTEGRAÇÃO BACK-END: trocar leitura/gravação local por endpoints de auditoria centralizados.
->>>>>>> origin/main:Telahistorico/historico.js
+// ==========================================================================
+// PORTAL RBS — CONTROLADOR DE AUDITORIA E HISTÓRICO (SUPABASE + FALLBACK LOCAL)
+// ==========================================================================
 var HISTORICO_KEY = "rbs_historico";
 var USUARIO_EMAIL_KEY = "rbs_usuario_email";
 
@@ -11,19 +8,11 @@ var USUARIO_EMAIL_KEY = "rbs_usuario_email";
 var historicoServidorCache = [];
 
 function registrarHistorico(acao, emailAtor) {
-<<<<<<< HEAD:src/pages/historico.js
-    var historico = JSON.parse(localStorage.getItem(HISTORICO_KEY) || "[]");
-=======
     try {
-        var historico = JSON.parse(
-            localStorage.getItem(HISTORICO_KEY) || "[]"
-        );
->>>>>>> origin/main:Telahistorico/historico.js
-
+        var historico = JSON.parse(localStorage.getItem(HISTORICO_KEY) || "[]");
         if (!Array.isArray(historico)) {
             throw new TypeError("O formato do histórico salvo é inválido.");
         }
-
         historico.push({
             email: emailAtor
                 || sessionStorage.getItem(USUARIO_EMAIL_KEY)
@@ -31,7 +20,6 @@ function registrarHistorico(acao, emailAtor) {
             acao,
             dataHora: new Date().toISOString()
         });
-
         localStorage.setItem(HISTORICO_KEY, JSON.stringify(historico));
         return true;
     } catch (error) {
@@ -47,7 +35,6 @@ async function carregarAuditoriaDoBackend() {
     if (typeof apiRequest !== "function" || !localStorage.getItem("rbs_token")) {
         return;
     }
-
     try {
         const logsApi = await apiRequest("/auditoria", "GET");
         if (Array.isArray(logsApi)) {
@@ -122,7 +109,6 @@ function renderizarHistorico() {
     historico.forEach((registro) => {
         var dataHora = new Date(registro.dataHora);
         var linha = document.createElement("tr");
-
         [
             registro.email || "Conta não identificada",
             dataHora.toLocaleDateString("pt-BR"),
@@ -133,7 +119,6 @@ function renderizarHistorico() {
             celula.textContent = valor;
             linha.appendChild(celula);
         });
-
         linhas.appendChild(linha);
     });
 }
@@ -156,12 +141,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
 });
 
-<<<<<<< HEAD:src/pages/historico.js
-=======
-// Atualiza a tabela quando outra aba registrar uma nova atividade.
 window.addEventListener("storage", function (event) {
     if (event.key === HISTORICO_KEY) {
         renderizarHistorico();
     }
 });
->>>>>>> origin/main:Telahistorico/historico.js
