@@ -1,5 +1,7 @@
-﻿// src/services/api.js
-const API_BASE_URL = "http://localhost:8080";
+﻿const IS_LOCAL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+const API_BASE_URL = IS_LOCAL
+    ? "http://localhost:8080"
+    : "https://SUA-URL-DO-JAVA.onrender.com"; // <-- Cole aqui a URL do Java da Etapa 2
 
 /**
  * Cliente HTTP centralizado da aplicação.
