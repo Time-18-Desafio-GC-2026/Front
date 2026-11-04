@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Pesquisa de Ativação do Planeta Atlântida - Exclusivo Cota Master">
+    <title>RBS Patrocinadores | Pesquisa de Ativação</title>
+    <link rel="stylesheet" href="../assets/css/style_portal.css">
+    <script src="../src/shared/theme.js"></script>
+    <script src="../src/guards/security.js"></script>
+</head>
+
+<body>
+    <div class="app-shell">
+        <aside class="sidebar" id="sidebar"></aside>
+
+        <div class="main-area">
+            <header class="topbar"></header>
+
+            <main class="content" id="pesquisaMain">
+                <!-- VISÃO DO PATROCINADOR MASTER -->
+                <section id="visaoPatrocinadorMaster" hidden>
+                    <section class="identificacao-patrocinador">
+                        <div class="identificacao-cabecalho">
+                            <div>
+                                <span class="identificacao-legenda">BENEFÍCIO EXCLUSIVO — COTA MASTER</span>
+                                <h1 id="nomeMarcaPesquisa">Pesquisa Oficial de Ativação</h1>
+                            </div>
+                        </div>
+                        <p class="identificacao-descricao">
+                            Como patrocinador Master do Planeta Atlântida, sua marca tem direito a incluir até
+                            <strong>3 perguntas personalizadas</strong> na pesquisa oficial aplicada pelo instituto de
+                            pesquisa junto aos planetários.
+                        </p>
+                    </section>
+
+                    <section class="faq-compose" aria-labelledby="formPesquisaTitulo">
+                        <h2 id="formPesquisaTitulo">Definir as 3 Perguntas da Sua Marca</h2>
+                        <form id="masterQuestionsForm">
+                            <div class="profile-field">
+                                <label for="perguntaInput1">Pergunta 1 (Obrigatória)</label>
+                                <input type="text" id="perguntaInput1" maxlength="500" required
+                                    placeholder="Ex.: Você lembra de ter visto ou interagido com a ativação da nossa marca no festival?">
+                            </div>
+                            <div class="profile-field">
+                                <label for="perguntaInput2">Pergunta 2</label>
+                                <input type="text" id="perguntaInput2" maxlength="500"
+                                    placeholder="Ex.: Como você avalia a experiência proporcionada no nosso estande/espaço?">
+                            </div>
+                            <div class="profile-field">
+                                <label for="perguntaInput3">Pergunta 3</label>
+                                <input type="text" id="perguntaInput3" maxlength="500"
+                                    placeholder="Ex.: A presença da nossa marca no Planeta Atlântida aumentou sua intenção de compra?">
+                            </div>
+                            <p class="faq-message" id="pesquisaMensagem" role="status" aria-live="polite"></p>
+                            <div class="profile-actions">
+                                <button class="button button-primary" type="submit" id="btnSalvarPerguntas">
+                                    Salvar Perguntas na Pesquisa Oficial
+                                </button>
+                            </div>
+                        </form>
+                    </section>
+
+                    <section class="materiais-publicados-cliente">
+                        <h2>Perguntas Registradas no Banco de Dados</h2>
+                        <div id="listaMinhasPerguntas"></div>
+                    </section>
+                </section>
+
+                <!-- VISÃO DO ADMINISTRADOR RBS -->
+                <section id="visaoAdminPesquisa" hidden>
+                    <section class="dashboard-header">
+                        <div class="patrocinadores-topo" style="width: 100%;">
+                            <div class="patrocinadores-titulos">
+                                <h1>Pesquisa de Ativação — Patrocinadores Master</h1>
+                                <p>Acompanhe e exporte as 3 perguntas personalizadas enviadas por cada patrocinador da
+                                    Cota Master.</p>
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="button button-primary" type="button" id="btnExportarPerguntasTxt">
+                                    📄 Baixar Pauta de Perguntas (.txt)
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <div id="gridPesquisaAdmin" class="patrocinadores-grid"></div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script src="../src/services/api.js"></script>
+    <script src="../src/shared/layout.js"></script>
+    <script src="../src/pages/pesquisa.js"></script>
+</body>
+
+</html>

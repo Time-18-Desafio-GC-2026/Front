@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Gestão da Equipe B2B e Administradores RBS">
+    <title>RBS Patrocinadores | Equipe RBS</title>
+    <link rel="stylesheet" href="../assets/css/style_portal.css">
+    <script src="../src/shared/theme.js"></script>
+    <script src="../src/guards/security.js"></script>
+</head>
+
+<body class="history-page">
+    <div class="app-shell">
+        <aside class="sidebar" id="sidebar"></aside>
+
+        <div class="main-area">
+            <header class="topbar"></header>
+
+            <main class="content">
+                <header class="history-header">
+                    <h1>Gestão da Equipe RBS</h1>
+                    <p>Área restrita ao SuperAdmin para liberar acessos de administradores do time B2B e gerenciar a
+                        senha padrão de primeiro acesso.</p>
+                </header>
+
+                <div
+                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 24px;">
+                    <!-- CARD 1: SENHA PADRÃO DOS ADMINS -->
+                    <section class="profile-form" style="width: 100%; margin-bottom: 0;">
+                        <h2>🔑 Senha Padrão de Primeiro Acesso (Admins)</h2>
+                        <p style="font-size: 12px; margin-bottom: 12px;">
+                            Todos os novos administradores cadastrados na lista ao lado receberão esta senha inicial e
+                            poderão alterá-la no menu Perfil.
+                        </p>
+                        <div class="profile-field">
+                            <label for="defaultAdminPassword">Senha padrão ativa para novos cadastros e resets</label>
+                            <div class="password-input-wrapper">
+                                <input id="defaultAdminPassword" type="password" value="Rbs@2026Admin" required>
+                                <button type="button" class="toggle-password" id="btnToggleDefaultPwd"
+                                    aria-pressed="false">
+                                    Mostrar
+                                </button>
+                            </div>
+                            <small>Mínimo de 8 caracteres (com letras e números).</small>
+                        </div>
+                        <div class="profile-actions">
+                            <button type="button" class="button button-primary" id="btnCopiarSenhaPadrao">
+                                Copiar Senha Padrão
+                            </button>
+                            <span id="feedbackSenhaPadrao" style="font-size: 12px; font-weight: 600;"></span>
+                        </div>
+                    </section>
+
+                    <!-- CARD 2: LIBERAR LISTA DE E-MAILS DE ADMINS -->
+                    <section class="profile-form" style="width: 100%; margin-bottom: 0;">
+                        <h2>➕ Liberar Novos Administradores RBS</h2>
+                        <form id="formCriarAdminsLote">
+                            <div class="profile-field">
+                                <label for="adminEmailsList">Lista de e-mails da equipe RBS (separados por vírgula ou
+                                    linha)</label>
+                                <input id="adminEmailsList" type="text" required
+                                    placeholder="Ex.: joao@rbs.com.br, maria@rbs.com.br, b2b@rbs.com.br">
+                                <small>Cada e-mail terá seu login e perfil individual criados automaticamente com a
+                                    senha padrão ao lado.</small>
+                            </div>
+                            <div class="profile-field">
+                                <label for="adminDefaultName">Identificação / Setor (Opcional)</label>
+                                <input id="adminDefaultName" type="text" placeholder="Ex.: Equipe B2B RBS">
+                            </div>
+                            <p class="profile-message" id="msgCriarAdmins" role="status" aria-live="polite"></p>
+                            <div class="profile-actions">
+                                <button type="submit" class="button button-primary" id="btnSubmitAdmins">
+                                    Cadastrar Administradores na Plataforma
+                                </button>
+                            </div>
+                        </form>
+                    </section>
+                </div>
+
+                <!-- TABELA DE MEMBROS DA EQUIPE RBS -->
+                <div class="history-table-wrapper">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Nome</th>
+                                <th scope="col">E-mail</th>
+                                <th scope="col">Perfil</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaEquipeRows">
+                            <tr>
+                                <td colspan="5">Carregando membros da equipe RBS...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="../src/services/api.js"></script>
+    <script src="../src/shared/layout.js"></script>
+    <script src="../src/pages/equipe.js"></script>
+</body>
+
+</html>
