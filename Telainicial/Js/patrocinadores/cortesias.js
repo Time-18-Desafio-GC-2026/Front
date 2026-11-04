@@ -368,6 +368,9 @@ function criarSecaoCortesias(patrocinador) {
     botaoEditar.type = "button";
 
     botaoEditar.className = "botao-editar-cortesias";
+    if (document.body.classList.contains("sponsor-detail-page")) {
+        botaoEditar.classList.add("button", "button-primary");
+    }
 
     botaoEditar.textContent = "Editar cortesias";
 
@@ -496,6 +499,9 @@ function criarSecaoCortesias(patrocinador) {
     const salvar = document.createElement("button");
 
     salvar.type = "submit";
+    if (document.body.classList.contains("sponsor-detail-page")) {
+        salvar.classList.add("button", "button-primary");
+    }
 
     salvar.textContent = "Salvar";
 
@@ -583,11 +589,13 @@ function criarSecaoCortesias(patrocinador) {
 
 
 
-            registrarHistorico(
-
-                `Admin RBS editou as cortesias da empresa "${patrocinador.nome}".`
-
-            );
+            if (typeof registrarHistorico === "function") {
+                registrarHistorico(
+                    `Admin RBS editou as cortesias da empresa "${patrocinador.nome}".`
+                );
+            } else {
+                console.error("Registro de auditoria indisponível ao editar cortesias.");
+            }
 
 
 
@@ -595,7 +603,11 @@ function criarSecaoCortesias(patrocinador) {
 
 
 
-            renderizarPatrocinadores();
+            if (document.body.classList.contains("sponsor-detail-page")) {
+                renderizarDetalhePatrocinador(patrocinador.id);
+            } else {
+                renderizarPatrocinadores();
+            }
 
         } catch (erro) {
 

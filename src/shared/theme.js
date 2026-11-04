@@ -25,9 +25,10 @@
         // Troca a logo da Sidebar conforme o tema ativo
         const logoSidebar = document.querySelector(".sidebar-brand .brand-mark");
         if (logoSidebar) {
-            logoSidebar.src = isDark
+            const logoTema = isDark ? logoSidebar.dataset.themeDark : logoSidebar.dataset.themeLight;
+            logoSidebar.src = logoTema || (isDark
                 ? "../assets/img/LogoPlanetaBlue.png"
-                : "../assets/img/LogoPlanetaOrange.png";
+                : "../assets/img/LogoPlanetaOrange.png");
         }
 
         // Atualiza todos os botões de alternância na tela

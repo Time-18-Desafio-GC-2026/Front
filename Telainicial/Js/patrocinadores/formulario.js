@@ -28,13 +28,10 @@ function editarPatrocinador(id, novosDados) {
         ...patrocinadores[indice],
 
         nome: novosDados.nome,
-
         cnpj: novosDados.cnpj,
-
         email: novosDados.email,
-
         cota: novosDados.cota,
-
+        foto: novosDados.foto || patrocinadores[indice].foto || "",
         arquivo: novosDados.arquivo
 
             ? novosDados.arquivo
