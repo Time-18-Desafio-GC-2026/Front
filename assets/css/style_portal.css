@@ -2340,3 +2340,25 @@ svg {
     border-color: var(--rbs-orange-dark);
     color: #ffffff;
 }
+
+/* Suaviza o carregamento visual da página e das trocas de menu */
+body {
+    animation: fadeInPortal 0.25s ease-in-out;
+}
+
+@keyframes fadeInPortal {
+    from {
+        opacity: 0;
+        transform: translateY(3px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Reduz engasgos na rolagem */
+.main-area {
+    will-change: transform, opacity;
+}
