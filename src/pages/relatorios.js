@@ -3,7 +3,7 @@
 // ==========================================================================
 const PYTHON_ANALYTICS_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
     ? "http://localhost:8000"
-    : "https://SUA-URL-DO-PYTHON.onrender.com"; // <-- Cole aqui a URL do Python da Etapa 1
+    : "https://portal-patrocinador-python-etl.onrender.com"; // 
 
 document.addEventListener("DOMContentLoaded", async () => {
     const sessao = JSON.parse(localStorage.getItem("rbs_sessao") || "null");
