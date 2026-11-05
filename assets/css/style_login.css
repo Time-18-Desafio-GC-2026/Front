@@ -25,18 +25,6 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Metade branca de cima a baixo encaixada ao lado esquerdo da marcação xadrez */
-.login-panel {
-  width: 49.2%;
-  min-height: 100vh;
-  background: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 32px 24px;
-  box-shadow: 12px 0 36px rgba(8, 13, 45, 0.22);
-}
-
 /* Card branco clean com o formulário */
 .login-card {
   width: min(100%, 400px);
