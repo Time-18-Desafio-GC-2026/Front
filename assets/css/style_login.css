@@ -1,212 +1,199 @@
-﻿/* Cores da página. */
-:root {
-  --bg-start: #d8dde7;
-  --bg-end: #0b174d;
-  --card: rgba(236, 238, 243, 0.7);
-  --card-border: rgba(243, 244, 252, 0.863);
-  --primary: #67a9c5;
-  --primary-dark: #151929;
-  --text: #04090f;
-  --muted: #545a63;
-  --input: rgba(170, 172, 177, 0.8);
-  --shadow: rgba(2, 7, 19, 0.35);
+﻿:root {
+  --rbs-blue: #101d4d;
+  --rbs-blue-hover: #173d83;
+  --rbs-orange: #f47b20;
+  --text-strong: #0f172a;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+  --input-bg: #f8fafc;
 }
 
-/* Mantém as dimensões previsíveis dos elementos. */
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
-/* Centraliza o cartão sobre o fundo da página. */
 body {
   margin: 0;
   min-height: 100vh;
-  display: grid;
-  place-items: center;
-  font-family: Arial, Helvetica, sans-serif;
-  background:
-    linear-gradient(rgba(11, 23, 77, 0.25), rgba(11, 23, 77, 0.25)),
-    url('../img/PAFundo1.png') center / cover no-repeat fixed;
-  color: var(--text);
+  display: flex;
+  align-items: stretch;
+  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: url('../img/PAFundo1.png') center center / cover no-repeat fixed;
+  color: var(--text-strong);
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Aparência do painel de login. */
+/* Metade branca de cima a baixo encaixada ao lado esquerdo da marcação xadrez */
+.login-panel {
+  width: 49.2%;
+  min-height: 100vh;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+  box-shadow: 12px 0 36px rgba(8, 13, 45, 0.22);
+}
+
+/* Card branco clean com o formulário */
 .login-card {
-  width: min(90vw, 380px);
-  background: var(--card);
-  border: 1px solid var(--card-border);
+  width: min(100%, 400px);
+  background: #ffffff;
+  border: 1px solid var(--border);
   border-radius: 16px;
-  padding: 28px 24px;
-  box-shadow: 0 16px 36px var(--shadow);
-  backdrop-filter: blur(10px);
+  padding: 36px 32px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
 }
 
-/* Tamanho e alinhamento da imagem da marca. */
+/* Logo do Planeta Atlântida inteira e sem cortes */
 .logo {
-  width: 72px;
-  height: 72px;
-  margin: 0 auto 16px;
+  width: 96px;
+  height: 96px;
+  margin: 0 auto 18px;
   display: block;
-  border-radius: 50%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
-/* Título principal do formulário. */
 h1 {
-  margin: 0 0 8px;
+  margin: 0 0 6px;
   text-align: center;
-  font-size: clamp(1.6rem, 2.7vw, 2rem);
+  color: var(--text-strong);
+  font-size: 1.55rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
-/* Texto auxiliar abaixo do título. */
 .subtitle {
-  margin: 0 0 20px;
+  margin: 0 0 28px;
   text-align: center;
-  color: var(--muted);
+  color: var(--text-muted);
   font-size: 0.9rem;
 }
 
-/* Organiza os campos verticalmente. */
 form {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 18px;
 }
 
-/* Agrupa cada rótulo com seu campo. */
 .field {
   display: flex;
   flex-direction: column;
   gap: 7px;
 }
 
-/* Alinha a opção de exibir senha abaixo do campo. */
-.password-visibility {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  cursor: pointer;
-}
-
-/* Mantém o checkbox compacto em vez de ocupar toda a linha. */
-.password-visibility input[type="checkbox"] {
-  width: auto;
-  padding: 0;
-  border-radius: 0;
-  background: transparent;
-  accent-color: var(--primary);
-}
-
-/* Estilo dos rótulos dos campos. */
 label {
-  font-size: 0.85rem;
-  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #334155;
 }
 
-/* Aparência dos campos de entrada. */
-input {
+input[type="email"],
+input[type="password"],
+input[type="text"] {
   width: 100%;
-  padding: 12px;
-  border-radius: 9px;
-  border: 1px solid rgba(9, 15, 24, 0.25);
-  background: var(--input);
-  color: var(--text);
-  font-size: 0.95rem;
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  background: var(--input-bg);
+  color: var(--text-strong);
+  font-size: 0.92rem;
   outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Destaca o campo selecionado. */
-input:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18);
+input[type="email"]::placeholder,
+input[type="password"]::placeholder,
+input[type="text"]::placeholder {
+  color: #94a3b8;
 }
 
-/* Alinha links e opções do formulário. */
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="text"]:focus {
+  background: #ffffff;
+  border-color: var(--rbs-blue);
+  box-shadow: 0 0 0 3px rgba(16, 29, 77, 0.1);
+}
+
 .options {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 10px;
-  font-size: 0.8rem;
-  color: var(--muted);
+  margin-top: 4px;
+  font-size: 0.82rem;
 }
 
-.options a,
-.register a {
-  display: inline-block;
-  padding: 0;
-  border: 0;
-  color: var(--primary-dark);
-  font-weight: 700;
+.password-visibility {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--text-muted);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.password-visibility input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  accent-color: var(--rbs-blue);
+  cursor: pointer;
+}
+
+.options a {
+  color: var(--rbs-blue);
+  font-weight: 600;
   text-decoration: none;
-  transition: color 0.2s ease;
+  transition: color 0.15s ease;
 }
 
-.options a:hover,
-.register a:hover {
-  color: var(--primary);
+.options a:hover {
+  color: var(--rbs-orange);
   text-decoration: underline;
 }
 
-.remember {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-
-.remember input {
-  width: auto;
-  accent-color: var(--primary);
-}
-
-/* Alinha o texto dos links. */
-a {
-  color: var(--primary);
-  text-decoration: none;
-}
-
-/* Botão principal de acesso. */
-button {
-  margin-top: 5px;
+button[type="submit"] {
+  margin-top: 6px;
+  height: 46px;
   border: none;
-  border-radius: 9px;
-  padding: 12px 18px;
-  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-  color: #fff;
+  border-radius: 10px;
+  padding: 0 18px;
+  background: var(--rbs-blue);
+  color: #ffffff;
   font-size: 0.95rem;
   font-weight: 700;
   cursor: pointer;
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  box-shadow: 0 4px 12px rgba(16, 29, 77, 0.18);
+  transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
 }
 
-/* Efeito visual ao passar o cursor no botão. */
-button:hover {
+button[type="submit"]:hover {
+  background: var(--rbs-blue-hover);
   transform: translateY(-1px);
-  opacity: 0.97;
+  box-shadow: 0 6px 16px rgba(16, 29, 77, 0.24);
 }
 
-/* Texto de cadastro abaixo do formulário. */
-.register {
-  margin-top: 16px;
-  text-align: center;
-  color: var(--muted);
-  font-size: 0.87rem;
+button[type="submit"]:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
 }
 
-.register a {
-  margin-left: 4px;
+@media (max-width: 900px) {
+  .login-panel {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(8px);
+  }
 }
 
-/* Ajustes para telas estreitas. */
 @media (max-width: 480px) {
   .login-card {
-    padding: 22px 16px;
-  }
-
-  .options {
-    flex-direction: column;
-    align-items: flex-start;
+    padding: 28px 20px;
   }
 }
-

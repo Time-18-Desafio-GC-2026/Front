@@ -2125,7 +2125,7 @@ svg {
 
 
 /* ==========================================================================
-   9. AJUSTES FINAIS DE LAYOUT (FILTROS, DETALHES INLINE, MÍDIA E SENHA)
+   9. MODAL CENTRALIZADO, BOTÕES DE ARQUIVO CINZAS E AJUSTES DE DETALHES
    ========================================================================== */
 .theme-toggle,
 [data-theme-toggle],
@@ -2149,10 +2149,6 @@ svg {
     position: relative;
 }
 
-.patrocinadores-filtros .new-sponsor-wrapper {
-    position: relative;
-}
-
 .button-novo-filtro {
     height: 38px;
     padding: 0 14px;
@@ -2170,20 +2166,135 @@ svg {
     color: #ffffff;
 }
 
-.patrocinadores-filtros #newSponsorForm {
-    position: absolute;
-    top: calc(100% + 12px);
-    right: 0;
-    margin-top: 0;
-    width: 380px;
-    z-index: 250;
+/* Modal centralizado na tela com fundo sombreado ao redor */
+.new-sponsor-form.open,
+#newSponsorForm.open,
+.patrocinadores-filtros #newSponsorForm.open,
+#formPerguntas.open {
+    display: block;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    right: auto;
+    transform: translate(-50%, -50%);
+    width: min(520px, calc(100vw - 32px));
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    margin: 0;
+    padding: 26px 28px;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow:
+        0 24px 48px rgba(15, 23, 42, 0.28),
+        0 0 0 100vmax rgba(15, 23, 42, 0.55);
+    z-index: 2000;
 }
 
-/* Botão Voltar no canto superior direito da tela de Detalhes */
+#newSponsorForm .form-header h3 {
+    font-size: 18px;
+}
+
+#newSponsorForm .form-group {
+    margin-bottom: 14px;
+}
+
+#newSponsorForm .form-group input:not([type="file"]),
+#newSponsorForm .form-group select {
+    height: 40px;
+    padding: 0 12px;
+    border-radius: 8px;
+}
+
+/* Estilização minimalista em cinza para todos os seletores de arquivo e botões secundários */
+input[type="file"],
+.form-group input[type="file"],
+#newSponsorForm .form-group input[type="file"],
+#newSponsorForm .form-group-arquivo input[type="file"] {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 42px;
+    height: auto;
+    padding: 6px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #475569;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+input[type="file"]::file-selector-button,
+input[type="file"]::-webkit-file-upload-button {
+    margin-right: 12px;
+    padding: 7px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background: #e2e8f0;
+    color: #334155;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+input[type="file"]::file-selector-button:hover,
+input[type="file"]::-webkit-file-upload-button:hover {
+    background: #cbd5e1;
+    border-color: #94a3b8;
+    color: #0f172a;
+}
+
+.btn-acao-pequeno,
+.form-cancel,
+#newSponsorForm .form-cancel,
+.cortesias-acoes button[type="button"] {
+    min-height: 36px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    background: #f1f5f9;
+    color: #334155;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+.btn-acao-pequeno:hover,
+.form-cancel:hover,
+#newSponsorForm .form-cancel:hover,
+.cortesias-acoes button[type="button"]:hover {
+    background: #e2e8f0;
+    border-color: #94a3b8;
+    color: #0f172a;
+}
+
+#newSponsorForm .form-submit {
+    min-height: 36px;
+    padding: 6px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--rbs-orange);
+    background: linear-gradient(100deg, var(--rbs-yellow) 0%, var(--rbs-orange) 100%);
+    color: #362440;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+#newSponsorForm .form-submit:hover {
+    background: var(--rbs-orange-dark);
+    border-color: var(--rbs-orange-dark);
+    color: #ffffff;
+}
+
+/* Botão Voltar posicionado à esquerda na mesma altura acima do card */
 .sponsor-detail-toolbar {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: flex-start;
     max-width: 1100px;
     margin: 0 auto 14px;
 }
@@ -2207,7 +2318,6 @@ svg {
     margin-top: 0;
 }
 
-/* Senha padrão invisível com botão Mostrar/Ocultar */
 .senha-padrao-inline {
     display: inline-flex;
     align-items: center;
@@ -2215,25 +2325,9 @@ svg {
     flex-wrap: wrap;
 }
 
-.btn-acao-pequeno {
-    padding: 4px 10px;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-    background: #ffffff;
-    color: var(--text-strong);
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.btn-acao-pequeno:hover {
-    background: var(--rbs-orange);
-    border-color: var(--rbs-orange-dark);
-    color: #ffffff;
-}
-
 .btn-acao-perigo {
-    padding: 4px 10px;
+    min-height: 32px;
+    padding: 5px 12px;
     border-radius: 6px;
     border: 1px solid #b42318;
     background: #b42318;
@@ -2296,24 +2390,17 @@ svg {
     margin-bottom: 0;
 }
 
-/* Suaviza o carregamento visual da página e das trocas de menu */
+/* Suaviza o carregamento visual sem criar contexto que prenda modais fixed */
 body {
-    animation: fadeInPortal 0.25s ease-in-out;
+    animation: fadeInPortal 0.2s ease-in-out;
 }
 
 @keyframes fadeInPortal {
     from {
         opacity: 0;
-        transform: translateY(3px);
     }
 
     to {
         opacity: 1;
-        transform: translateY(0);
     }
-}
-
-/* Reduz engasgos na rolagem */
-.main-area {
-    will-change: transform, opacity;
 }

@@ -4,57 +4,45 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login</title>
-
+  <title>Portal do Patrocinador | Login</title>
   <link rel="stylesheet" href="../assets/css/style_login.css" />
 </head>
 
 <body>
+  <div class="login-panel">
+    <main class="login-card">
+      <img class="logo" src="../assets/img/logo-planeta.png" alt="Planeta Atlântida" />
+      <h1>Portal do Patrocinador</h1>
+      <p class="subtitle">Acesse sua conta para continuar</p>
 
-  <main class="login-card">
+      <form>
+        <div class="field">
+          <label for="email">E-mail</label>
+          <input id="email" type="email" placeholder="seu@email.com" autocomplete="email" required />
+        </div>
 
-    <img class="logo" src="../assets/img/LogoPlanetaBlue.png" />
-    <h1>Portal do Patrocinador</h1>
-    <p class="subtitle">Acesse sua conta para continuar</p>
+        <div class="field">
+          <label for="password">Senha</label>
+          <input id="password" type="password" placeholder="Digite sua senha" autocomplete="current-password"
+            required />
 
-    <!-- Formulário de e-mail e senha. -->
-    <form>
-      <div class="field">
-        <label for="email">E-mail</label>
-        <input id="email" type="email" placeholder="seu@email.com" required />
-      </div>
+          <div class="options">
+            <label class="password-visibility" for="toggle-password">
+              <input id="toggle-password" type="checkbox" />
+              Mostrar senha
+            </label>
+            <a href="#">Esqueci minha senha</a>
+          </div>
+        </div>
 
-      <div class="field">
-        <label for="password">Senha</label>
-        <!-- Campo obrigatório que começa ocultando os caracteres. -->
-        <input id="password" type="password" placeholder="Digite sua senha" required />
-
-        <!-- Opção para alternar entre exibir e ocultar a senha. -->
-        <label class="password-visibility" for="toggle-password">
-          <input id="toggle-password" type="checkbox" />
-          Mostrar senha
-        </label>
-      </div>
-
-      <!-- Link para recuperar o acesso. -->
-      <div class="options">
-        <a href="#">Esqueci minha senha</a>
-      </div>
-
-      <!-- Envia os dados para validação pelo JavaScript. -->
-      <button type="submit">Entrar</button>
-    </form>
-
-    <!-- Link de solicitação de cadastro. -->
-    <p class="register">
-      Não tem uma conta?
-      <a href="#">Solicitar Cadastro</a>
-    </p>
-  </main>
+        <button type="submit">Entrar</button>
+      </form>
+    </main>
+  </div>
 
   <!-- Camada de serviço HTTP (conecta com o Back-end Java) -->
   <script src="../src/services/api.js"></script>
-  <!-- Carrega as interações do formulário. -->
+  <!-- Carrega as interações do formulário -->
   <script src="../src/pages/login.js"></script>
 </body>
 
