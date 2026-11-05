@@ -84,52 +84,57 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
+    let contratosAtuaisCache = [];
+
     function renderizarContratosCliente(contratos) {
+        contratosAtuaisCache = contratos || [];
         if (!listaContratosCliente) return;
         listaContratosCliente.replaceChildren();
 
-        if (!contratos || contratos.length === 0) {
+        const contratoAtual = contratosAtuaisCache[0] || null;
+        if (!contratoAtual) {
             const msg = document.createElement("p");
             msg.className = "envios-patrocinador-vazio";
-            msg.textContent = "Nenhum contrato em PDF disponibilizado ainda.";
+            msg.textContent = "Nenhum contrato em PDF disponibilizado pela RBS ainda.";
             listaContratosCliente.appendChild(msg);
             return;
         }
 
-        contratos.forEach(mat => {
-            const item = document.createElement("div");
-            item.className = "material-publicado-item";
+        const item = document.createElement("div");
+        item.className = "material-publicado-item";
 
-            const enviadoPeloPatrocinador = mat.autorPerfil === "PATROCINADOR";
-            const badge = enviadoPeloPatrocinador
-                ? "✍️ Enviado Assinado pela sua Empresa"
-                : "📄 Disponibilizado pela Administração RBS";
-            const dataStr = mat.criadoEm ? new Date(mat.criadoEm).toLocaleString("pt-BR") : "";
+        let faseTexto = "Fase 1/3: Disponibilizado pela RBS — Aguardando assinatura da sua empresa";
+        if (contratoAtual.status === "CONTRATO_FINALIZADO") {
+            faseTexto = "Fase 3/3: Contrato Final Assinado por ambas as partes";
+        } else if (contratoAtual.autorPerfil === "PATROCINADOR" || contratoAtual.status === "ASSINADO_PELA_EMPRESA") {
+            faseTexto = "Fase 2/3: Assinado pela sua empresa — Aguardando assinatura final da RBS";
+        }
 
-            const titulo = document.createElement("p");
-            titulo.className = "material-publicado-titulo";
-            titulo.innerHTML = `<span class="envio-status" style="margin-right:8px;">${badge}</span> ${mat.titulo} <small style="color:#64748b; font-weight:400;">(${dataStr})</small>`;
+        const dataStr = contratoAtual.criadoEm ? new Date(contratoAtual.criadoEm).toLocaleString("pt-BR") : "";
 
-            const acoes = document.createElement("div");
-            acoes.className = "material-publicado-acoes";
+        const titulo = document.createElement("p");
+        titulo.className = "material-publicado-titulo";
+        titulo.innerHTML = `<span class="envio-status" style="margin-right:8px;">${faseTexto}</span> ${contratoAtual.titulo} <small style="color:#64748b; font-weight:400;">(${dataStr})</small>`;
 
-            const urlNuvem = mat.caminhoStorage || mat.urlExterna;
-            if (urlNuvem && urlNuvem.startsWith("http")) {
-                const baixar = document.createElement("a");
-                baixar.href = urlNuvem;
-                baixar.target = "_blank";
-                baixar.rel = "noopener noreferrer";
-                baixar.download = mat.titulo || "contrato.pdf";
-                baixar.textContent = "Visualizar / Baixar PDF";
-                baixar.addEventListener("click", () => {
-                    if (mat.id) apiRequest(`/materiais/${mat.id}/acessar`, "POST").catch(() => { });
-                });
-                acoes.appendChild(baixar);
-            }
+        const acoes = document.createElement("div");
+        acoes.className = "material-publicado-acoes";
 
-            item.append(titulo, acoes);
-            listaContratosCliente.appendChild(item);
-        });
+        const urlNuvem = contratoAtual.caminhoStorage || contratoAtual.urlExterna;
+        if (urlNuvem && urlNuvem.startsWith("http")) {
+            const baixar = document.createElement("a");
+            baixar.href = urlNuvem;
+            baixar.target = "_blank";
+            baixar.rel = "noopener noreferrer";
+            baixar.download = contratoAtual.titulo || "contrato.pdf";
+            baixar.textContent = "Visualizar / Baixar PDF";
+            baixar.addEventListener("click", () => {
+                if (contratoAtual.id) apiRequest(`/materiais/${contratoAtual.id}/acessar`, "POST").catch(() => { });
+            });
+            acoes.appendChild(baixar);
+        }
+
+        item.append(titulo, acoes);
+        listaContratosCliente.appendChild(item);
     }
 
     function renderizarMateriais(materiais) {
@@ -256,8 +261,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         resumo.innerHTML = `
             <strong>Arena:</strong> Passaporte (${cortesia.arenaPassaporte}) | Sexta (${cortesia.arenaSexta}) | Sábado (${cortesia.arenaSabado})<br>
             <strong>Camarote:</strong> Passaporte (${cortesia.camarotePassaporte}) | Sexta (${cortesia.camaroteSexta}) | Sábado (${cortesia.camaroteSabado})<br>
-            <strong>Premium:</strong> Passaporte (${cortesia.premiumPassaporte}) | Sexta (${cortesia.premiumSexta}) | Sábado (${cortesia.premiumSabado})<br>
-            <strong>Lounge:</strong> ${cortesia.loungeInfo || "Sem observações de Lounge."}
+            <strong>Premium:</strong> Passaporte (${cortesia.premiumPassaporte}) | Sexta (${cortesia.premiumSexta}) | Sábado (${cortesia.premiumSabado})
         `;
         resumoCortesiasCliente.appendChild(resumo);
     }
@@ -331,18 +335,24 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
         if (btnContratoAssinado) {
             btnContratoAssinado.disabled = true;
-            btnContratoAssinado.textContent = "Enviando PDF assinado...";
+            btnContratoAssinado.textContent = "Atualizando contrato...";
         }
         try {
+            // Substitui a versão anterior para avançar o contrato para a Fase 2
+            for (const c of contratosAtuaisCache) {
+                await apiRequest(`/materiais/${c.id}`, "DELETE").catch(() => { });
+            }
+
             await apiUploadMaterial(marcaId, {
-                titulo: `Contrato Assinado - ${arquivoPdf.name}`,
-                descricao: "Contrato assinado enviado pelo patrocinador",
+                titulo: arquivoPdf.name,
+                descricao: "Fase 2/3: Contrato assinado pela empresa patrocinadora",
                 abaDestino: "ABA_7_CONTRATO",
                 tipoMaterial: "CONTRATO",
                 caminhoStorage: null,
                 urlExterna: null
             }, arquivoPdf);
-            alert("Contrato assinado enviado com sucesso para a Administração RBS!");
+
+            alert("Contrato assinado enviado e atualizado com sucesso! A RBS fará a assinatura final.");
             formContratoAssinado.reset();
             await carregarPainelDoPatrocinador();
         } catch (erro) {
@@ -350,7 +360,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         } finally {
             if (btnContratoAssinado) {
                 btnContratoAssinado.disabled = false;
-                btnContratoAssinado.textContent = "✍️ Enviar Contrato Assinado (PDF)";
+                btnContratoAssinado.textContent = "Enviar Contrato Assinado (PDF)";
             }
         }
     });

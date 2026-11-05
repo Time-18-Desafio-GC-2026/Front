@@ -2125,51 +2125,175 @@ svg {
 
 
 /* ==========================================================================
-   8. COMPLEMENTOS VISUAIS DO TEMA CLARO (PERFIL, RELATÓRIOS E FOTO EMPRESA)
+   9. AJUSTES FINAIS DE LAYOUT (FILTROS, DETALHES INLINE, MÍDIA E SENHA)
    ========================================================================== */
-.form-group small {
-    color: var(--text-muted);
-    font-size: 11px;
+.theme-toggle,
+[data-theme-toggle],
+.topbar .avatar {
+    display: none !important;
 }
 
-.form-group input[type="file"] {
-    padding: 5px 9px;
-    height: auto;
+.patrocinadores-topo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 24px;
 }
 
-:root:not([data-theme="dark"]) body .profile-form,
-:root:not([data-theme="dark"]) body .username-form,
-:root:not([data-theme="dark"]) body .report-panel,
-:root:not([data-theme="dark"]) body .report-summary {
-    background: linear-gradient(110deg, var(--rbs-yellow) 0%, var(--rbs-orange) 100%);
-    border-color: var(--rbs-orange-dark);
-    box-shadow: 0 4px 12px rgba(217, 93, 11, 0.12);
+.patrocinadores-filtros {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    position: relative;
 }
 
-:root:not([data-theme="dark"]) body .profile-form h2,
-:root:not([data-theme="dark"]) body .profile-field label,
-:root:not([data-theme="dark"]) body .profile-field small,
-:root:not([data-theme="dark"]) body .profile-message,
-:root:not([data-theme="dark"]) body .profile-forgot,
-:root:not([data-theme="dark"]) body .report-panel .field,
-:root:not([data-theme="dark"]) body .report-summary {
-    color: #000000;
+.patrocinadores-filtros .new-sponsor-wrapper {
+    position: relative;
 }
 
-:root:not([data-theme="dark"]) body .profile-view .profile-actions button,
-:root:not([data-theme="dark"]) body .profile-view .password-input-wrapper .toggle-password {
+.button-novo-filtro {
+    height: 38px;
+    padding: 0 14px;
+    border-radius: 8px;
     background: #ffffff;
-    border: 1px solid #dfe5ec;
-    border-radius: 6px;
-    color: #000000;
-    box-shadow: none;
+    border: 1px solid rgba(255, 255, 255, 0.95);
+    color: var(--rbs-orange-dark);
+    font-weight: 700;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
 }
 
-:root:not([data-theme="dark"]) body .profile-view .profile-actions button:hover,
-:root:not([data-theme="dark"]) body .profile-view .password-input-wrapper .toggle-password:hover {
+.button-novo-filtro:hover {
+    background: var(--rbs-blue);
+    border-color: var(--rbs-blue);
+    color: #ffffff;
+}
+
+.patrocinadores-filtros #newSponsorForm {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    margin-top: 0;
+    width: 380px;
+    z-index: 250;
+}
+
+/* Botão Voltar no canto superior direito da tela de Detalhes */
+.sponsor-detail-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    max-width: 1100px;
+    margin: 0 auto 14px;
+}
+
+/* Nome + Tag de Cota lado a lado e Botão Editar na direita */
+.titulo-cota-inline {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+    flex-wrap: wrap;
+}
+
+.titulo-cota-inline h3 {
+    margin: 0;
+    flex: 0 1 auto;
+}
+
+.titulo-cota-inline .patrocinador-cota {
+    margin-top: 0;
+}
+
+/* Senha padrão invisível com botão Mostrar/Ocultar */
+.senha-padrao-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn-acao-pequeno {
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: #ffffff;
+    color: var(--text-strong);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-acao-pequeno:hover {
     background: var(--rbs-orange);
     border-color: var(--rbs-orange-dark);
     color: #ffffff;
+}
+
+.btn-acao-perigo {
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid #b42318;
+    background: #b42318;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-acao-perigo:hover {
+    background: #8f1c13;
+}
+
+/* Formulário de Edição Inline na página de Detalhes */
+.form-edicao-inline {
+    margin: 14px 0;
+    padding: 18px;
+    background: var(--surface-soft);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+}
+
+.form-edicao-inline h4 {
+    margin: 0 0 12px;
+    color: var(--text-strong);
+}
+
+.form-edicao-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+}
+
+/* Divisão Mídia e Conteúdo: Envios da Marca vs Envios da RBS */
+.midia-subbloco {
+    padding: 14px;
+    margin-bottom: 14px;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+}
+
+.midia-subbloco h5 {
+    margin: 0 0 10px;
+    color: var(--text-strong);
+    font-size: 0.92rem;
+    font-weight: 700;
+}
+
+.midia-rbs-controles-empilhados {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.midia-rbs-controles-empilhados .midia-rbs-form {
+    width: 100%;
+    margin-bottom: 0;
 }
 
 /* Suaviza o carregamento visual da página e das trocas de menu */

@@ -17,15 +17,15 @@ function inicializarLayoutPortal() {
     const paginaAtual = window.location.pathname.split("/").pop() || "indexAdministrador.html";
 
     const titulosPaginas = {
-        "indexAdministrador.html": "Patrocinadores",
-        "detalhes-patrocinador.html": "Detalhes da empresa",
+        "indexAdministrador.html": "Dashboard",
+        "detalhes-patrocinador.html": "Visualização da Marca",
         "indexPatrocinador.html": "Dashboard",
-        "indexCredenciamento.html": "Credenciamento",
-        "indexPesquisa.html": "Pesquisa de Ativação",
         "indexRelatorio.html": "Relatórios",
-        "indexHistorico.html": "Auditoria",
-        "indexEquipe.html": "Equipe RBS",
+        "indexPesquisa.html": "Pesquisa",
+        "indexCredenciamento.html": "Credenciamento",
         "indexFaq.html": "FAQ",
+        "indexEquipe.html": "Equipe RBS",
+        "indexHistorico.html": "Auditoria",
         "indexPerfil.html": "Perfil"
     };
 
@@ -41,16 +41,17 @@ function inicializarLayoutPortal() {
         paginaAtual === "indexAdministrador.html" ||
         paginaAtual === "detalhes-patrocinador.html" ||
         paginaAtual === "indexPatrocinador.html";
-    const isCredActive = paginaAtual === "indexCredenciamento.html";
-    const isPesqActive = paginaAtual === "indexPesquisa.html";
     const isRelActive = paginaAtual === "indexRelatorio.html";
-    const isAudActive = paginaAtual === "indexHistorico.html";
-    const isEqpActive = paginaAtual === "indexEquipe.html";
+    const isPesqActive = paginaAtual === "indexPesquisa.html";
+    const isCredActive = paginaAtual === "indexCredenciamento.html";
     const isFaqActive = paginaAtual === "indexFaq.html";
+    const isEqpActive = paginaAtual === "indexEquipe.html";
+    const isAudActive = paginaAtual === "indexHistorico.html";
     const isCfgActive = paginaAtual === "indexPerfil.html";
 
     const logoInicial = "../assets/img/LogoPlanetaOrange.png";
 
+    // Ordem: Dashboard, Relatórios, Pesquisa, Credenciamento, FAQ, Equipe RBS, Auditoria, Perfil, Sair
     const sidebarEl = document.getElementById("sidebar");
     if (sidebarEl) {
         sidebarEl.innerHTML = `
@@ -76,13 +77,11 @@ function inicializarLayoutPortal() {
                     </svg>
                     <span>Dashboard</span>
                 </a>
-                <a class="nav-item ${isCredActive ? "active" : ""}" href="indexCredenciamento.html" ${isCredActive ? 'aria-current="page"' : ""}>
+                <a class="nav-item ${isRelActive ? "active" : ""}" href="indexRelatorio.html" ${isRelActive ? 'aria-current="page"' : ""}>
                     <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <rect x="3" y="4" width="18" height="16" rx="2"/>
-                        <circle cx="9" cy="10" r="2"/>
-                        <path d="M15 8h2M15 12h2M7 16h10"/>
+                        <path d="M4 19V9M10 19V5M16 19v-8M22 19H2"/>
                     </svg>
-                    <span>Credenciamento</span>
+                    <span>Relatórios</span>
                 </a>
                 ${podeVerPesquisa ? `
                 <a class="nav-item ${isPesqActive ? "active" : ""}" href="indexPesquisa.html" ${isPesqActive ? 'aria-current="page"' : ""}>
@@ -93,21 +92,22 @@ function inicializarLayoutPortal() {
                     <span>Pesquisa</span>
                 </a>
                 ` : ""}
-                <a class="nav-item ${isRelActive ? "active" : ""}" href="indexRelatorio.html" ${isRelActive ? 'aria-current="page"' : ""}>
+                <a class="nav-item ${isCredActive ? "active" : ""}" href="indexCredenciamento.html" ${isCredActive ? 'aria-current="page"' : ""}>
                     <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M4 19V9M10 19V5M16 19v-8M22 19H2"/>
+                        <rect x="3" y="4" width="18" height="16" rx="2"/>
+                        <circle cx="9" cy="10" r="2"/>
+                        <path d="M15 8h2M15 12h2M7 16h10"/>
                     </svg>
-                    <span>Relatórios</span>
+                    <span>Credenciamento</span>
                 </a>
-                ${!ehPatrocinador ? `
-                <a class="nav-item ${isAudActive ? "active" : ""}" href="indexHistorico.html" ${isAudActive ? 'aria-current="page"' : ""}>
+                <a class="nav-item ${isFaqActive ? "active" : ""}" href="indexFaq.html" ${isFaqActive ? 'aria-current="page"' : ""}>
                     <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M12 3l8 3v5c0 5-3.4 8.3-8 10-4.6-1.7-8-5-8-10V6l8-3z"/>
-                        <path d="M9 12l2 2 4-4"/>
+                        <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/>
+                        <path d="M12 17h.01"/>
+                        <circle cx="12" cy="12" r="9"/>
                     </svg>
-                    <span>Auditoria</span>
+                    <span>FAQ</span>
                 </a>
-                ` : ""}
                 ${ehSuperAdmin ? `
                 <a class="nav-item ${isEqpActive ? "active" : ""}" href="indexEquipe.html" ${isEqpActive ? 'aria-current="page"' : ""}>
                     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -119,14 +119,15 @@ function inicializarLayoutPortal() {
                     <span>Equipe RBS</span>
                 </a>
                 ` : ""}
-                <a class="nav-item ${isFaqActive ? "active" : ""}" href="indexFaq.html" ${isFaqActive ? 'aria-current="page"' : ""}>
+                ${!ehPatrocinador ? `
+                <a class="nav-item ${isAudActive ? "active" : ""}" href="indexHistorico.html" ${isAudActive ? 'aria-current="page"' : ""}>
                     <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/>
-                        <path d="M12 17h.01"/>
-                        <circle cx="12" cy="12" r="9"/>
+                        <path d="M12 3l8 3v5c0 5-3.4 8.3-8 10-4.6-1.7-8-5-8-10V6l8-3z"/>
+                        <path d="M9 12l2 2 4-4"/>
                     </svg>
-                    <span>FAQ</span>
+                    <span>Auditoria</span>
                 </a>
+                ` : ""}
                 <a class="nav-item ${isCfgActive ? "active" : ""}" id="profileNav" href="indexPerfil.html#perfil" ${isCfgActive ? 'aria-current="page"' : ""}>
                     <svg viewBox="0 0 24 24" aria-hidden="true">
                         <circle cx="12" cy="8" r="4"/>
@@ -152,7 +153,7 @@ function inicializarLayoutPortal() {
         `;
     }
 
-    // Topbar sem botão de tema e exibindo Nome em cima + E-mail embaixo
+    // Topbar sem avatar e com Nome + E-mail
     const topbarEl = document.querySelector("header.topbar");
     if (topbarEl) {
         topbarEl.innerHTML = `
@@ -165,13 +166,19 @@ function inicializarLayoutPortal() {
                         <strong id="accountName" data-account-name>${sessao.nome || "Usuário"}</strong>
                         <span id="accountEmail" data-account-email>${sessao.email || ""}</span>
                     </div>
-                    <div class="avatar" data-account-avatar aria-hidden="true">US</div>
                 </a>
             </div>
         `;
     }
 
-    function aplicarNomeEmailEAvatar(nome, email) {
+    window.definirTituloMarcaTopbar = function (nomeMarca) {
+        const breadcrumbTitle = document.getElementById("breadcrumbTitle");
+        if (breadcrumbTitle && nomeMarca) {
+            breadcrumbTitle.innerHTML = `Visualização da Marca: <strong>${nomeMarca}</strong>`;
+        }
+    };
+
+    function aplicarNomeEEmail(nome, email) {
         const nomeLimpo = String(nome || email || "Conta").trim();
         const emailLimpo = String(email || sessao.email || "").trim();
 
@@ -181,19 +188,9 @@ function inicializarLayoutPortal() {
         document.querySelectorAll("[data-account-email]").forEach(el => {
             el.textContent = emailLimpo;
         });
-
-        const iniciais = nomeLimpo
-            .split(/\s+/)
-            .slice(0, 2)
-            .map(parte => parte[0])
-            .join("")
-            .toUpperCase();
-        document.querySelectorAll("[data-account-avatar]").forEach(el => {
-            el.textContent = iniciais || "US";
-        });
     }
 
-    aplicarNomeEmailEAvatar(sessao.nome, sessao.email);
+    aplicarNomeEEmail(sessao.nome, sessao.email);
 
     if (typeof apiRequest === "function" && localStorage.getItem("rbs_token")) {
         apiRequest("/auth/eu", "GET")
@@ -201,7 +198,7 @@ function inicializarLayoutPortal() {
                 if (eu && (eu.nome || eu.email)) {
                     const nomeReal = (eu.nome || eu.email).trim();
                     const emailReal = (eu.email || sessao.email || "").trim();
-                    aplicarNomeEmailEAvatar(nomeReal, emailReal);
+                    aplicarNomeEEmail(nomeReal, emailReal);
 
                     const mudouCotaOuPerfil =
                         (eu.marcaCota && eu.marcaCota !== sessao.marcaCota) ||

@@ -169,12 +169,31 @@
                         <h2>Meus Materiais Enviados</h2>
                         <div id="listaMeusEnvios"></div>
                     </section>
-
                     <!-- Quadro de Cortesias da Marca (Somente Leitura para o Patrocinador) -->
                     <section id="cortesiasClienteSection" class="materiais-publicados-cliente"
                         style="margin-top: 1.5rem;">
-                        <h2>Minhas Cortesias e Lounge</h2>
+                        <h2>Minhas Cortesias</h2>
                         <div id="resumoCortesiasCliente"></div>
+                    </section>
+
+                    <!-- Seção de Contrato (Download para Assinatura e Devolução de PDF Assinado) -->
+                    <section id="contratosClienteSection" class="materiais-publicados-cliente"
+                        style="margin-top: 1.5rem;">
+                        <h2>Contrato de Patrocínio</h2>
+                        <p style="margin: 0 0 12px; color: var(--text-muted); font-size: 13px;">
+                            Baixe o contrato disponibilizado pela RBS, realize a assinatura e envie o arquivo PDF
+                            assinado para atualizar o
+                            documento na plataforma.
+                        </p>
+                        <div id="listaContratosCliente"></div>
+                        <form id="formEnviarContratoAssinado"
+                            style="margin-top: 12px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <input type="file" id="inputContratoAssinadoPdf" accept=".pdf,application/pdf" required
+                                style="max-width: 320px; padding: 6px; border: 1px solid var(--border); border-radius: 6px; background: #fff;">
+                            <button type="submit" class="button button-primary" id="btnEnviarContratoAssinado">
+                                Enviar Contrato Assinado (PDF)
+                            </button>
+                        </form>
                     </section>
         </div>
     </div>

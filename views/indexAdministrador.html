@@ -22,22 +22,21 @@
                     <div class="patrocinadores-topo">
                         <div class="patrocinadores-titulos">
                             <h1>Patrocinadores</h1>
+                            <p>Gerencie as marcas patrocinadoras, cotas e entregas do evento.</p>
                         </div>
 
-                        <div class="patrocinadores-acoes-topo">
-                            <div class="patrocinadores-filtros">
-                                <div class="campo-busca">
-                                    <input type="search" id="buscarPatrocinador"
-                                        placeholder="Buscar por nome ou CNPJ..." aria-label="Buscar por nome ou CNPJ">
-                                </div>
-
-                                <select id="filtrarCota" aria-label="Filtrar por cota">
-                                    <option value="">Todas as cotas</option>
-                                </select>
+                        <div class="patrocinadores-filtros">
+                            <div class="campo-busca">
+                                <input type="search" id="buscarPatrocinador" placeholder="Buscar por nome ou CNPJ..."
+                                    aria-label="Buscar por nome ou CNPJ">
                             </div>
 
+                            <select id="filtrarCota" aria-label="Filtrar por cota">
+                                <option value="">Todas as cotas</option>
+                            </select>
+
                             <div class="new-sponsor-wrapper">
-                                <button class="button button-primary" type="button" id="newSponsorButton"
+                                <button class="button button-novo-filtro" type="button" id="newSponsorButton"
                                     aria-expanded="false" aria-controls="newSponsorForm">
                                     <svg viewBox="0 0 24 24" aria-hidden="true">
                                         <path d="M12 5v14M5 12h14" />
@@ -113,9 +112,7 @@
                         </div>
                     </div>
 
-                    <div id="patrocinadoresGrid" class="patrocinadores-grid">
-                        <!-- Cards dos patrocinadores -->
-                    </div>
+                    <div id="patrocinadoresGrid" class="patrocinadores-grid"></div>
                 </section>
             </main>
         </div>
