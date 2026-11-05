@@ -1,8 +1,98 @@
 ﻿/**
  * ==========================================================================
- * PORTAL RBS — COMPONENTE UNIFICADO DE LAYOUT (SIDEBAR + TOPBAR + CONTA)
+ * PORTAL RBS — COMPONENTE UNIFICADO DE LAYOUT + MODAL DE 1º ACESSO
  * ==========================================================================
  */
+function verificarEExibirModalPrimeiroAcesso(sessao) {
+    if (!sessao || !sessao.precisaTrocarSenha) return;
+    const perfilApi = String(sessao.perfilApi || "").toUpperCase();
+    if (perfilApi === "SUPERADMIN") return;
+    if (document.getElementById("modalPrimeiroAcessoObrigatorio")) return;
+
+    const modal = document.createElement("div");
+    modal.id = "modalPrimeiroAcessoObrigatorio";
+    modal.className = "modal-primeiro-acesso-box";
+    modal.innerHTML = `
+        <div class="form-header">
+            <div>
+                <h3>Primeiro Acesso — Segurança Obrigatória</h3>
+                <p>Por segurança, personalize seu nome de exibição e substitua a senha padrão inicial antes de utilizar a plataforma.</p>
+            </div>
+        </div>
+        <form id="formPrimeiroAcessoModal">
+            <div class="form-group">
+                <label for="primeiroAcessoNome">Seu Nome Completo</label>
+                <input type="text" id="primeiroAcessoNome" required maxlength="120"
+                    placeholder="Digite seu nome e sobrenome" value="${sessao.nome && sessao.nome !== sessao.email ? sessao.nome : ""}">
+            </div>
+            <div class="form-group">
+                <label for="primeiroAcessoNovaSenha">Nova Senha Pessoal (mín. 8 caracteres, letras e números)</label>
+                <input type="password" id="primeiroAcessoNovaSenha" required minlength="8"
+                    placeholder="Crie uma senha forte e exclusiva">
+            </div>
+            <div class="form-group">
+                <label for="primeiroAcessoConfirmaSenha">Confirmar Nova Senha</label>
+                <input type="password" id="primeiroAcessoConfirmaSenha" required minlength="8"
+                    placeholder="Repita a nova senha">
+            </div>
+            <p class="profile-message" id="msgErroPrimeiroAcesso" style="color:#b42318;"></p>
+            <div class="form-actions">
+                <button type="submit" class="button button-primary" id="btnSalvarPrimeiroAcesso">
+                    Confirmar e Acessar Plataforma
+                </button>
+            </div>
+        </form>
+    `;
+
+    document.body.appendChild(modal);
+
+    const form = document.getElementById("formPrimeiroAcessoModal");
+    const msgErro = document.getElementById("msgErroPrimeiroAcesso");
+    const btnSubmit = document.getElementById("btnSalvarPrimeiroAcesso");
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        msgErro.textContent = "";
+        const nome = document.getElementById("primeiroAcessoNome").value.trim();
+        const novaSenha = document.getElementById("primeiroAcessoNovaSenha").value;
+        const confirma = document.getElementById("primeiroAcessoConfirmaSenha").value;
+
+        if (novaSenha.length < 8) {
+            msgErro.textContent = "A nova senha deve ter pelo menos 8 caracteres (letras e números).";
+            return;
+        }
+        if (novaSenha !== confirma) {
+            msgErro.textContent = "A confirmação de senha não confere.";
+            return;
+        }
+
+        btnSubmit.disabled = true;
+        btnSubmit.textContent = "Salvando...";
+
+        try {
+            const resposta = await apiRequest("/auth/primeiro-acesso", "POST", {
+                nome,
+                novaSenha
+            });
+
+            if (resposta && resposta.tokenJwt) {
+                localStorage.setItem("rbs_token", resposta.tokenJwt);
+            }
+
+            sessao.nome = resposta?.usuario?.nome || nome;
+            sessao.precisaTrocarSenha = false;
+            localStorage.setItem("rbs_sessao", JSON.stringify(sessao));
+
+            modal.remove();
+            inicializarLayoutPortal();
+        } catch (erro) {
+            msgErro.textContent = erro.message || "Não foi possível concluir o primeiro acesso.";
+            btnSubmit.disabled = false;
+            btnSubmit.textContent = "Confirmar e Acessar Plataforma";
+        }
+    });
+}
+
 function inicializarLayoutPortal() {
     const sessao = JSON.parse(localStorage.getItem("rbs_sessao") || "null");
     if (!sessao) return;
@@ -33,9 +123,6 @@ function inicializarLayoutPortal() {
     const linkDashboard = ehPatrocinador ? "indexPatrocinador.html" : "indexAdministrador.html";
     const textoWorkspace = ehPatrocinador ? "Área do Patrocinador" : "Administração RBS";
     const textoSubtitulo = ehPatrocinador ? "Visão geral da sua marca" : "Visão geral da operação";
-    const textoPermissao = ehPatrocinador
-        ? "Acesso exclusivo aos materiais, contratos, cortesias e relatórios da sua marca."
-        : "Acesso à gestão de todos os patrocinadores e cotas.";
 
     const isDashActive =
         paginaAtual === "indexAdministrador.html" ||
@@ -51,7 +138,6 @@ function inicializarLayoutPortal() {
 
     const logoInicial = "../assets/img/LogoPlanetaOrange.png";
 
-    // Ordem: Dashboard, Relatórios, Pesquisa, Credenciamento, FAQ, Equipe RBS, Auditoria, Perfil, Sair
     const sidebarEl = document.getElementById("sidebar");
     if (sidebarEl) {
         sidebarEl.innerHTML = `
@@ -143,17 +229,9 @@ function inicializarLayoutPortal() {
                     <span>Sair</span>
                 </button>
             </nav>
-            <div class="sidebar-note">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <rect x="6" y="10" width="12" height="10" rx="2"/>
-                    <path d="M9 10V7a3 3 0 0 1 6 0v3"/>
-                </svg>
-                <span>${textoPermissao}</span>
-            </div>
         `;
     }
 
-    // Topbar sem avatar e com Nome + E-mail
     const topbarEl = document.querySelector("header.topbar");
     if (topbarEl) {
         topbarEl.innerHTML = `
@@ -191,6 +269,7 @@ function inicializarLayoutPortal() {
     }
 
     aplicarNomeEEmail(sessao.nome, sessao.email);
+    verificarEExibirModalPrimeiroAcesso(sessao);
 
     if (typeof apiRequest === "function" && localStorage.getItem("rbs_token")) {
         apiRequest("/auth/eu", "GET")
@@ -205,9 +284,12 @@ function inicializarLayoutPortal() {
                         (eu.perfil && eu.perfil !== sessao.perfilApi);
                     sessao.nome = nomeReal;
                     sessao.email = emailReal;
+                    sessao.precisaTrocarSenha = Boolean(eu.precisaTrocarSenha);
                     if (eu.perfil) sessao.perfilApi = eu.perfil;
                     if (eu.marcaCota) sessao.marcaCota = eu.marcaCota;
                     localStorage.setItem("rbs_sessao", JSON.stringify(sessao));
+
+                    verificarEExibirModalPrimeiroAcesso(sessao);
                     if (mudouCotaOuPerfil) {
                         inicializarLayoutPortal();
                     }

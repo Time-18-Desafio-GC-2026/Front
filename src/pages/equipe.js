@@ -12,12 +12,10 @@ document.addEventListener("DOMContentLoaded", async function () {
     const feedbackSenha = document.getElementById("feedbackSenhaPadrao");
     const formLote = document.getElementById("formCriarAdminsLote");
     const inputEmails = document.getElementById("adminEmailsList");
-    const inputNomeSetor = document.getElementById("adminDefaultName");
     const msgCriar = document.getElementById("msgCriarAdmins");
     const btnSubmit = document.getElementById("btnSubmitAdmins");
     const tbody = document.getElementById("tabelaEquipeRows");
 
-    // Recupera a senha padrão configurada pelo Superadmin (ou usa Rbs@2026Admin)
     const senhaSalva = localStorage.getItem(SENHA_PADRAO_ADMINS_KEY);
     if (senhaSalva && inputSenhaPadrao) {
         inputSenhaPadrao.value = senhaSalva;
@@ -58,18 +56,39 @@ document.addEventListener("DOMContentLoaded", async function () {
         )];
     }
 
+    function formatarDataHoraAcesso(isoString) {
+        if (!isoString) return "Nunca acessou";
+        const d = new Date(isoString);
+        return Number.isNaN(d.getTime()) ? "Nunca acessou" : d.toLocaleString("pt-BR");
+    }
+
     async function carregarEquipeRbs() {
         if (!tbody) return;
         try {
-            const todosUsuarios = (await apiRequest("/usuarios", "GET")) || [];
-            const equipe = todosUsuarios.filter(
+            const [todosUsuarios, logsAuditoria] = await Promise.all([
+                apiRequest("/usuarios", "GET").catch(() => []),
+                apiRequest("/auditoria", "GET").catch(() => [])
+            ]);
+
+            const equipe = (todosUsuarios || []).filter(
                 u => u.perfil === "SUPERADMIN" || u.perfil === "ADMIN"
             );
+
+            // Mapa com o último LOGIN_REALIZADO por e-mail/nome nos logs como complemento
+            const mapaUltimoLogin = {};
+            (logsAuditoria || []).forEach(log => {
+                if (log.acao === "LOGIN_REALIZADO" && log.atorNome) {
+                    const chave = String(log.atorNome).toLowerCase();
+                    if (!mapaUltimoLogin[chave]) {
+                        mapaUltimoLogin[chave] = log.criadoEm;
+                    }
+                }
+            });
 
             tbody.replaceChildren();
 
             if (equipe.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5">Nenhum administrador encontrado.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4">Nenhum administrador encontrado.</td></tr>`;
                 return;
             }
 
@@ -78,89 +97,30 @@ document.addEventListener("DOMContentLoaded", async function () {
                 const ehSuper = admin.perfil === "SUPERADMIN";
 
                 const tdNome = document.createElement("td");
-                tdNome.innerHTML = `<strong>${admin.nome || "Admin RBS"}</strong>`;
+                tdNome.innerHTML = `<strong>${admin.nome || admin.email}</strong>`;
 
                 const tdEmail = document.createElement("td");
                 tdEmail.textContent = admin.email;
 
                 const tdPerfil = document.createElement("td");
-                tdPerfil.textContent = ehSuper ? "SUPERADMIN (Dono)" : "ADMIN RBS";
+                tdPerfil.textContent = ehSuper ? "SUPERADMIN" : "ADMIN RBS";
 
-                const tdStatus = document.createElement("td");
-                tdStatus.textContent = admin.ativo
-                    ? (admin.precisaTrocarSenha ? "Ativo (Senha padrão)" : "Ativo")
-                    : "Desativado";
+                const ultimoLog =
+                    mapaUltimoLogin[String(admin.email).toLowerCase()] ||
+                    mapaUltimoLogin[String(admin.nome || "").toLowerCase()] ||
+                    admin.primeiroAcessoEm;
 
-                const tdAcoes = document.createElement("td");
+                const tdUltimoAcesso = document.createElement("td");
+                tdUltimoAcesso.textContent = admin.precisaTrocarSenha
+                    ? "Pendente (1º acesso não realizado)"
+                    : formatarDataHoraAcesso(ultimoLog);
 
-                if (ehSuper) {
-                    tdAcoes.innerHTML = `<small style="color:#64748b;">Conta principal protegida</small>`;
-                } else {
-                    const divBotoes = document.createElement("div");
-                    divBotoes.style.display = "flex";
-                    divBotoes.style.gap = "6px";
-                    divBotoes.style.flexWrap = "wrap";
-
-                    const btnReset = document.createElement("button");
-                    btnReset.type = "button";
-                    btnReset.className = "history-filter-reset";
-                    btnReset.textContent = "Resetar p/ Senha Padrão";
-                    btnReset.addEventListener("click", async () => {
-                        const senhaPadrao = inputSenhaPadrao.value.trim() || "Rbs@2026Admin";
-                        if (!window.confirm(`Resetar a senha de "${admin.email}" para a senha padrão (${senhaPadrao})?`)) return;
-                        try {
-                            await apiRequest(`/usuarios/${admin.id}/resetar-senha`, "POST", {
-                                novaSenhaTemporaria: senhaPadrao
-                            });
-                            alert(`Senha de ${admin.email} resetada para: ${senhaPadrao}`);
-                            await carregarEquipeRbs();
-                        } catch (erro) {
-                            alert(erro.message || "Erro ao resetar senha.");
-                        }
-                    });
-
-                    const btnToggleAtivo = document.createElement("button");
-                    btnToggleAtivo.type = "button";
-                    btnToggleAtivo.className = "history-filter-reset";
-                    btnToggleAtivo.textContent = admin.ativo ? "Desativar" : "Reativar";
-                    btnToggleAtivo.addEventListener("click", async () => {
-                        const acao = admin.ativo ? "desativar" : "reativar";
-                        try {
-                            await apiRequest(`/usuarios/${admin.id}/${acao}`, "POST");
-                            await carregarEquipeRbs();
-                        } catch (erro) {
-                            alert(erro.message || `Erro ao ${acao} administrador.`);
-                        }
-                    });
-
-                    divBotoes.append(btnReset, btnToggleAtivo);
-
-                    if (!admin.ativo) {
-                        const btnExcluir = document.createElement("button");
-                        btnExcluir.type = "button";
-                        btnExcluir.className = "faq-delete-button";
-                        btnExcluir.textContent = "Excluir";
-                        btnExcluir.addEventListener("click", async () => {
-                            if (!window.confirm(`Excluir permanentemente o administrador ${admin.email}?`)) return;
-                            try {
-                                await apiRequest(`/usuarios/${admin.id}`, "DELETE");
-                                await carregarEquipeRbs();
-                            } catch (erro) {
-                                alert(erro.message || "Erro ao excluir.");
-                            }
-                        });
-                        divBotoes.appendChild(btnExcluir);
-                    }
-
-                    tdAcoes.appendChild(divBotoes);
-                }
-
-                tr.append(tdNome, tdEmail, tdPerfil, tdStatus, tdAcoes);
+                tr.append(tdNome, tdEmail, tdPerfil, tdUltimoAcesso);
                 tbody.appendChild(tr);
             });
         } catch (erro) {
             console.error("Erro ao listar equipe RBS:", erro);
-            tbody.innerHTML = `<tr><td colspan="5">Erro ao carregar equipe: ${erro.message}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="4">Erro ao carregar equipe: ${erro.message}</td></tr>`;
         }
     }
 
@@ -169,7 +129,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         msgCriar.textContent = "";
         const senhaPadrao = inputSenhaPadrao.value.trim();
         const emails = extrairEmailsUnicos(inputEmails.value);
-        const nomeBase = inputNomeSetor.value.trim();
 
         if (senhaPadrao.length < 8) {
             msgCriar.textContent = "A senha padrão precisa ter pelo menos 8 caracteres (letras e números).";
@@ -189,11 +148,10 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         for (const email of emails) {
             const prefixoEmail = email.split("@")[0];
-            const nomeAdmin = nomeBase ? `${nomeBase} (${prefixoEmail})` : prefixoEmail;
             try {
                 await apiRequest("/admins", "POST", {
                     email,
-                    nome: nomeAdmin,
+                    nome: prefixoEmail,
                     senhaInicial: senhaPadrao
                 });
                 criados++;
@@ -207,11 +165,11 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         if (criados > 0 && erros.length === 0) {
             formLote.reset();
-            msgCriar.textContent = `✅ ${criados} administrador(es) cadastrado(s) com sucesso usando a senha padrão!`;
+            msgCriar.textContent = `${criados} administrador(es) cadastrado(s) com sucesso usando a senha padrão!`;
         } else if (criados > 0 && erros.length > 0) {
-            msgCriar.textContent = `⚠️ ${criados} criado(s). Avisos: ${erros.join(" | ")}`;
+            msgCriar.textContent = `${criados} criado(s). Avisos: ${erros.join(" | ")}`;
         } else {
-            msgCriar.textContent = `❌ Não foi possível cadastrar: ${erros.join(" | ")}`;
+            msgCriar.textContent = `Não foi possível cadastrar: ${erros.join(" | ")}`;
         }
 
         await carregarEquipeRbs();

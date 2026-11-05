@@ -1,6 +1,6 @@
 /**
  * ==========================================================================
- * PORTAL RBS — CONTROLADOR DE PESQUISA DE ATIVAÇÃO (EXCLUSIVO COTA MASTER)
+ * PORTAL RBS — CONTROLADOR DE PESQUISA DE ATIVAÇÃO (LISTA EXPANSÍVEL + PDF)
  * ==========================================================================
  */
 document.addEventListener("DOMContentLoaded", async function () {
@@ -87,7 +87,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 }
                 if (msgEl) {
                     msgEl.classList.remove("is-error");
-                    msgEl.textContent = "✅ Suas perguntas foram salvas com sucesso e enviadas à equipe de pesquisa da RBS!";
+                    msgEl.textContent = "Suas perguntas foram salvas com sucesso e enviadas à equipe de pesquisa da RBS!";
                 }
                 await carregarPerguntasDoCliente();
             } catch (erro) {
@@ -109,102 +109,188 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // ==================== 2. MODO ADMIN / SUPERADMIN RBS ====================
     if (visaoAdmin) visaoAdmin.hidden = false;
-    const gridAdmin = document.getElementById("gridPesquisaAdmin");
-    const btnExportar = document.getElementById("btnExportarPerguntasTxt");
+    const containerLista = document.getElementById("listaPesquisaAccordion");
+    const inputBusca = document.getElementById("buscaMarcaPesquisa");
+    const btnImportarPdf = document.getElementById("btnExportarPerguntasPdf");
     let consolidadoMaster = [];
+
+    function renderizarListaMaster(listaFiltrada) {
+        if (!containerLista) return;
+        containerLista.replaceChildren();
+
+        if (listaFiltrada.length === 0) {
+            containerLista.innerHTML = `
+                <div class="patrocinadores-vazio" style="border: 0; border-radius: 0;">
+                    Nenhum patrocinador da cota <strong>Master</strong> encontrado para os critérios informados.
+                </div>
+            `;
+            return;
+        }
+
+        listaFiltrada.forEach(({ marca, perguntas, logoUrl }) => {
+            const qtdEnviadas = (perguntas || []).length;
+            const faltam = Math.max(0, 3 - qtdEnviadas);
+
+            const textoTag = faltam === 0
+                ? "3/3 perguntas concluídas"
+                : (faltam === 1 ? "Falta 1 pergunta" : `Faltam ${faltam} perguntas`);
+            const bgTag = faltam === 0 ? "#dcfce7" : "#fef3c7";
+            const corTag = faltam === 0 ? "#166534" : "#92400e";
+
+            const item = document.createElement("div");
+            item.className = "pesquisa-accordion-item";
+
+            const header = document.createElement("div");
+            header.className = "pesquisa-accordion-header";
+
+            const iniciais = String(marca.nome || "M").slice(0, 2).toUpperCase();
+            const htmlLogo = logoUrl
+                ? `<img src="${logoUrl}" alt="${marca.nome}">`
+                : iniciais;
+
+            header.innerHTML = `
+                <div class="pesquisa-marca-identidade">
+                    <div class="pesquisa-marca-logo">${htmlLogo}</div>
+                    <div>
+                        <strong style="color: var(--text-strong); font-size: 14px; display: block;">${marca.nome}</strong>
+                        <small style="color: var(--text-muted); font-size: 12px;">CNPJ: ${marca.cnpj || "Não informado"}</small>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span class="patrocinador-cota" style="background: ${bgTag}; color: ${corTag}; margin: 0;">${textoTag}</span>
+                    <button type="button" class="botao-recolher" aria-expanded="false" title="Expandir perguntas">⌄</button>
+                </div>
+            `;
+
+            const body = document.createElement("div");
+            body.className = "pesquisa-accordion-body";
+            body.hidden = true;
+
+            for (let i = 1; i <= 3; i++) {
+                const p = (perguntas || []).find(q => Number(q.numeroPergunta) === i);
+                const linha = document.createElement("div");
+                linha.className = "pesquisa-linha-pergunta";
+                linha.innerHTML = p
+                    ? `<strong>Pergunta ${i}:</strong> ${p.textoPergunta} <span style="float:right; color:#64748b; font-size:11px;">${formatarData(p.atualizadoEm)}</span>`
+                    : `<strong>Pergunta ${i}:</strong> <em style="color:#94a3b8;">Ainda não enviada pelo patrocinador.</em>`;
+                body.appendChild(linha);
+            }
+
+            const btnToggle = header.querySelector(".botao-recolher");
+            header.addEventListener("click", () => {
+                const vaiFechar = !body.hidden;
+                body.hidden = vaiFechar;
+                btnToggle.textContent = vaiFechar ? "⌄" : "⌃";
+                btnToggle.setAttribute("aria-expanded", String(!vaiFechar));
+            });
+
+            item.append(header, body);
+            containerLista.appendChild(item);
+        });
+    }
+
+    function obterListaFiltrada() {
+        const termo = (inputBusca?.value || "").trim().toLowerCase();
+        if (!termo) return consolidadoMaster;
+        return consolidadoMaster.filter(({ marca }) =>
+            String(marca.nome || "").toLowerCase().includes(termo) ||
+            String(marca.cnpj || "").toLowerCase().includes(termo)
+        );
+    }
 
     async function carregarPainelAdminPesquisa() {
         try {
             const todasMarcas = (await apiRequest("/marcas", "GET")) || [];
             const marcasMaster = todasMarcas.filter(m => String(m.cota).toUpperCase() === "MASTER");
-
-            gridAdmin.replaceChildren();
             consolidadoMaster = [];
 
-            if (marcasMaster.length === 0) {
-                gridAdmin.innerHTML = `
-                    <div class="patrocinadores-vazio">
-                        Nenhum patrocinador da cota <strong>Master</strong> cadastrado até o momento.
-                    </div>
-                `;
-                return;
-            }
-
             for (const marca of marcasMaster) {
-                const perguntas = await apiRequest(`/marcas/${marca.id}/pesquisa-perguntas`, "GET").catch(() => []);
-                consolidadoMaster.push({ marca, perguntas: perguntas || [] });
-
-                const card = document.createElement("article");
-                card.className = "patrocinador-card";
-
-                const qtd = (perguntas || []).length;
-                const corStatus = qtd === 3 ? "#15803d" : (qtd > 0 ? "#b45309" : "#b42318");
-                const textoStatus = qtd === 3 ? "Completa (3/3)" : `${qtd}/3 enviadas`;
-
-                let htmlPerguntas = "";
-                for (let i = 1; i <= 3; i++) {
-                    const p = (perguntas || []).find(item => Number(item.numeroPergunta) === i);
-                    htmlPerguntas += `
-                        <div class="envio-item" style="margin-bottom: 8px;">
-                            <strong style="font-size: 0.8rem; color: #475569;">PERGUNTA ${i}</strong>
-                            <p class="envio-texto" style="margin: 4px 0;">
-                                ${p ? p.textoPergunta : "<em style='color:#94a3b8;'>Ainda não enviada pelo patrocinador.</em>"}
-                            </p>
-                            ${p ? `<small style="color:#64748b; font-size:0.75rem;">Autor: ${p.autorNome} (${formatarData(p.atualizadoEm)})</small>` : ""}
-                        </div>
-                    `;
-                }
-
-                card.innerHTML = `
-                    <div class="patrocinador-card-header">
-                        <h3>${marca.nome}</h3>
-                        <span class="patrocinador-cota" style="background:#fef3c7; color:${corStatus};">${textoStatus}</span>
-                    </div>
-                    <div class="patrocinador-info">
-                        <div class="patrocinador-info-item">
-                            <strong>CNPJ</strong>
-                            <span>${marca.cnpj || "Não informado"}</span>
-                        </div>
-                    </div>
-                    <div class="patrocinador-envios">
-                        <h4>Perguntas para o Instituto de Pesquisa</h4>
-                        ${htmlPerguntas}
-                    </div>
-                `;
-
-                gridAdmin.appendChild(card);
+                const [perguntas, materiais] = await Promise.all([
+                    apiRequest(`/marcas/${marca.id}/pesquisa-perguntas`, "GET").catch(() => []),
+                    apiRequest(`/marcas/${marca.id}/materiais`, "GET").catch(() => [])
+                ]);
+                const fotoMat = (materiais || []).find(mat => mat.tipoMaterial === "FOTO_EMPRESA");
+                const logoUrl = fotoMat ? (fotoMat.caminhoStorage || fotoMat.urlExterna) : "";
+                consolidadoMaster.push({ marca, perguntas: perguntas || [], logoUrl });
             }
+
+            renderizarListaMaster(obterListaFiltrada());
         } catch (erro) {
             console.error("Erro ao carregar pesquisa admin:", erro);
         }
     }
 
-    btnExportar?.addEventListener("click", () => {
-        if (consolidadoMaster.length === 0) {
-            alert("Não há patrocinadores Master para exportar.");
+    inputBusca?.addEventListener("input", () => {
+        renderizarListaMaster(obterListaFiltrada());
+    });
+
+    // Gera Relatório Oficial em PDF (Impressão Nativa Formatada)
+    btnImportarPdf?.addEventListener("click", () => {
+        const lista = obterListaFiltrada();
+        if (lista.length === 0) {
+            alert("Não há patrocinadores Master listados para exportar.");
             return;
         }
-        const linhas = [
-            "=================================================================",
-            "PLANETA ATLÂNTIDA 2026 — PAUTA DE PERGUNTAS (PATROCINADORES MASTER)",
-            `Gerado em: ${new Date().toLocaleString("pt-BR")}`,
-            "=================================================================\n"
-        ];
 
-        consolidadoMaster.forEach(({ marca, perguntas }) => {
-            linhas.push(`MARCA: ${marca.nome} (CNPJ: ${marca.cnpj || "-"})`);
-            for (let i = 1; i <= 3; i++) {
-                const p = perguntas.find(item => Number(item.numeroPergunta) === i);
-                linhas.push(`  [${i}] ${p ? p.textoPergunta : "(Pendente de envio)"}`);
-            }
-            linhas.push("-----------------------------------------------------------------");
-        });
+        const linhasHtml = lista.map(({ marca, perguntas }) => {
+            const q1 = perguntas.find(p => Number(p.numeroPergunta) === 1)?.textoPergunta || "<em>Pendente de envio</em>";
+            const q2 = perguntas.find(p => Number(p.numeroPergunta) === 2)?.textoPergunta || "<em>Pendente de envio</em>";
+            const q3 = perguntas.find(p => Number(p.numeroPergunta) === 3)?.textoPergunta || "<em>Pendente de envio</em>";
+            return `
+                <tr>
+                    <td><strong>${marca.nome}</strong><br><small>${marca.cnpj || "-"}</small></td>
+                    <td>1. ${q1}<br>2. ${q2}<br>3. ${q3}</td>
+                    <td>${perguntas.length}/3 enviadas</td>
+                </tr>
+            `;
+        }).join("");
 
-        const blob = new Blob([linhas.join("\n")], { type: "text/plain;charset=utf-8" });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = "perguntas-pesquisa-patrocinadores-master.txt";
-        link.click();
+        const janelaPdf = window.open("", "_blank", "width=950,height=750");
+        if (!janelaPdf) {
+            alert("Permita pop-ups no navegador para gerar o documento PDF.");
+            return;
+        }
+
+        janelaPdf.document.write(`
+            <!DOCTYPE html>
+            <html lang="pt-BR">
+            <head>
+                <meta charset="UTF-8">
+                <title>Relatório de Pesquisa de Ativação — Planeta Atlântida</title>
+                <style>
+                    body { font-family: Arial, sans-serif; color: #1e293b; margin: 32px; }
+                    .header { border-bottom: 3px solid #f47b20; padding-bottom: 14px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+                    .header h1 { margin: 0; color: #101d4d; font-size: 20px; }
+                    .meta { font-size: 12px; color: #64748b; }
+                    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+                    th, td { border: 1px solid #cbd5e1; padding: 10px 12px; text-align: left; font-size: 12px; vertical-align: top; line-height: 1.5; }
+                    th { background: #101d4d; color: #ffffff; }
+                    tr:nth-child(even) { background: #f8fafc; }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <div>
+                        <h1>Planeta Atlântida — Pauta da Pesquisa de Ativação (Cota Master)</h1>
+                        <div class="meta">Documento Oficial de Auditoria e Pesquisa • Grupo RBS</div>
+                    </div>
+                    <div class="meta">Emitido em: ${new Date().toLocaleString("pt-BR")}</div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 24%;">Patrocinador Master</th>
+                            <th style="width: 62%;">Perguntas Cadastradas</th>
+                            <th style="width: 14%;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>${linhasHtml}</tbody>
+                </table>
+                <script>window.onload = function() { window.print(); };<\/script>
+            </body>
+            </html>
+        `);
+        janelaPdf.document.close();
     });
 
     await carregarPainelAdminPesquisa();

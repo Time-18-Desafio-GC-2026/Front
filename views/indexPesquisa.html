@@ -7,7 +7,6 @@
     <meta name="description" content="Pesquisa de Ativação do Planeta Atlântida - Exclusivo Cota Master">
     <title>RBS Patrocinadores | Pesquisa de Ativação</title>
     <link rel="stylesheet" href="../assets/css/style_portal.css">
-    <script src="../src/shared/theme.js"></script>
     <script src="../src/guards/security.js"></script>
 </head>
 
@@ -68,24 +67,27 @@
                     </section>
                 </section>
 
-                <!-- VISÃO DO ADMINISTRADOR RBS -->
+                <!-- VISÃO DO ADMINISTRADOR RBS (ESTRUTURA DE LISTA EXPANSÍVEL + CABEÇALHO DE BUSCA) -->
                 <section id="visaoAdminPesquisa" hidden>
-                    <section class="dashboard-header">
-                        <div class="patrocinadores-topo" style="width: 100%;">
-                            <div class="patrocinadores-titulos">
-                                <h1>Pesquisa de Ativação — Patrocinadores Master</h1>
-                                <p>Acompanhe e exporte as 3 perguntas personalizadas enviadas por cada patrocinador da
-                                    Cota Master.</p>
-                            </div>
-                            <div style="display: flex; gap: 10px;">
-                                <button class="button button-primary" type="button" id="btnExportarPerguntasTxt">
-                                    📄 Baixar Pauta de Perguntas (.txt)
-                                </button>
-                            </div>
-                        </div>
-                    </section>
+                    <header class="history-header">
+                        <h1>Pesquisa de Ativação</h1>
+                        <p>Acompanhe e importe as 3 perguntas personalizadas enviadas por cada patrocinador da Cota
+                            Master.</p>
+                    </header>
 
-                    <div id="gridPesquisaAdmin" class="patrocinadores-grid"></div>
+                    <div class="history-filters" style="justify-content: space-between; align-items: center;">
+                        <label for="buscaMarcaPesquisa" style="margin: 0; flex: 1 1 320px;">
+                            Buscar Patrocinador Master (Nome ou CNPJ)
+                            <input id="buscaMarcaPesquisa" type="search"
+                                placeholder="Digite o nome da marca ou CNPJ...">
+                        </label>
+                        <button class="history-filter-reset" type="button" id="btnExportarPerguntasPdf"
+                            style="align-self: flex-end; height: 36px;">
+                            Importar Perguntas
+                        </button>
+                    </div>
+
+                    <div id="listaPesquisaAccordion" class="pesquisa-accordion-wrapper"></div>
                 </section>
             </main>
         </div>
