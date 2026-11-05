@@ -1,214 +1,115 @@
 ﻿<!DOCTYPE html>
-
 <html lang="pt-BR">
 
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <meta name="description" content="Portal de gestão RBS - Dashboard administrativo">
-
     <title>RBS Patrocinadores | Dashboard</title>
     <link rel="stylesheet" href="../assets/css/style_portal.css">
-
-    <script src="../src/shared/theme.js"></script>
     <script src="../src/guards/security.js"></script>
 </head>
 
 <body>
-    <!-- =========================================================
-         APP SHELL
-    ========================================================== -->
-
     <div class="app-shell">
-
-        <!-- =====================================================
-             SIDEBAR
-        ====================================================== -->
-
         <aside class="sidebar" id="sidebar"></aside>
 
-        <!-- =====================================================
-
-             MAIN AREA
-
-        ====================================================== -->
-
         <div class="main-area">
-
-            <!-- TOPBAR -->
-
             <header class="topbar"></header>
 
-
-
             <main class="content" id="dashboard">
-
-
-
-                <!-- DASHBOARD HEADER -->
-
-                <section class="dashboard-header">
-                    <div class="dashboard-title">
-                        <h1>Dashboard</h1>
-                        <p>Acompanhe patrocinadores, entregas e pendências.</p>
-
-                        <div class="new-sponsor-wrapper">
-                            <button class="button button-primary" type="button" id="newSponsorButton"
-                                aria-expanded="false" aria-controls="newSponsorForm">
-                                <svg viewBox="0 0 24 24" aria-hidden="true">
-                                    <path d="M12 5v14M5 12h14" />
-                                </svg>
-                                Novo patrocinador
-                            </button>
-
-                            <div class="new-sponsor-form" id="newSponsorForm">
-
-                                <div class="form-header">
-
-                                    <div>
-                                        <h3>Novo patrocinador</h3>
-                                        <p>Cadastre um novo patrocinador na plataforma.</p>
-                                    </div>
-
-                                    <button type="button" class="close-form" id="closeSponsorForm" aria-label="Fechar">
-                                        ×
-                                    </button>
-
-                                </div>
-
-                                <form id="sponsorForm">
-
-                                    <!-- Nome -->
-
-                                    <div class="form-group">
-
-                                        <label for="sponsorName">
-
-                                            Nome da empresa
-
-                                        </label>
-
-
-
-                                        <input type="text" id="sponsorName" name="nome"
-                                            placeholder="Ex.: Aurora Alimentos" required>
-
-                                    </div>
-
-                                    <!-- CNPJ -->
-
-                                    <div class="form-group">
-
-                                        <label for="sponsorCnpj">
-
-                                            CNPJ
-
-                                        </label>
-
-                                        <input type="text" id="sponsorCnpj" name="cnpj" placeholder="00.000.000/0000-00"
-                                            maxlength="18" required>
-
-                                    </div>
-
-                                    <!-- Segmento -->
-
-                                    <div class="form-group">
-
-                                        <label for="sponsorEmails">
-
-                                            Emails
-
-                                        </label>
-
-                                        <input type="text" id="sponsorEmails" name="Emails"
-                                            placeholder="Ex.: Funcionário1@empresa.com, Funcionário2@empresa.com"
-                                            required>
-                                    </div>
-
-                                    <!-- Cota -->
-
-                                    <div class="form-group">
-
-                                        <label for="sponsorQuota">
-
-                                            Cota
-
-                                        </label>
-
-                                        <select id="sponsorQuota" name="cota" required>
-                                            <option value="">Selecione uma cota</option>
-
-                                            <option value="Master">Master</option>
-
-                                            <option value="Subcota G">Subcota G</option>
-
-                                            <option value="Subcota">Subcota</option>
-
-                                        </select>
-
-
-
-                                    </div>
-
-                                    <!-- Data -->
-
-                                    <div class="form-group">
-
-                                        <label for="sponsorComercialPlan">
-
-                                            Plano Comercial
-
-                                        </label>
-
-                                        <input type="file" id="sponsorComercialPlan" name="plano_comercial">
-
-                                    </div>
-
-                                    <!-- Foto da Empresa -->
-                                    <div class="form-group">
-                                        <label for="sponsorPhoto">Foto da empresa</label>
-                                        <input type="file" id="sponsorPhoto" name="foto"
-                                            accept="image/png,image/jpeg,image/webp">
-                                        <small>JPG, PNG ou WEBP; até 2 MB.</small>
-                                    </div>
-                                    <!-- Botões -->
-
-                                    <div class="form-actions">
-
-                                        <button type="button" class="form-cancel" id="cancelSponsor">
-                                            Cancelar
-                                        </button>
-
-                                        <button type="submit" class="form-submit">
-                                            Cadastrar patrocinador
-
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
                 <section class="secao-patrocinadores">
                     <div class="patrocinadores-topo">
                         <div class="patrocinadores-titulos">
                             <h1>Patrocinadores</h1>
-                            <p>Visualize os patrocinadores cadastrados.</p>
                         </div>
 
-                        <div class="patrocinadores-filtros">
-                            <div class="campo-busca">
-                                <input type="search" id="buscarPatrocinador" placeholder="Buscar por nome ou CNPJ..."
-                                    aria-label="Buscar por nome ou CNPJ">
+                        <div class="patrocinadores-acoes-topo">
+                            <div class="patrocinadores-filtros">
+                                <div class="campo-busca">
+                                    <input type="search" id="buscarPatrocinador"
+                                        placeholder="Buscar por nome ou CNPJ..." aria-label="Buscar por nome ou CNPJ">
+                                </div>
+
+                                <select id="filtrarCota" aria-label="Filtrar por cota">
+                                    <option value="">Todas as cotas</option>
+                                </select>
                             </div>
 
-                            <select id="filtrarCota" aria-label="Filtrar por cota">
-                                <option value="">Todas as cotas</option>
-                            </select>
+                            <div class="new-sponsor-wrapper">
+                                <button class="button button-primary" type="button" id="newSponsorButton"
+                                    aria-expanded="false" aria-controls="newSponsorForm">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M12 5v14M5 12h14" />
+                                    </svg>
+                                    Novo patrocinador
+                                </button>
+
+                                <div class="new-sponsor-form" id="newSponsorForm">
+                                    <div class="form-header">
+                                        <div>
+                                            <h3>Novo patrocinador</h3>
+                                            <p>Cadastre um novo patrocinador na plataforma.</p>
+                                        </div>
+                                        <button type="button" class="close-form" id="closeSponsorForm"
+                                            aria-label="Fechar">
+                                            ×
+                                        </button>
+                                    </div>
+
+                                    <form id="sponsorForm">
+                                        <div class="form-group">
+                                            <label for="sponsorName">Nome da empresa</label>
+                                            <input type="text" id="sponsorName" name="nome"
+                                                placeholder="Ex.: Aurora Alimentos" required>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="sponsorCnpj">CNPJ</label>
+                                            <input type="text" id="sponsorCnpj" name="cnpj"
+                                                placeholder="00.000.000/0000-00" maxlength="18" required>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="sponsorEmails">Emails</label>
+                                            <input type="text" id="sponsorEmails" name="Emails"
+                                                placeholder="Ex.: funcionario1@empresa.com, funcionario2@empresa.com"
+                                                required>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="sponsorQuota">Cota</label>
+                                            <select id="sponsorQuota" name="cota" required>
+                                                <option value="">Selecione uma cota</option>
+                                                <option value="Master">Master</option>
+                                                <option value="Subcota G">Subcota G</option>
+                                                <option value="Subcota">Subcota</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="sponsorComercialPlan">Plano Comercial</label>
+                                            <input type="file" id="sponsorComercialPlan" name="plano_comercial">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="sponsorPhoto">Foto da empresa</label>
+                                            <input type="file" id="sponsorPhoto" name="foto"
+                                                accept="image/png,image/jpeg,image/webp">
+                                            <small>JPG, PNG ou WEBP; até 2 MB.</small>
+                                        </div>
+
+                                        <div class="form-actions">
+                                            <button type="button" class="form-cancel" id="cancelSponsor">
+                                                Cancelar
+                                            </button>
+                                            <button type="submit" class="form-submit">
+                                                Cadastrar patrocinador
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -216,28 +117,14 @@
                         <!-- Cards dos patrocinadores -->
                     </div>
                 </section>
-
             </main>
-
         </div>
     </div>
 
-
-    <!-- Camada central de comunicação HTTP com o Back-end Java -->
     <script src="../src/services/api.js"></script>
-
-    <!-- Histórico de atividades -->
     <script src="../src/pages/historico.js"></script>
-
-    <!-- Módulos de gerenciamento de patrocinadores -->
     <script src="../src/pages/dashboard.js"></script>
-
-    <!-- Nome e avatar da conta -->
     <script src="../src/shared/layout.js"></script>
-
-    <!-- Interações do dashboard -->
-
-
 </body>
 
 </html>

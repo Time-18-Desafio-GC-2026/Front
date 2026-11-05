@@ -17,9 +17,10 @@ function inicializarLayoutPortal() {
     const paginaAtual = window.location.pathname.split("/").pop() || "indexAdministrador.html";
 
     const titulosPaginas = {
-        "indexAdministrador.html": "Dashboard",
+        "indexAdministrador.html": "Patrocinadores",
         "detalhes-patrocinador.html": "Detalhes da empresa",
         "indexPatrocinador.html": "Dashboard",
+        "indexCredenciamento.html": "Credenciamento",
         "indexPesquisa.html": "Pesquisa de Ativação",
         "indexRelatorio.html": "Relatórios",
         "indexHistorico.html": "Auditoria",
@@ -29,18 +30,18 @@ function inicializarLayoutPortal() {
     };
 
     const tituloBreadcrumb = titulosPaginas[paginaAtual] || "Dashboard";
-    const linkDashboard = ehPatrocinador ? "indexPatrocinador.html" : "indexAdministrador.html#dashboard";
-    const textoWorkspace = ehPatrocinador ? "Administração Cliente" : "Administração RBS";
+    const linkDashboard = ehPatrocinador ? "indexPatrocinador.html" : "indexAdministrador.html";
+    const textoWorkspace = ehPatrocinador ? "Área do Patrocinador" : "Administração RBS";
     const textoSubtitulo = ehPatrocinador ? "Visão geral da sua marca" : "Visão geral da operação";
     const textoPermissao = ehPatrocinador
-        ? "Acesso exclusivo aos materiais, cortesias e relatórios da sua marca."
+        ? "Acesso exclusivo aos materiais, contratos, cortesias e relatórios da sua marca."
         : "Acesso à gestão de todos os patrocinadores e cotas.";
-    const textoEquipe = ehSuperAdmin ? "SuperAdmin RBS" : (ehPatrocinador ? "Equipe Cliente" : "Equipe RBS");
 
     const isDashActive =
         paginaAtual === "indexAdministrador.html" ||
         paginaAtual === "detalhes-patrocinador.html" ||
         paginaAtual === "indexPatrocinador.html";
+    const isCredActive = paginaAtual === "indexCredenciamento.html";
     const isPesqActive = paginaAtual === "indexPesquisa.html";
     const isRelActive = paginaAtual === "indexRelatorio.html";
     const isAudActive = paginaAtual === "indexHistorico.html";
@@ -54,7 +55,7 @@ function inicializarLayoutPortal() {
     if (sidebarEl) {
         sidebarEl.innerHTML = `
             <a class="sidebar-brand" href="${linkDashboard}">
-                <img class="brand-mark" src="${logoInicial}" data-theme-light="../assets/img/LogoPlanetaOrange.png">
+                <img class="brand-mark" src="${logoInicial}" alt="Planeta Atlântida">
                 <div class="brand-copy">
                     <strong>Portal do Patrocinador</strong>
                 </div>
@@ -74,6 +75,14 @@ function inicializarLayoutPortal() {
                         <rect x="14" y="14" width="7" height="7" rx="1"/>
                     </svg>
                     <span>Dashboard</span>
+                </a>
+                <a class="nav-item ${isCredActive ? "active" : ""}" href="indexCredenciamento.html" ${isCredActive ? 'aria-current="page"' : ""}>
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <rect x="3" y="4" width="18" height="16" rx="2"/>
+                        <circle cx="9" cy="10" r="2"/>
+                        <path d="M15 8h2M15 12h2M7 16h10"/>
+                    </svg>
+                    <span>Credenciamento</span>
                 </a>
                 ${podeVerPesquisa ? `
                 <a class="nav-item ${isPesqActive ? "active" : ""}" href="indexPesquisa.html" ${isPesqActive ? 'aria-current="page"' : ""}>
@@ -143,6 +152,7 @@ function inicializarLayoutPortal() {
         `;
     }
 
+    // Topbar sem botão de tema e exibindo Nome em cima + E-mail embaixo
     const topbarEl = document.querySelector("header.topbar");
     if (topbarEl) {
         topbarEl.innerHTML = `
@@ -150,27 +160,54 @@ function inicializarLayoutPortal() {
                 <span class="breadcrumb">${textoWorkspace} <b>/</b> <span id="breadcrumbTitle">${tituloBreadcrumb}</span></span>
             </div>
             <div class="topbar-user">
-
                 <a class="topbar-user-link" href="indexPerfil.html#perfil" aria-label="Abrir perfil da conta">
                     <div class="user-text">
-                        <strong id="accountName" data-account-name>Carregando...</strong>
-                        <span id="accountRole">${textoEquipe}</span>
+                        <strong id="accountName" data-account-name>${sessao.nome || "Usuário"}</strong>
+                        <span id="accountEmail" data-account-email>${sessao.email || ""}</span>
                     </div>
+                    <div class="avatar" data-account-avatar aria-hidden="true">US</div>
                 </a>
             </div>
         `;
     }
+
+    function aplicarNomeEmailEAvatar(nome, email) {
+        const nomeLimpo = String(nome || email || "Conta").trim();
+        const emailLimpo = String(email || sessao.email || "").trim();
+
+        document.querySelectorAll("[data-account-name]").forEach(el => {
+            el.textContent = nomeLimpo;
+        });
+        document.querySelectorAll("[data-account-email]").forEach(el => {
+            el.textContent = emailLimpo;
+        });
+
+        const iniciais = nomeLimpo
+            .split(/\s+/)
+            .slice(0, 2)
+            .map(parte => parte[0])
+            .join("")
+            .toUpperCase();
+        document.querySelectorAll("[data-account-avatar]").forEach(el => {
+            el.textContent = iniciais || "US";
+        });
+    }
+
+    aplicarNomeEmailEAvatar(sessao.nome, sessao.email);
 
     if (typeof apiRequest === "function" && localStorage.getItem("rbs_token")) {
         apiRequest("/auth/eu", "GET")
             .then(eu => {
                 if (eu && (eu.nome || eu.email)) {
                     const nomeReal = (eu.nome || eu.email).trim();
+                    const emailReal = (eu.email || sessao.email || "").trim();
+                    aplicarNomeEmailEAvatar(nomeReal, emailReal);
+
                     const mudouCotaOuPerfil =
                         (eu.marcaCota && eu.marcaCota !== sessao.marcaCota) ||
                         (eu.perfil && eu.perfil !== sessao.perfilApi);
                     sessao.nome = nomeReal;
-                    sessao.email = eu.email || sessao.email;
+                    sessao.email = emailReal;
                     if (eu.perfil) sessao.perfilApi = eu.perfil;
                     if (eu.marcaCota) sessao.marcaCota = eu.marcaCota;
                     localStorage.setItem("rbs_sessao", JSON.stringify(sessao));

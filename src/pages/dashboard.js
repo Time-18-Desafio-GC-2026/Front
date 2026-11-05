@@ -5,6 +5,7 @@ const PATROCINADORES_KEY = "rbs_patrocinadores";
 const USUARIOS_KEY = "rbs_usuarios";
 const ENVIOS_KEY = "rbs_envios";
 const MIDIA_RBS_KEY = "rbs_midia_rbs";
+const CONTRATOS_KEY = "rbs_contratos";
 const CORTESIAS_KEY = "rbs_cortesias";
 const SETORES_CORTESIA = ["Arena", "Camarote", "Premium"];
 
@@ -79,6 +80,7 @@ async function sincronizarDadosComBackend() {
         const patrocinadoresSincronizados = [];
         const enviosCliente = [];
         const midiasRbs = [];
+        const contratosMarca = [];
         const cortesiasBanco = [];
 
         for (const m of marcasApi) {
@@ -125,7 +127,20 @@ async function sincronizarDadosComBackend() {
 
             (materiaisApi || []).forEach(mat => {
                 const urlArquivoNuvem = mat.caminhoStorage || mat.urlExterna || null;
-                if (mat.autorPerfil === "PATROCINADOR") {
+
+                if (mat.tipoMaterial === "CONTRATO" || mat.abaDestino === "ABA_7_CONTRATO") {
+                    contratosMarca.push({
+                        id: mat.id,
+                        patrocinadorId: m.id,
+                        titulo: mat.titulo,
+                        descricao: mat.descricao || "",
+                        arquivoData: urlArquivoNuvem || "#",
+                        autorNome: mat.autorNome || (mat.autorPerfil === "PATROCINADOR" ? "Patrocinador" : "Equipe RBS"),
+                        autorPerfil: mat.autorPerfil,
+                        status: mat.status,
+                        criadoEm: mat.criadoEm
+                    });
+                } else if (mat.autorPerfil === "PATROCINADOR") {
                     enviosCliente.push({
                         id: mat.id,
                         patrocinadorId: m.id,
@@ -176,6 +191,7 @@ async function sincronizarDadosComBackend() {
         ));
         localStorage.setItem(ENVIOS_KEY, JSON.stringify(enviosCliente));
         localStorage.setItem(MIDIA_RBS_KEY, JSON.stringify(midiasRbs));
+        localStorage.setItem(CONTRATOS_KEY, JSON.stringify(contratosMarca));
         localStorage.setItem(CORTESIAS_KEY, JSON.stringify(cortesiasBanco));
     } catch (erro) {
         console.error("Erro ao sincronizar com o Back-end:", erro);
@@ -205,7 +221,7 @@ function validarEmailsPatrocinador(valor) {
     return emails;
 }
 
-// --- MODULO: Leitura de Envios ---
+// --- MODULO: Leitura de Envios e Contratos ---
 function listarEnvios() {
     return JSON.parse(localStorage.getItem(ENVIOS_KEY) || "[]");
 }
@@ -216,7 +232,12 @@ function listarEnviosPorPatrocinador(patrocinadorId) {
     );
 }
 
-// --- MODULO: Mídia e Publicações RBS (Conectado ao Supabase Storage) ---
+function listarContratosPorPatrocinador(patrocinadorId) {
+    const todos = JSON.parse(localStorage.getItem(CONTRATOS_KEY) || "[]");
+    return todos.filter(c => String(c.patrocinadorId) === String(patrocinadorId));
+}
+
+// --- MODULO: Mídia e Publicações RBS ---
 function listarMidiaRBS() {
     return JSON.parse(localStorage.getItem(MIDIA_RBS_KEY) || "[]");
 }
@@ -261,7 +282,6 @@ function criarAreaMidiaRBS(patrocinador) {
         campoArquivo.click();
     });
 
-    // Upload real de arquivo pela RBS para o Supabase Storage (até 20 MB) + Gatilho Python se for .xlsx
     campoArquivo.addEventListener("change", async function () {
         const arquivo = campoArquivo.files[0];
         if (!arquivo) return;
@@ -289,7 +309,6 @@ function criarAreaMidiaRBS(patrocinador) {
         }
     });
 
-    // Registro de Link de Publicação pela RBS via Multipart
     formularioLink.addEventListener("submit", async function (event) {
         event.preventDefault();
         const url = campoLink.value.trim();
@@ -376,6 +395,126 @@ function criarAreaMidiaRBS(patrocinador) {
     return secao;
 }
 
+// --- MODULO: Contratos PDF (Ida e Volta Assinado entre Admin RBS e Patrocinador) ---
+function criarSecaoContratos(patrocinador) {
+    const contratos = listarContratosPorPatrocinador(patrocinador.id);
+
+    const secao = document.createElement("section");
+    secao.className = "patrocinador-cortesias";
+
+    const cabecalho = document.createElement("div");
+    cabecalho.className = "secao-cabecalho";
+    const titulo = document.createElement("h4");
+    titulo.textContent = `Contrato de Patrocínio (${contratos.length})`;
+    cabecalho.appendChild(titulo);
+
+    const conteudo = document.createElement("div");
+    conteudo.className = "secao-conteudo";
+    conteudo.hidden = false;
+
+    const descricao = document.createElement("p");
+    descricao.className = "envios-vazio";
+    descricao.style.marginBottom = "12px";
+    descricao.textContent = "Envie a minuta do contrato em PDF para assinatura do patrocinador ou consulte o contrato assinado devolvido pela empresa.";
+    conteudo.appendChild(descricao);
+
+    const lista = document.createElement("div");
+    lista.className = "midia-rbs-lista";
+
+    if (contratos.length === 0) {
+        const vazio = document.createElement("p");
+        vazio.className = "midia-rbs-vazio";
+        vazio.textContent = "Nenhum contrato em PDF enviado para esta empresa ainda.";
+        lista.appendChild(vazio);
+    } else {
+        contratos.forEach(contrato => {
+            const item = document.createElement("div");
+            item.className = "envio-item";
+
+            const enviadoPeloCliente = contrato.autorPerfil === "PATROCINADOR";
+            const badgeTexto = enviadoPeloCliente
+                ? "✍️ Assinado / Enviado pelo Patrocinador"
+                : "📄 Enviado pela Administração RBS";
+
+            const linha = document.createElement("div");
+            linha.className = "envio-linha";
+
+            const infoTexto = document.createElement("div");
+            infoTexto.style.flex = "1";
+            const dataStr = contrato.criadoEm ? new Date(contrato.criadoEm).toLocaleString("pt-BR") : "";
+            infoTexto.innerHTML = `
+                <span class="envio-status" style="margin-bottom:6px;">${badgeTexto}</span>
+                <p class="envio-texto" style="margin:4px 0;"><strong>${contrato.titulo}</strong></p>
+                <small style="color:#64748b; font-size:0.78rem;">Por: ${contrato.autorNome} • ${dataStr}</small>
+            `;
+
+            const btnBaixar = document.createElement("a");
+            btnBaixar.className = "envio-download button button-primary";
+            btnBaixar.href = contrato.arquivoData;
+            btnBaixar.target = "_blank";
+            btnBaixar.rel = "noopener noreferrer";
+            btnBaixar.download = contrato.titulo || "contrato.pdf";
+            btnBaixar.textContent = "Visualizar / Baixar PDF";
+            btnBaixar.addEventListener("click", () => {
+                if (contrato.id) {
+                    apiRequest(`/materiais/${contrato.id}/acessar`, "POST").catch(() => { });
+                }
+            });
+
+            linha.append(infoTexto, btnBaixar);
+            item.appendChild(linha);
+            lista.appendChild(item);
+        });
+    }
+
+    const divUpload = document.createElement("div");
+    divUpload.className = "midia-rbs-arquivo";
+    divUpload.style.marginTop = "10px";
+
+    const inputPdf = document.createElement("input");
+    inputPdf.type = "file";
+    inputPdf.accept = ".pdf,application/pdf";
+    inputPdf.hidden = true;
+
+    const btnEnviarPdf = document.createElement("button");
+    btnEnviarPdf.type = "button";
+    btnEnviarPdf.className = "button button-primary";
+    btnEnviarPdf.textContent = "📤 Enviar Contrato em PDF (Para Assinatura / Final Assinado)";
+
+    btnEnviarPdf.addEventListener("click", () => inputPdf.click());
+
+    inputPdf.addEventListener("change", async () => {
+        const arquivo = inputPdf.files?.[0];
+        if (!arquivo) return;
+        btnEnviarPdf.disabled = true;
+        btnEnviarPdf.textContent = "Enviando PDF...";
+        try {
+            await apiUploadMaterial(patrocinador.id, {
+                titulo: arquivo.name,
+                descricao: "Contrato em PDF enviado pela Administração RBS",
+                abaDestino: "ABA_7_CONTRATO",
+                tipoMaterial: "CONTRATO",
+                caminhoStorage: null,
+                urlExterna: null
+            }, arquivo);
+            alert("Contrato em PDF enviado com sucesso para o patrocinador!");
+            await sincronizarDadosComBackend();
+            atualizarTelaPatrocinadores(patrocinador.id);
+        } catch (erro) {
+            alert(erro.message || "Não foi possível enviar o contrato em PDF.");
+        } finally {
+            btnEnviarPdf.disabled = false;
+            btnEnviarPdf.textContent = "📤 Enviar Contrato em PDF (Para Assinatura / Final Assinado)";
+            inputPdf.value = "";
+        }
+    });
+
+    divUpload.append(btnEnviarPdf, inputPdf);
+    conteudo.append(lista, divUpload);
+    secao.append(cabecalho, conteudo);
+    return secao;
+}
+
 // --- MODULO: Cortesias ---
 function listarCortesias() {
     return JSON.parse(localStorage.getItem(CORTESIAS_KEY) || "[]");
@@ -400,16 +539,11 @@ function criarSecaoCortesias(patrocinador) {
     cabecalhoCortesias.className = "secao-cabecalho";
     const titulo = document.createElement("h4");
     titulo.textContent = "Cortesias";
-    const botaoCortesias = document.createElement("button");
-    botaoCortesias.type = "button";
-    botaoCortesias.className = "botao-recolher";
-    botaoCortesias.textContent = "⌄";
-    botaoCortesias.setAttribute("aria-expanded", "false");
-    cabecalhoCortesias.append(titulo, botaoCortesias);
+    cabecalhoCortesias.appendChild(titulo);
 
     const conteudoCortesias = document.createElement("div");
     conteudoCortesias.className = "secao-conteudo";
-    conteudoCortesias.hidden = true;
+    conteudoCortesias.hidden = false;
     const grade = document.createElement("div");
     grade.className = "cortesias-grade";
 
@@ -546,12 +680,6 @@ function criarSecaoCortesias(patrocinador) {
 
     conteudoCortesias.append(botaoEditar, formulario);
     secao.append(cabecalhoCortesias, conteudoCortesias);
-    botaoCortesias.addEventListener("click", function () {
-        const vaiRecolher = !conteudoCortesias.hidden;
-        conteudoCortesias.hidden = vaiRecolher;
-        botaoCortesias.textContent = vaiRecolher ? "⌄" : "⌃";
-        botaoCortesias.setAttribute("aria-expanded", String(!vaiRecolher));
-    });
     return secao;
 }
 
@@ -598,11 +726,7 @@ function configurarFiltrosPatrocinadores() {
             const nome = normalizarTexto(
                 card.querySelector(".patrocinador-card-header h3")?.textContent
             );
-            const cnpj = normalizarTexto(
-                [...card.querySelectorAll(".patrocinador-info-item")]
-                    .find(item => normalizarTexto(item.querySelector("strong")?.textContent) === "cnpj")
-                    ?.querySelector("span")?.textContent
-            );
+            const cnpj = normalizarTexto(card.dataset.cnpj || "");
             const cota = card.querySelector(".patrocinador-cota")?.textContent.trim() || "";
             const correspondeBusca = !busca || nome.includes(busca) || cnpj.includes(busca);
             const correspondeCota = !cotaSelecionada || cota === cotaSelecionada;
@@ -615,7 +739,7 @@ function configurarFiltrosPatrocinadores() {
     aplicarFiltros();
 }
 
-// --- MODULO: Cadastro, Edição e Exclusão com Upload Físico para o Supabase Storage ---
+// --- MODULO: Cadastro, Edição e Exclusão ---
 async function cadastrarPatrocinador(dados) {
     const emailsValidos = validarEmailsPatrocinador(dados.email);
     const prefixoLimpo = dados.nome.replace(/[^a-zA-Z0-9]/g, "").slice(0, 6) || "Marca";
@@ -747,7 +871,7 @@ function atualizarTelaPatrocinadores(patrocinadorId) {
     }
 }
 
-// --- MODULO: Renderização dos Cards (Listagem Geral e Modo Detalhes da Empresa) ---
+// --- MODULO: Renderização dos Cards (Sem Dropdown no Dashboard / Completo nos Detalhes) ---
 function renderizarPatrocinadores(patrocinadoresParaExibir, modoDetalhes = false) {
     const grid = document.getElementById("patrocinadoresGrid");
     if (!grid) return;
@@ -767,31 +891,11 @@ function renderizarPatrocinadores(patrocinadoresParaExibir, modoDetalhes = false
         const card = document.createElement("article");
         card.className = "patrocinador-card";
         card.dataset.patrocinadorId = String(patrocinador.id);
-
-        if (!modoDetalhes) {
-            card.setAttribute("role", "link");
-            card.tabIndex = 0;
-            card.setAttribute("aria-label", `Abrir detalhes de ${patrocinador.nome || "empresa"}`);
-            function abrirDetalhes() {
-                const url = new URL("detalhes-patrocinador.html", window.location.href);
-                url.searchParams.set("id", String(patrocinador.id));
-                window.location.href = url.href;
-            }
-            card.addEventListener("click", event => {
-                if (event.target.closest("button, a, input, select, textarea, label")) return;
-                abrirDetalhes();
-            });
-            card.addEventListener("keydown", event => {
-                if (event.target !== card || !["Enter", " "].includes(event.key)) return;
-                event.preventDefault();
-                abrirDetalhes();
-            });
-        }
+        card.dataset.cnpj = String(patrocinador.cnpj || "");
 
         const header = document.createElement("div");
         header.className = "patrocinador-card-header";
 
-        // Bloco de Foto / Logo da empresa adicionado pelo seu colega
         const foto = document.createElement("div");
         foto.className = "patrocinador-foto";
         if (patrocinador.foto) {
@@ -807,20 +911,12 @@ function renderizarPatrocinadores(patrocinadoresParaExibir, modoDetalhes = false
                 seletorFoto.type = "file";
                 seletorFoto.accept = "image/jpeg,image/png,image/webp";
                 seletorFoto.hidden = true;
-                seletorFoto.setAttribute("aria-label", `Selecionar foto de ${patrocinador.nome || "empresa"}`);
                 foto.setAttribute("role", "button");
                 foto.tabIndex = 0;
-                foto.setAttribute("aria-label", `Adicionar foto para ${patrocinador.nome || "empresa"}`);
                 foto.title = "Clique para adicionar uma foto";
                 foto.appendChild(seletorFoto);
 
                 foto.addEventListener("click", event => {
-                    event.stopPropagation();
-                    seletorFoto.click();
-                });
-                seletorFoto.addEventListener("keydown", event => {
-                    if (!["Enter", " "].includes(event.key)) return;
-                    event.preventDefault();
                     event.stopPropagation();
                     seletorFoto.click();
                 });
@@ -852,14 +948,36 @@ function renderizarPatrocinadores(patrocinadoresParaExibir, modoDetalhes = false
         cota.className = "patrocinador-cota";
         cota.textContent = patrocinador.cota || "Cota não informada";
 
-        const botaoRecolherTudo = document.createElement("button");
-        botaoRecolherTudo.type = "button";
-        botaoRecolherTudo.className = "botao-recolher";
-        botaoRecolherTudo.textContent = "⌄";
-        botaoRecolherTudo.setAttribute("aria-expanded", "false");
-        botaoRecolherTudo.setAttribute("aria-label", "Recolher conteúdo do patrocinador");
+        // No Dashboard principal: Card limpo, sem botão de dropdown (clicar abre os detalhes)
+        if (!modoDetalhes) {
+            card.setAttribute("role", "link");
+            card.tabIndex = 0;
+            card.setAttribute("aria-label", `Abrir detalhes de ${patrocinador.nome || "empresa"}`);
 
-        header.append(foto, nome, botaoRecolherTudo, cota);
+            function abrirDetalhes() {
+                const url = new URL("detalhes-patrocinador.html", window.location.href);
+                url.searchParams.set("id", String(patrocinador.id));
+                window.location.href = url.href;
+            }
+
+            card.addEventListener("click", event => {
+                if (event.target.closest("button, a, input, select, textarea, label")) return;
+                abrirDetalhes();
+            });
+            card.addEventListener("keydown", event => {
+                if (event.target !== card || !["Enter", " "].includes(event.key)) return;
+                event.preventDefault();
+                abrirDetalhes();
+            });
+
+            header.append(foto, nome, cota);
+            card.appendChild(header);
+            grid.appendChild(card);
+            return;
+        }
+
+        // Modo Detalhes (detalhes-patrocinador.html): Exibe todas as seções abertas
+        header.append(foto, nome, cota);
 
         const info = document.createElement("div");
         info.className = "patrocinador-info";
@@ -909,22 +1027,17 @@ function renderizarPatrocinadores(patrocinadoresParaExibir, modoDetalhes = false
         cabecalhoEnvios.className = "secao-cabecalho";
         const tituloEnvios = document.createElement("h4");
         tituloEnvios.textContent = `Mídia e Conteúdo (${envios.length})`;
-        const botaoEnvios = document.createElement("button");
-        botaoEnvios.type = "button";
-        botaoEnvios.className = "botao-recolher";
-        botaoEnvios.textContent = "⌄";
-        botaoEnvios.setAttribute("aria-expanded", "false");
+        cabecalhoEnvios.appendChild(tituloEnvios);
 
         const conteudoEnvios = document.createElement("div");
         conteudoEnvios.className = "secao-conteudo";
-        conteudoEnvios.hidden = true;
+        conteudoEnvios.hidden = false;
 
         const tituloMateriaisCliente = document.createElement("h5");
         tituloMateriaisCliente.className = "titulo-materiais-cliente";
         tituloMateriaisCliente.textContent = "Materiais enviados pelo patrocinador";
         conteudoEnvios.appendChild(tituloMateriaisCliente);
 
-        cabecalhoEnvios.append(tituloEnvios, botaoEnvios);
         secaoEnvios.append(cabecalhoEnvios, conteudoEnvios);
 
         if (envios.length === 0) {
@@ -943,8 +1056,7 @@ function renderizarPatrocinadores(patrocinadoresParaExibir, modoDetalhes = false
                     texto.className = "envio-texto";
                     texto.textContent = `Arquivo em texto: ${envio.texto}`;
                     const baixarTexto = document.createElement("a");
-                    baixarTexto.className = "envio-download";
-                    if (modoDetalhes) baixarTexto.classList.add("button", "button-primary");
+                    baixarTexto.className = "envio-download button button-primary";
                     baixarTexto.href = URL.createObjectURL(
                         new Blob([envio.texto], { type: "text/plain;charset=utf-8" })
                     );
@@ -960,8 +1072,7 @@ function renderizarPatrocinadores(patrocinadoresParaExibir, modoDetalhes = false
                     nomeArquivo.className = "envio-arquivo-nome";
                     nomeArquivo.textContent = `Mídia: ${envio.arquivo.nome || "Arquivo enviado"}`;
                     const baixarArquivo = document.createElement("a");
-                    baixarArquivo.className = "envio-download";
-                    if (modoDetalhes) baixarArquivo.classList.add("button", "button-primary");
+                    baixarArquivo.className = "envio-download button button-primary";
                     baixarArquivo.href = envio.arquivo.arquivoData;
                     baixarArquivo.target = "_blank";
                     baixarArquivo.rel = "noopener noreferrer";
@@ -982,58 +1093,39 @@ function renderizarPatrocinadores(patrocinadoresParaExibir, modoDetalhes = false
         const areaMidiaRBS = criarAreaMidiaRBS(patrocinador);
         conteudoEnvios.appendChild(areaMidiaRBS);
 
-        botaoEnvios.addEventListener("click", function () {
-            const vaiRecolher = !conteudoEnvios.hidden;
-            conteudoEnvios.hidden = vaiRecolher;
-            botaoEnvios.textContent = vaiRecolher ? "⌄" : "⌃";
-            botaoEnvios.setAttribute("aria-expanded", String(!vaiRecolher));
-        });
+        const secaoCortesias = criarSecaoCortesias(patrocinador);
+        const secaoContratos = criarSecaoContratos(patrocinador);
 
         const acoes = document.createElement("div");
         acoes.className = "patrocinador-acoes";
 
         const botaoEditar = document.createElement("button");
         botaoEditar.type = "button";
-        botaoEditar.className = "botao-editar";
-        if (modoDetalhes) botaoEditar.classList.add("button", "button-primary");
+        botaoEditar.className = "botao-editar button button-primary";
         botaoEditar.textContent = "Editar";
         botaoEditar.addEventListener("click", function () {
-            if (modoDetalhes) {
-                const url = new URL("indexAdministrador.html", window.location.href);
-                url.searchParams.set("editar", String(patrocinador.id));
-                url.searchParams.set("voltarParaEmpresa", String(patrocinador.id));
-                url.hash = "dashboard";
-                window.location.href = url.href;
-                return;
-            }
-            abrirEdicaoPatrocinador(patrocinador.id);
+            const url = new URL("indexAdministrador.html", window.location.href);
+            url.searchParams.set("editar", String(patrocinador.id));
+            url.searchParams.set("voltarParaEmpresa", String(patrocinador.id));
+            window.location.href = url.href;
         });
 
         const botaoExcluir = document.createElement("button");
         botaoExcluir.type = "button";
-        botaoExcluir.className = "botao-excluir";
-        if (modoDetalhes) botaoExcluir.classList.add("button", "button-primary");
+        botaoExcluir.className = "botao-excluir button button-primary";
         botaoExcluir.textContent = "Excluir";
         botaoExcluir.addEventListener("click", async function () {
             if (!confirm(`Deseja realmente excluir ${patrocinador.nome}?`)) return;
             try {
                 await excluirPatrocinador(patrocinador.id);
-                if (modoDetalhes) {
-                    window.location.href = "indexAdministrador.html#dashboard";
-                } else {
-                    renderizarPatrocinadores();
-                }
+                window.location.href = "indexAdministrador.html";
             } catch (erro) {
                 alert(erro.message || "Não foi possível excluir o patrocinador.");
             }
         });
 
-        const secaoCortesias = criarSecaoCortesias(patrocinador);
-        const botaoEditarCortesias = modoDetalhes
-            ? secaoCortesias.querySelector(".botao-editar-cortesias")
-            : null;
-
-        if (modoDetalhes && botaoEditarCortesias) {
+        const botaoEditarCortesias = secaoCortesias.querySelector(".botao-editar-cortesias");
+        if (botaoEditarCortesias) {
             acoes.append(botaoEditar, botaoEditarCortesias, botaoExcluir);
         } else {
             acoes.append(botaoEditar, botaoExcluir);
@@ -1041,18 +1133,10 @@ function renderizarPatrocinadores(patrocinadoresParaExibir, modoDetalhes = false
 
         const conteudoPatrocinador = document.createElement("div");
         conteudoPatrocinador.className = "patrocinador-conteudo";
-        conteudoPatrocinador.hidden = true;
-        conteudoPatrocinador.append(info, secaoEnvios, secaoCortesias, acoes);
+        conteudoPatrocinador.hidden = false;
+        conteudoPatrocinador.append(info, secaoEnvios, secaoCortesias, secaoContratos, acoes);
 
         card.append(header, conteudoPatrocinador);
-
-        botaoRecolherTudo.addEventListener("click", function () {
-            const vaiRecolher = !conteudoPatrocinador.hidden;
-            conteudoPatrocinador.hidden = vaiRecolher;
-            botaoRecolherTudo.textContent = vaiRecolher ? "⌄" : "⌃";
-            botaoRecolherTudo.setAttribute("aria-expanded", String(!vaiRecolher));
-        });
-
         grid.appendChild(card);
     });
 
@@ -1075,24 +1159,6 @@ function renderizarDetalhePatrocinador(id) {
     }
 
     renderizarPatrocinadores([patrocinador], true);
-
-    const card = grid.querySelector(".patrocinador-card");
-    const conteudo = card?.querySelector(".patrocinador-conteudo");
-    const botaoPrincipal = card?.querySelector(".patrocinador-card-header .botao-recolher");
-    if (conteudo) conteudo.hidden = false;
-    if (botaoPrincipal) {
-        botaoPrincipal.textContent = "⌃";
-        botaoPrincipal.setAttribute("aria-expanded", "true");
-        botaoPrincipal.setAttribute("aria-label", "Recolher conteúdo do patrocinador");
-    }
-    card?.querySelectorAll(".secao-conteudo").forEach(secao => {
-        secao.hidden = false;
-        const botao = secao.previousElementSibling?.querySelector(".botao-recolher");
-        if (botao) {
-            botao.textContent = "⌃";
-            botao.setAttribute("aria-expanded", "true");
-        }
-    });
 }
 
 // --- Inicialização e Eventos do Formulário Principal ---
@@ -1109,7 +1175,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (isDetailPage) {
         renderizarDetalhePatrocinador(idDetalhe);
         document.getElementById("backToDashboard")?.addEventListener("click", function () {
-            window.location.href = "indexAdministrador.html#dashboard";
+            window.location.href = "indexAdministrador.html";
         });
         return;
     }
