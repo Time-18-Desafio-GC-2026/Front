@@ -1780,3 +1780,321 @@ input[type="file"]::-webkit-file-upload-button:hover {
         grid-template-columns: 1fr;
     }
 }
+
+/* ==========================================================================
+   9. PAINEL POWER BI, SELETORES MULTI-ESCOLHA E ALERTA DE DADOS (RELATÓRIOS)
+   ========================================================================== */
+.report-alert-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 14px 18px;
+    margin-bottom: 18px;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-left: 4px solid var(--rbs-orange);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+}
+
+.report-alert-banner strong {
+    color: var(--rbs-blue);
+    font-size: 13px;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.report-alert-banner span {
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.report-alert-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.report-month-badge {
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: #dcfce7;
+    color: #166534;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.multi-filter-section {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border-soft);
+}
+
+.multi-filter-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.multi-filter-header span {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-strong);
+}
+
+.chips-selector-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.chip-checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #334155;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+    transition: all 140ms ease;
+}
+
+.chip-checkbox input {
+    width: 14px;
+    height: 14px;
+    margin: 0;
+    accent-color: var(--rbs-blue);
+    cursor: pointer;
+}
+
+.chip-checkbox:has(input:checked) {
+    background: #eef2ff;
+    border-color: var(--rbs-blue);
+    color: var(--rbs-blue);
+}
+
+/* Dashboard Estilo Power BI */
+.pbi-workspace {
+    background: #f1f5f9;
+    padding: 20px;
+    border-radius: 12px;
+    color: #0f172a;
+}
+
+.pbi-top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    background: #ffffff;
+    padding: 16px 20px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 16px;
+}
+
+.pbi-brand-identity {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.pbi-brand-logo {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    object-fit: cover;
+    background: #f8fafc;
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+    color: var(--rbs-blue);
+}
+
+.pbi-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.pbi-kpi-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-top: 4px solid var(--rbs-blue);
+    border-radius: 10px;
+    padding: 14px 18px;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
+}
+
+.pbi-kpi-card.accent-orange {
+    border-top-color: var(--rbs-orange);
+}
+
+.pbi-kpi-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #64748b;
+    display: block;
+    margin-bottom: 6px;
+}
+
+.pbi-kpi-value {
+    font-size: 24px;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.1;
+}
+
+.pbi-kpi-sub {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 4px;
+    display: block;
+}
+
+.pbi-charts-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(300px, 1fr));
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.pbi-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 18px 20px;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
+}
+
+.pbi-card-title {
+    margin: 0 0 14px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #101d4d;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 8px;
+}
+
+/* Gráfico de Colunas Verticais Estilo Power BI */
+.pbi-column-chart {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    height: 190px;
+    padding: 20px 8px 0;
+    border-bottom: 1px solid #cbd5e1;
+    gap: 12px;
+}
+
+.pbi-col-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    height: 100%;
+    justify-content: flex-end;
+}
+
+.pbi-col-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 145px;
+    width: 100%;
+    justify-content: center;
+}
+
+.pbi-bar-vert {
+    width: 18px;
+    border-radius: 4px 4px 0 0;
+    transition: height 250ms ease;
+    position: relative;
+}
+
+.pbi-col-label {
+    margin-top: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #334155;
+}
+
+.pbi-legend {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 12px;
+    font-size: 11px;
+    color: #475569;
+}
+
+.pbi-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+}
+
+.pbi-legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+}
+
+/* Tabela de Volumetria Mensal e Total */
+.pbi-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.pbi-table th,
+.pbi-table td {
+    padding: 9px 12px;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: left;
+}
+
+.pbi-table th {
+    background: #101d4d;
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.pbi-table td.num,
+.pbi-table th.num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.pbi-table tr.subtotal-row {
+    background: #f8fafc;
+    font-weight: 700;
+    color: #101d4d;
+}
+
+.pbi-table tr.grand-total-row {
+    background: #fff0df;
+    font-weight: 800;
+    color: #0f172a;
+    border-top: 2px solid var(--rbs-orange);
+}
+
+@media (max-width: 900px) {
+    .pbi-charts-grid {
+        grid-template-columns: 1fr;
+    }
+}
