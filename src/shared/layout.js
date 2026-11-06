@@ -1,8 +1,10 @@
 ﻿/**
  * ==========================================================================
- * PORTAL RBS — COMPONENTE UNIFICADO DE LAYOUT + MODAL DE 1º ACESSO
+ * PORTAL RBS — COMPONENTE UNIFICADO DE LAYOUT + MODAL DE 1º ACESSO + ALERTAS
  * ==========================================================================
  */
+const PRAZO_PESQUISA_KEY = "rbs_pesquisa_data_limite";
+
 function verificarEExibirModalPrimeiroAcesso(sessao) {
     if (!sessao || !sessao.precisaTrocarSenha) return;
     const perfilApi = String(sessao.perfilApi || "").toUpperCase();
@@ -93,6 +95,72 @@ function verificarEExibirModalPrimeiroAcesso(sessao) {
     });
 }
 
+async function verificarNotificacaoPrazoPesquisaMaster(sessao) {
+    const ehPatrocinador = String(sessao?.perfil || "").toLowerCase() === "patrocinador";
+    const ehMaster = String(sessao?.marcaCota || "").toUpperCase() === "MASTER";
+    if (!ehPatrocinador || !ehMaster || !sessao.patrocinadorId) return;
+
+    try {
+        const [materiais, perguntas] = await Promise.all([
+            apiRequest(`/marcas/${sessao.patrocinadorId}/materiais`, "GET").catch(() => []),
+            apiRequest(`/marcas/${sessao.patrocinadorId}/pesquisa-perguntas`, "GET").catch(() => [])
+        ]);
+
+        // Se já enviou as 3 perguntas, não precisa exibir alerta de pendência
+        if ((perguntas || []).length >= 3) return;
+
+        const matPrazo = (materiais || []).find(m => m.tipoMaterial === "PRAZO_PESQUISA");
+        const dataIso = matPrazo?.descricao || localStorage.getItem(PRAZO_PESQUISA_KEY) || "";
+        if (!dataIso) return;
+
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+        const limite = new Date(dataIso + "T00:00:00");
+        if (Number.isNaN(limite.getTime())) return;
+
+        const diffDias = Math.round((limite - hoje) / (1000 * 60 * 60 * 24));
+        const dataFormatada = limite.toLocaleDateString("pt-BR");
+        const ultimoPrazoVisto = localStorage.getItem(`rbs_prazo_visto_${sessao.patrocinadorId}`);
+        const mudouDataLimite = ultimoPrazoVisto && ultimoPrazoVisto !== dataIso;
+        localStorage.setItem(`rbs_prazo_visto_${sessao.patrocinadorId}`, dataIso);
+
+        let textoAlerta = "";
+        let urgente = false;
+
+        if (diffDias === 0) {
+            textoAlerta = `Atenção: Hoje (${dataFormatada}) é o dia limite para o envio das 3 perguntas da Pesquisa de Ativação da sua marca (${(perguntas || []).length}/3 enviadas).`;
+            urgente = true;
+        } else if (diffDias === 1) {
+            textoAlerta = `Aviso de Prazo: Falta 1 dia para encerrar o envio das perguntas da Pesquisa de Ativação (Data limite: ${dataFormatada}).`;
+            urgente = true;
+        } else if (diffDias === 7) {
+            textoAlerta = `Lembrete de Prazo: Faltam 7 dias para o envio das 3 perguntas da Pesquisa de Ativação (Data limite: ${dataFormatada}).`;
+        } else if (mudouDataLimite) {
+            textoAlerta = `Atualização: A data limite para envio das perguntas da Pesquisa de Ativação foi atualizada para ${dataFormatada}.`;
+        } else if (diffDias > 0 && diffDias < 7) {
+            textoAlerta = `Prazo da Pesquisa de Ativação: Faltam ${diffDias} dias (Data limite: ${dataFormatada} • ${(perguntas || []).length}/3 enviadas).`;
+        }
+
+        if (!textoAlerta) return;
+
+        const topbarEl = document.querySelector("header.topbar");
+        if (!topbarEl || document.getElementById("barraNotificacaoPrazoMaster")) return;
+
+        const barra = document.createElement("div");
+        barra.id = "barraNotificacaoPrazoMaster";
+        barra.className = `notificacao-prazo-barra ${urgente ? "urgente" : ""}`;
+        barra.innerHTML = `
+            <span>${textoAlerta}</span>
+            <a href="indexPesquisa.html" class="button button-primary" style="min-height: 28px; padding: 3px 12px; font-size: 11px;">
+                Acessar Pesquisa
+            </a>
+        `;
+        topbarEl.insertAdjacentElement("afterend", barra);
+    } catch {
+        // Silencioso
+    }
+}
+
 function inicializarLayoutPortal() {
     const sessao = JSON.parse(localStorage.getItem("rbs_sessao") || "null");
     if (!sessao) return;
@@ -110,6 +178,7 @@ function inicializarLayoutPortal() {
         "indexAdministrador.html": "Dashboard",
         "detalhes-patrocinador.html": "Visualização da Marca",
         "indexPatrocinador.html": "Dashboard",
+        "indexContratos.html": "Contratos",
         "indexRelatorio.html": "Relatórios",
         "indexPesquisa.html": "Pesquisa",
         "indexCredenciamento.html": "Credenciamento",
@@ -128,6 +197,7 @@ function inicializarLayoutPortal() {
         paginaAtual === "indexAdministrador.html" ||
         paginaAtual === "detalhes-patrocinador.html" ||
         paginaAtual === "indexPatrocinador.html";
+    const isCntActive = paginaAtual === "indexContratos.html";
     const isRelActive = paginaAtual === "indexRelatorio.html";
     const isPesqActive = paginaAtual === "indexPesquisa.html";
     const isCredActive = paginaAtual === "indexCredenciamento.html";
@@ -162,6 +232,13 @@ function inicializarLayoutPortal() {
                         <rect x="14" y="14" width="7" height="7" rx="1"/>
                     </svg>
                     <span>Dashboard</span>
+                </a>
+                <a class="nav-item ${isCntActive ? "active" : ""}" href="indexContratos.html" ${isCntActive ? 'aria-current="page"' : ""}>
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>
+                    </svg>
+                    <span>Contratos</span>
                 </a>
                 <a class="nav-item ${isRelActive ? "active" : ""}" href="indexRelatorio.html" ${isRelActive ? 'aria-current="page"' : ""}>
                     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -270,6 +347,7 @@ function inicializarLayoutPortal() {
 
     aplicarNomeEEmail(sessao.nome, sessao.email);
     verificarEExibirModalPrimeiroAcesso(sessao);
+    verificarNotificacaoPrazoPesquisaMaster(sessao);
 
     if (typeof apiRequest === "function" && localStorage.getItem("rbs_token")) {
         apiRequest("/auth/eu", "GET")

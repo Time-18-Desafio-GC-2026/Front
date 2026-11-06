@@ -25,16 +25,19 @@
                 </header>
 
                 <div class="equipe-cards-grid">
+                    <!-- CARD ESQUERDA: LISTA DE E-MAILS COM + E × E SCROLL INTERNO -->
                     <section class="profile-form" style="width: 100%; margin-bottom: 0;">
                         <h2>Liberar Novos Administradores RBS</h2>
                         <form id="formCriarAdminsLote">
                             <div class="profile-field">
-                                <label for="adminEmailsList">Lista de e-mails da equipe RBS (separados por vírgula ou
-                                    linha)</label>
-                                <input id="adminEmailsList" type="text" required
-                                    placeholder="Ex.: joao@rbs.com.br, maria@rbs.com.br, b2b@rbs.com.br">
-                                <small>Cada e-mail terá seu login e perfil individual criados automaticamente com a
-                                    senha padrão ao lado.</small>
+                                <div class="dynamic-emails-header">
+                                    <label>E-mails da equipe RBS</label>
+                                    <button type="button" class="btn-icon-add" id="btnAddAdminEmailRow"
+                                        title="Adicionar nova linha de e-mail">+</button>
+                                </div>
+                                <div class="dynamic-emails-scroll" id="adminEmailsDynamicContainer"></div>
+                                <small>Adicione novos e-mails com + ou clique no × para revogar o acesso de um
+                                    administrador.</small>
                             </div>
                             <p class="profile-message" id="msgCriarAdmins" role="status" aria-live="polite"></p>
                             <div class="profile-actions">
@@ -72,7 +75,7 @@
                     </section>
                 </div>
 
-                <!-- TABELA DE MEMBROS DA EQUIPE RBS (1 LINHA POR USUÁRIO COM ÚLTIMO ACESSO) -->
+                <!-- TABELA DE MEMBROS DA EQUIPE RBS -->
                 <div class="history-table-wrapper">
                     <table class="history-table">
                         <thead>

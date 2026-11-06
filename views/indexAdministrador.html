@@ -70,10 +70,12 @@
                                         </div>
 
                                         <div class="form-group">
-                                            <label for="sponsorEmails">Emails</label>
-                                            <input type="text" id="sponsorEmails" name="Emails"
-                                                placeholder="Ex.: funcionario1@empresa.com, funcionario2@empresa.com"
-                                                required>
+                                            <div class="dynamic-emails-header">
+                                                <label>E-mails autorizados</label>
+                                                <button type="button" class="btn-icon-add" id="btnAddSponsorEmailRow"
+                                                    title="Adicionar linha de e-mail">+</button>
+                                            </div>
+                                            <div class="dynamic-emails-scroll" id="sponsorEmailsContainer"></div>
                                         </div>
 
                                         <div class="form-group">
@@ -88,22 +90,38 @@
 
                                         <div class="form-group">
                                             <label for="sponsorComercialPlan">Plano Comercial</label>
-                                            <input type="file" id="sponsorComercialPlan" name="plano_comercial">
+                                            <div class="file-input-with-clear">
+                                                <input type="file" id="sponsorComercialPlan" name="plano_comercial">
+                                                <button type="button" class="btn-icon-remove" id="clearSponsorPlanBtn"
+                                                    title="Remover arquivo" hidden>×</button>
+                                            </div>
                                         </div>
 
                                         <div class="form-group">
                                             <label for="sponsorPhoto">Foto da empresa</label>
-                                            <input type="file" id="sponsorPhoto" name="foto"
-                                                accept="image/png,image/jpeg,image/webp">
-                                            <small>JPG, PNG ou WEBP; até 2 MB.</small>
+                                            <div class="file-input-with-clear">
+                                                <input type="file" id="sponsorPhoto" name="foto"
+                                                    accept="image/png,image/jpeg,image/webp">
+                                                <button type="button" class="btn-icon-remove" id="clearSponsorPhotoBtn"
+                                                    title="Remover foto" hidden>×</button>
+                                            </div>
                                         </div>
+
+                                        <!-- CORTESIAS DAS 5 CATEGORIAS NO MODAL DE CADASTRO -->
+                                        <div class="modal-cortesias-box">
+                                            <h4>Cortesias do Patrocinador</h4>
+                                            <div class="modal-cortesias-grid" id="modalCortesiasInputsGrid"></div>
+                                        </div>
+
+                                        <p class="profile-message" id="sponsorFormFeedback"
+                                            style="color: #b42318; margin-top: 8px;"></p>
 
                                         <div class="form-actions">
                                             <button type="button" class="form-cancel" id="cancelSponsor">
                                                 Cancelar
                                             </button>
-                                            <button type="submit" class="form-submit">
-                                                Cadastrar patrocinador
+                                            <button type="submit" class="form-submit" id="submitSponsorBtn">
+                                                Cadastrar
                                             </button>
                                         </div>
                                     </form>

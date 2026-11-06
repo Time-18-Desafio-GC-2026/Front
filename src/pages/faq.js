@@ -1,6 +1,6 @@
 /**
  * ==========================================================================
- * PORTAL RBS — CONTROLADOR DE FAQ (SEÇÕES RECOLHÍVEIS + FILTRO DE CATEGORIA)
+ * PORTAL RBS — CONTROLADOR DE FAQ (RESPOSTAS EM DROPDOWN + EDIÇÃO + ACESSOS DE PATROCINADORES)
  * ==========================================================================
  */
 document.addEventListener("DOMContentLoaded", async function () {
@@ -34,6 +34,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     let cacheRecebidas = [];
     let cachePublicadas = [];
+    const visualizadasNestaSessao = new Set();
 
     if (isAdmin) {
         if (questionSection) questionSection.hidden = true;
@@ -41,11 +42,9 @@ document.addEventListener("DOMContentLoaded", async function () {
             faqIntro.textContent = "Consulte as perguntas recebidas dos patrocinadores e gerencie as respostas publicadas.";
         }
     } else {
-        // Para patrocinadores, a seção de pendentes só aparece se houver perguntas pendentes visíveis
         if (secaoRecebidas) secaoRecebidas.hidden = true;
     }
 
-    // Comportamento de recolher/expandir as duas seções (Dropdowns)
     headerRecebidas?.addEventListener("click", () => {
         const vaiFechar = !bodyRecebidas.hidden;
         bodyRecebidas.hidden = vaiFechar;
@@ -64,140 +63,231 @@ document.addEventListener("DOMContentLoaded", async function () {
         message.classList.toggle("is-error", Boolean(isError));
     }
 
-    function formatDate(value) {
-        if (!value) return "Data indisponível";
-        const date = new Date(value);
-        if (Number.isNaN(date.getTime())) return "Data indisponível";
-        return new Intl.DateTimeFormat("pt-BR", {
-            dateStyle: "short",
-            timeStyle: "short"
-        }).format(date);
-    }
+    // Card de Pergunta Pendente (Apenas na seção "Perguntas recebidas" do Admin)
+    function criarItemPerguntaRecebida(item) {
+        const wrapper = document.createElement("article");
+        wrapper.className = "faq-dropdown-item";
 
-    function criarCardPergunta(item) {
-        const card = document.createElement("article");
-        card.className = "faq-card";
+        const conteudo = document.createElement("div");
+        conteudo.style.padding = "14px 16px";
 
-        const cardHeader = document.createElement("div");
-        cardHeader.className = "faq-card-header";
+        const topo = document.createElement("div");
+        topo.style.display = "flex";
+        topo.style.justifyContent = "space-between";
+        topo.style.alignItems = "center";
+        topo.style.marginBottom = "8px";
 
-        const author = document.createElement("strong");
-        const nomeMarcaOuAutor = item.marcaNome || item.autorMarcaNome || "Patrocinador";
-        const visualizacoes = item.visualizacoes ?? 0;
-        const categoriaLabel = item.categoria || "GERAL";
-        author.textContent = `${nomeMarcaOuAutor} • Categoria: ${categoriaLabel} • ${visualizacoes} acessos`;
+        const autorInfo = document.createElement("small");
+        autorInfo.style.color = "#64748b";
+        autorInfo.style.fontWeight = "700";
+        autorInfo.textContent = `${item.marcaNome || item.autorMarcaNome || "Patrocinador"} • Categoria: ${item.categoria || "GERAL"}`;
 
-        const createdAt = document.createElement("time");
-        createdAt.dateTime = item.criadoEm || "";
-        createdAt.textContent = formatDate(item.criadoEm);
-        cardHeader.append(author, createdAt);
-
-        const question = document.createElement("p");
-        question.className = "faq-question";
-        question.textContent = item.pergunta;
-        question.style.cursor = "pointer";
-        question.title = "Clique para registrar leitura desta pergunta";
-
-        question.addEventListener("click", async () => {
+        const deleteBtn = document.createElement("button");
+        deleteBtn.type = "button";
+        deleteBtn.className = "faq-delete-button";
+        deleteBtn.textContent = "Excluir";
+        deleteBtn.addEventListener("click", async () => {
+            if (!window.confirm("Deseja realmente excluir esta pergunta recebida?")) return;
             try {
-                const atualizado = await apiRequest(`/faq/${item.id}`, "GET");
-                if (atualizado && typeof atualizado.visualizacoes === "number") {
-                    author.textContent = `${nomeMarcaOuAutor} • Categoria: ${categoriaLabel} • ${atualizado.visualizacoes} acessos`;
-                }
-            } catch {
-                // Silencioso
+                await apiRequest(`/faq/${item.id}`, "DELETE");
+                showMessage("Pergunta excluída com sucesso.", false);
+                await carregarFaq();
+            } catch (erro) {
+                showMessage(erro.message || "Erro ao excluir pergunta.", true);
             }
         });
 
-        card.append(cardHeader, question);
+        topo.append(autorInfo, deleteBtn);
+
+        const perguntaP = document.createElement("p");
+        perguntaP.className = "faq-dropdown-question-title";
+        perguntaP.style.marginBottom = "12px";
+        perguntaP.textContent = item.pergunta;
+
+        const answerForm = document.createElement("form");
+        answerForm.className = "faq-answer-form";
+
+        const answerInput = document.createElement("textarea");
+        answerInput.maxLength = 1000;
+        answerInput.required = true;
+        answerInput.placeholder = "Digite a resposta oficial para publicar...";
+
+        const answerButton = document.createElement("button");
+        answerButton.className = "button button-primary";
+        answerButton.style.alignSelf = "flex-end";
+        answerButton.type = "submit";
+        answerButton.textContent = "Responder e Publicar";
+
+        answerForm.append(answerInput, answerButton);
+        answerForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const answerText = answerInput.value.trim();
+            if (!answerText) return;
+            answerButton.disabled = true;
+            try {
+                await apiRequest(`/faq/${item.id}/responder`, "PUT", {
+                    resposta: answerText,
+                    publicarParaTodos: true
+                });
+                showMessage("Resposta publicada com sucesso!", false);
+                await carregarFaq();
+            } catch (erro) {
+                showMessage(erro.message || "Erro ao publicar resposta.", true);
+            } finally {
+                answerButton.disabled = false;
+            }
+        });
+
+        conteudo.append(topo, perguntaP, answerForm);
+        wrapper.appendChild(conteudo);
+        return wrapper;
+    }
+
+    // Item de Resposta Publicada: Linha com Dropdown (borda cinza) e Resposta interna (borda laranja)
+    function criarItemRespostaPublicada(item) {
+        const itemBox = document.createElement("article");
+        itemBox.className = "faq-dropdown-item";
+
+        const trigger = document.createElement("div");
+        trigger.className = "faq-dropdown-trigger";
+
+        const questionTitle = document.createElement("p");
+        questionTitle.className = "faq-dropdown-question-title";
+        questionTitle.textContent = item.pergunta;
+
+        const meta = document.createElement("div");
+        meta.className = "faq-dropdown-meta";
+
+        // Contador de acessos aparece SOMENTE para os administradores
+        let badgeAcessos = null;
+        if (isAdmin) {
+            badgeAcessos = document.createElement("span");
+            badgeAcessos.className = "faq-access-counter";
+            badgeAcessos.textContent = `${item.visualizacoes ?? 0} acessos`;
+            meta.appendChild(badgeAcessos);
+        }
+
+        const btnChevron = document.createElement("button");
+        btnChevron.type = "button";
+        btnChevron.className = "botao-recolher";
+        btnChevron.setAttribute("aria-expanded", "false");
+        btnChevron.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>`;
+        meta.appendChild(btnChevron);
+
+        trigger.append(questionTitle, meta);
+
+        const content = document.createElement("div");
+        content.className = "faq-dropdown-content";
+        content.hidden = true;
+
+        const answerClean = document.createElement("div");
+        answerClean.className = "faq-answer-clean";
+        answerClean.textContent = item.resposta;
+        content.appendChild(answerClean);
 
         if (isAdmin) {
-            const actions = document.createElement("div");
-            actions.className = "faq-question-actions";
-            const deleteButton = document.createElement("button");
-            deleteButton.className = "faq-delete-button";
-            deleteButton.type = "button";
-            deleteButton.textContent = "Excluir pergunta";
-            deleteButton.addEventListener("click", async () => {
-                if (!window.confirm("Deseja realmente excluir esta pergunta do FAQ?")) return;
-                try {
-                    await apiRequest(`/faq/${item.id}`, "DELETE");
-                    showMessage("Pergunta excluída com sucesso.", false);
-                    await carregarFaq();
-                } catch (erro) {
-                    showMessage(erro.message || "Não foi possível excluir a pergunta.", true);
-                }
+            const controls = document.createElement("div");
+            controls.className = "faq-admin-controls";
+
+            const btnEditar = document.createElement("button");
+            btnEditar.type = "button";
+            btnEditar.className = "btn-acao-pequeno";
+            btnEditar.textContent = "Editar resposta";
+
+            const btnExcluir = document.createElement("button");
+            btnExcluir.type = "button";
+            btnExcluir.className = "faq-delete-button";
+            btnExcluir.textContent = "Excluir resposta";
+
+            const formEdicao = document.createElement("form");
+            formEdicao.className = "faq-answer-form";
+            formEdicao.style.marginTop = "10px";
+            formEdicao.hidden = true;
+
+            const textareaEdicao = document.createElement("textarea");
+            textareaEdicao.maxLength = 1000;
+            textareaEdicao.required = true;
+            textareaEdicao.value = item.resposta || "";
+
+            const botoesEdicao = document.createElement("div");
+            botoesEdicao.style.display = "flex";
+            botoesEdicao.style.justifyContent = "flex-end";
+            botoesEdicao.style.gap = "8px";
+
+            const btnCancelarEdicao = document.createElement("button");
+            btnCancelarEdicao.type = "button";
+            btnCancelarEdicao.className = "form-cancel";
+            btnCancelarEdicao.textContent = "Cancelar";
+
+            const btnSalvarEdicao = document.createElement("button");
+            btnSalvarEdicao.type = "submit";
+            btnSalvarEdicao.className = "button button-primary";
+            btnSalvarEdicao.textContent = "Salvar alterações";
+
+            botoesEdicao.append(btnCancelarEdicao, btnSalvarEdicao);
+            formEdicao.append(textareaEdicao, botoesEdicao);
+
+            btnEditar.addEventListener("click", () => {
+                formEdicao.hidden = !formEdicao.hidden;
             });
-            actions.append(deleteButton);
-            card.append(actions);
-        }
 
-        if (item.resposta) {
-            const answer = document.createElement("div");
-            answer.className = "faq-answer";
-            const answerHeader = document.createElement("div");
-            answerHeader.className = "faq-answer-header";
-            const answerTitle = document.createElement("strong");
-            answerTitle.textContent = `Resposta da equipe RBS (${item.respondidoPor || "Admin RBS"})`;
-            const answeredAt = document.createElement("time");
-            answeredAt.dateTime = item.respondidoEm || "";
-            answeredAt.textContent = formatDate(item.respondidoEm);
-            answerHeader.append(answerTitle, answeredAt);
+            btnCancelarEdicao.addEventListener("click", () => {
+                formEdicao.hidden = true;
+                textareaEdicao.value = item.resposta || "";
+            });
 
-            const answerText = document.createElement("p");
-            answerText.textContent = item.resposta;
-            answer.append(answerHeader, answerText);
-            card.append(answer);
-        } else if (isAdmin) {
-            const answerForm = document.createElement("form");
-            answerForm.className = "faq-answer-form";
-            answerForm.style.marginTop = "12px";
-
-            const answerLabel = document.createElement("label");
-            const answerId = `answer-${item.id}`;
-            answerLabel.htmlFor = answerId;
-            answerLabel.textContent = "Sua resposta oficial (será movida para Perguntas Publicadas)";
-
-            const answerInput = document.createElement("textarea");
-            answerInput.id = answerId;
-            answerInput.maxLength = 1000;
-            answerInput.required = true;
-            answerInput.placeholder = "Escreva uma resposta oficial (até 1.000 caracteres)";
-
-            const answerButton = document.createElement("button");
-            answerButton.className = "button button-primary";
-            answerButton.style.alignSelf = "flex-end";
-            answerButton.type = "submit";
-            answerButton.textContent = "Responder e Publicar";
-
-            answerForm.append(answerLabel, answerInput, answerButton);
-            answerForm.addEventListener("submit", async (event) => {
-                event.preventDefault();
-                const answerText = answerInput.value.trim();
-                if (!answerText) return;
-                answerButton.disabled = true;
+            formEdicao.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const novoTexto = textareaEdicao.value.trim();
+                if (!novoTexto) return;
+                btnSalvarEdicao.disabled = true;
                 try {
                     await apiRequest(`/faq/${item.id}/responder`, "PUT", {
-                        resposta: answerText,
+                        resposta: novoTexto,
                         publicarParaTodos: true
                     });
-                    showMessage("Resposta publicada com sucesso no FAQ!", false);
+                    showMessage("Resposta atualizada com sucesso!", false);
                     await carregarFaq();
                 } catch (erro) {
-                    showMessage(erro.message || "Erro ao publicar resposta.", true);
+                    showMessage(erro.message || "Erro ao editar resposta.", true);
                 } finally {
-                    answerButton.disabled = false;
+                    btnSalvarEdicao.disabled = false;
                 }
             });
-            card.append(answerForm);
-        } else {
-            const pending = document.createElement("p");
-            pending.className = "faq-pending";
-            pending.textContent = "Aguardando resposta da equipe RBS";
-            card.append(pending);
+
+            btnExcluir.addEventListener("click", async () => {
+                if (!window.confirm("Deseja realmente excluir esta resposta publicada?")) return;
+                try {
+                    await apiRequest(`/faq/${item.id}`, "DELETE");
+                    showMessage("Resposta excluída com sucesso.", false);
+                    await carregarFaq();
+                } catch (erro) {
+                    showMessage(erro.message || "Não foi possível excluir a resposta.", true);
+                }
+            });
+
+            controls.append(btnEditar, btnExcluir);
+            content.append(controls, formEdicao);
         }
 
-        return card;
+        // Ao abrir o dropdown, exibe a resposta e contabiliza acesso SOMENTE se for Patrocinador (!isAdmin)
+        trigger.addEventListener("click", async () => {
+            const vaiAbrir = content.hidden;
+            content.hidden = !vaiAbrir;
+            btnChevron.setAttribute("aria-expanded", String(vaiAbrir));
+
+            if (vaiAbrir && !isAdmin && !visualizadasNestaSessao.has(item.id)) {
+                visualizadasNestaSessao.add(item.id);
+                try {
+                    await apiRequest(`/faq/${item.id}`, "GET");
+                } catch {
+                    // Silencioso
+                }
+            }
+        });
+
+        itemBox.append(trigger, content);
+        return itemBox;
     }
 
     function renderizarListasFaq() {
@@ -218,10 +308,10 @@ document.addEventListener("DOMContentLoaded", async function () {
             if (recebidasFiltradas.length === 0) {
                 const empty = document.createElement("p");
                 empty.className = "faq-empty";
-                empty.textContent = "Nenhuma pergunta aguardando resposta.";
+                empty.textContent = "Nenhuma pergunta pendente.";
                 listRecebidas.appendChild(empty);
             } else {
-                recebidasFiltradas.forEach(item => listRecebidas.appendChild(criarCardPergunta(item)));
+                recebidasFiltradas.forEach(item => listRecebidas.appendChild(criarItemPerguntaRecebida(item)));
             }
         }
 
@@ -230,10 +320,10 @@ document.addEventListener("DOMContentLoaded", async function () {
             if (publicadasFiltradas.length === 0) {
                 const empty = document.createElement("p");
                 empty.className = "faq-empty";
-                empty.textContent = "Ainda não há perguntas publicadas para esta categoria.";
+                empty.textContent = "Ainda não há respostas publicadas para esta categoria.";
                 listPublicadas.appendChild(empty);
             } else {
-                publicadasFiltradas.forEach(item => listPublicadas.appendChild(criarCardPergunta(item)));
+                publicadasFiltradas.forEach(item => listPublicadas.appendChild(criarItemRespostaPublicada(item)));
             }
         }
     }
@@ -276,7 +366,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             });
             form.reset();
             if (counter) counter.textContent = "0/500";
-            showMessage("Pergunta enviada para a equipe RBS! Assim que respondida, aparecerá nas perguntas publicadas.", false);
+            showMessage("Pergunta enviada para a equipe RBS!", false);
             await carregarFaq();
         } catch (erro) {
             showMessage(erro.message || "Não foi possível enviar sua pergunta.", true);

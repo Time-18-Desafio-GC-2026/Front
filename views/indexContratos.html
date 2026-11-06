@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Gestão e Assinatura de Contratos de Patrocínio">
+    <title>RBS Patrocinadores | Contratos</title>
+    <link rel="stylesheet" href="../assets/css/style_portal.css">
+    <script src="../src/guards/security.js"></script>
+</head>
+
+<body>
+    <div class="app-shell">
+        <aside class="sidebar" id="sidebar"></aside>
+
+        <div class="main-area">
+            <header class="topbar"></header>
+
+            <main class="content">
+                <!-- VISÃO DO PATROCINADOR -->
+                <section id="visaoContratoPatrocinador" hidden>
+                    <header class="history-header">
+                        <h1>Contrato de Patrocínio</h1>
+                        <p>Informe os dados do representante legal que assinará pela sua empresa, baixe o contrato
+                            enviado pela RBS e reenvie o documento assinado.</p>
+                    </header>
+
+                    <div class="contrato-stepper" id="stepperContratoCliente"></div>
+
+                    <div class="profile-unified-card" style="width: 100%; max-width: 1100px;">
+                        <div class="profile-column">
+                            <h2>1. Representante Legal (Quem Assina)</h2>
+                            <form id="formSignatarioContrato">
+                                <div class="profile-field">
+                                    <label for="signatarioNome">Nome completo do representante</label>
+                                    <input type="text" id="signatarioNome" required
+                                        placeholder="Ex.: Roberto Carlos Almeida">
+                                </div>
+                                <div class="profile-field">
+                                    <label for="signatarioCargo">Cargo na empresa</label>
+                                    <input type="text" id="signatarioCargo" required
+                                        placeholder="Ex.: Diretor Comercial">
+                                </div>
+                                <p class="profile-message" id="msgSignatarioCliente"></p>
+                                <div class="profile-actions">
+                                    <button type="submit" class="button button-primary" id="btnSalvarSignatario">
+                                        Salvar Dados do Representante
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="profile-column">
+                            <h2>2. Documento em PDF e Assinatura</h2>
+                            <div id="boxArquivoContratoCliente" style="margin-bottom: 14px;"></div>
+
+                            <form id="formReenviarContratoAssinado" hidden>
+                                <div class="profile-field">
+                                    <label for="inputPdfAssinadoCliente">Reenviar Contrato Assinado pela Empresa
+                                        (PDF)</label>
+                                    <input type="file" id="inputPdfAssinadoCliente" accept=".pdf,application/pdf"
+                                        required>
+                                </div>
+                                <p class="profile-message" id="msgUploadContratoCliente"></p>
+                                <div class="profile-actions">
+                                    <button type="submit" class="button button-primary" id="btnReenviarContratoCliente">
+                                        Enviar Contrato Assinado
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VISÃO DO ADMINISTRADOR RBS -->
+                <section id="visaoContratoAdmin" hidden>
+                    <header class="history-header">
+                        <h1>Contratos de Patrocínio</h1>
+                        <p>Acompanhe os dados de representante legal enviados pelos patrocinadores, disponibilize os
+                            contratos assinados pela RBS e consulte os contratos consolidados.</p>
+                    </header>
+
+                    <div class="history-filters" style="justify-content: space-between; align-items: center;">
+                        <label for="buscaContratoMarca" style="margin: 0; flex: 1 1 320px;">
+                            Buscar Patrocinador (Nome ou CNPJ)
+                            <input id="buscaContratoMarca" type="search"
+                                placeholder="Filtrar por nome da marca ou CNPJ...">
+                        </label>
+                    </div>
+
+                    <div id="listaContratosAccordion" class="pesquisa-accordion-wrapper"></div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script src="../src/services/api.js"></script>
+    <script src="../src/shared/layout.js"></script>
+    <script src="../src/pages/contratos.js"></script>
+</body>
+
+</html>

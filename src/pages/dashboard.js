@@ -7,7 +7,7 @@ const ENVIOS_KEY = "rbs_envios";
 const MIDIA_RBS_KEY = "rbs_midia_rbs";
 const CONTRATOS_KEY = "rbs_contratos";
 const CORTESIAS_KEY = "rbs_cortesias";
-const SETORES_CORTESIA = ["Arena", "Camarote", "Premium"];
+const SETORES_CORTESIA = ["Arena", "Camarote", "Premium", "Hooftop", "Terraço"];
 
 const MAPA_COTA_PARA_API = {
     "Master": "MASTER",
@@ -18,7 +18,14 @@ const MAPA_COTA_PARA_API = {
 const MAPA_COTA_PARA_FRONT = {
     "MASTER": "Master",
     "SUB_COTA_G": "Subcota G",
+    "SUBcota": "Subcota",
     "SUB_COTA": "Subcota"
+};
+
+const PESO_ORDEM_COTA = {
+    "Master": 1,
+    "Subcota G": 2,
+    "Subcota": 3
 };
 
 function traduzirCotaParaApi(cotaFront) {
@@ -27,6 +34,40 @@ function traduzirCotaParaApi(cotaFront) {
 
 function traduzirCotaParaFront(cotaApi) {
     return MAPA_COTA_PARA_FRONT[cotaApi] || cotaApi;
+}
+
+function ordenarPatrocinadoresPorCotaEAlfabetica(lista) {
+    return [...(lista || [])].sort((a, b) => {
+        const pesoA = PESO_ORDEM_COTA[a.cota] || 99;
+        const pesoB = PESO_ORDEM_COTA[b.cota] || 99;
+        if (pesoA !== pesoB) return pesoA - pesoB;
+        return String(a.nome || "").localeCompare(String(b.nome || ""), "pt-BR");
+    });
+}
+
+function extrairSetoresExtrasDeLoungeInfo(loungeInfoStr) {
+    const padrao = {
+        Hooftop: { passaporte: 0, sexta: 0, sabado: 0 },
+        "Terraço": { passaporte: 0, sexta: 0, sabado: 0 }
+    };
+    if (!loungeInfoStr) return padrao;
+    try {
+        const parsed = JSON.parse(loungeInfoStr);
+        return {
+            Hooftop: {
+                passaporte: Number(parsed?.Hooftop?.passaporte) || 0,
+                sexta: Number(parsed?.Hooftop?.sexta) || 0,
+                sabado: Number(parsed?.Hooftop?.sabado) || 0
+            },
+            "Terraço": {
+                passaporte: Number(parsed?.["Terraço"]?.passaporte) || 0,
+                sexta: Number(parsed?.["Terraço"]?.sexta) || 0,
+                sabado: Number(parsed?.["Terraço"]?.sabado) || 0
+            }
+        };
+    } catch {
+        return padrao;
+    }
 }
 
 function gerarSenhaPadraoPorNome(nomeMarca) {
@@ -49,40 +90,33 @@ function lerListaLocalStorage(chave) {
     try {
         const dados = JSON.parse(localStorage.getItem(chave) || "[]");
         return Array.isArray(dados) ? dados : [];
-    } catch (erro) {
-        console.error(`Erro ao ler "${chave}":`, erro);
+    } catch {
         return [];
     }
 }
 
 function salvarListaLocalStorage(chave, dados) {
-    if (!Array.isArray(dados)) {
-        throw new TypeError("O valor a ser salvo precisa ser uma lista.");
-    }
     localStorage.setItem(chave, JSON.stringify(dados));
 }
 
 function listarPatrocinadores() {
-    return lerListaLocalStorage(PATROCINADORES_KEY);
+    return ordenarPatrocinadoresPorCotaEAlfabetica(lerListaLocalStorage(PATROCINADORES_KEY));
 }
 
 function salvarPatrocinadores(patrocinadores) {
-    salvarListaLocalStorage(PATROCINADORES_KEY, patrocinadores);
+    salvarListaLocalStorage(PATROCINADORES_KEY, ordenarPatrocinadoresPorCotaEAlfabetica(patrocinadores));
 }
 
 function validarArquivoFoto(arquivo) {
     if (!arquivo) return;
     if (!["image/jpeg", "image/png", "image/webp"].includes(arquivo.type)) {
-        throw new Error("A foto deve estar no formato JPG, PNG ou WEBP.");
+        throw new Error("Arquivo com formato inválido para a logo. Utilize apenas PNG, JPG ou WEBP.");
     }
     if (arquivo.size > 2 * 1024 * 1024) {
-        throw new Error("A foto deve ter no máximo 2 MB.");
+        throw new Error("O arquivo da logo excede o tamanho máximo de 2 MB.");
     }
 }
 
-/**
- * Sincroniza Marcas, Usuários, Cortesias, Contratos e Materiais com o PostgreSQL + Supabase Storage.
- */
 async function sincronizarDadosComBackend() {
     try {
         const [marcasApi, usuariosApi] = await Promise.all([
@@ -91,7 +125,7 @@ async function sincronizarDadosComBackend() {
         ]);
         if (!Array.isArray(marcasApi)) return;
 
-        const cacheAnterior = listarPatrocinadores();
+        const cacheAnterior = lerListaLocalStorage(PATROCINADORES_KEY);
         const patrocinadoresSincronizados = [];
         const enviosCliente = [];
         const midiasRbs = [];
@@ -116,6 +150,7 @@ async function sincronizarDadosComBackend() {
             ]);
 
             if (cortesiaApi) {
+                const extras = extrairSetoresExtrasDeLoungeInfo(cortesiaApi.loungeInfo);
                 cortesiasBanco.push({
                     patrocinadorId: m.id,
                     setores: {
@@ -133,7 +168,9 @@ async function sincronizarDadosComBackend() {
                             passaporte: cortesiaApi.premiumPassaporte || 0,
                             sexta: cortesiaApi.premiumSexta || 0,
                             sabado: cortesiaApi.premiumSabado || 0
-                        }
+                        },
+                        Hooftop: extras.Hooftop,
+                        "Terraço": extras["Terraço"]
                     },
                     atualizadoEm: cortesiaApi.atualizadoEm
                 });
@@ -145,12 +182,13 @@ async function sincronizarDadosComBackend() {
             (materiaisApi || []).forEach(mat => {
                 const urlArquivoNuvem = mat.caminhoStorage || mat.urlExterna || null;
 
-                if (mat.tipoMaterial === "CONTRATO" || mat.abaDestino === "ABA_7_CONTRATO") {
+                if (mat.tipoMaterial === "CONTRATO" || mat.abaDestino === "ABA_7_CONTRATO" || mat.tipoMaterial === "DADOS_SIGNATARIO") {
                     contratosMarca.push({
                         id: mat.id,
                         patrocinadorId: m.id,
                         titulo: mat.titulo,
                         descricao: mat.descricao || "",
+                        tipoMaterial: mat.tipoMaterial,
                         arquivoData: urlArquivoNuvem || "#",
                         autorNome: mat.autorNome || (mat.autorPerfil === "PATROCINADOR" ? "Empresa Patrocinadora" : "Administração RBS"),
                         autorPerfil: mat.autorPerfil,
@@ -161,12 +199,16 @@ async function sincronizarDadosComBackend() {
                     enviosCliente.push({
                         id: mat.id,
                         patrocinadorId: m.id,
-                        texto: mat.descricao || mat.titulo,
+                        texto: mat.descricao || "",
                         arquivo: urlArquivoNuvem ? { nome: mat.titulo, arquivoData: urlArquivoNuvem } : null,
                         status: mat.status,
                         criadoEm: mat.criadoEm
                     });
-                } else if (mat.tipoMaterial !== "PLANO_COMERCIAL" && mat.tipoMaterial !== "FOTO_EMPRESA") {
+                } else if (
+                    mat.tipoMaterial !== "PLANO_COMERCIAL" &&
+                    mat.tipoMaterial !== "FOTO_EMPRESA" &&
+                    mat.tipoMaterial !== "PRAZO_PESQUISA"
+                ) {
                     midiasRbs.push({
                         id: mat.id,
                         patrocinadorId: m.id,
@@ -217,6 +259,9 @@ async function sincronizarDadosComBackend() {
 }
 
 function normalizarEmailsPatrocinador(valor) {
+    if (Array.isArray(valor)) {
+        return [...new Set(valor.map(e => String(e || "").trim().toLowerCase()).filter(Boolean))];
+    }
     return [...new Set(
         String(valor || "")
             .split(/[;,]/)
@@ -228,7 +273,7 @@ function normalizarEmailsPatrocinador(valor) {
 function validarEmailsPatrocinador(valor) {
     const emails = normalizarEmailsPatrocinador(valor);
     if (emails.length === 0) {
-        throw new Error("Informe pelo menos um e-mail.");
+        throw new Error("Informe pelo menos um e-mail válido.");
     }
     const formatoEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const invalido = emails.find(email => !formatoEmail.test(email));
@@ -253,10 +298,13 @@ function listarMidiaRBSPorPatrocinador(patrocinadorId) {
     return todos.filter(item => String(item.patrocinadorId) === String(patrocinadorId));
 }
 
-// --- MODULO: Contrato de Patrocínio em Fases (Substitui a versão anterior a cada fase) ---
+// --- MODULO: Contrato de Patrocínio nos Detalhes da Empresa (Exibe PDF apenas se Consolidado) ---
 function criarSecaoContratos(patrocinador) {
-    const contratos = listarContratosPorPatrocinador(patrocinador.id);
-    const contratoAtual = contratos[0] || null;
+    const registros = listarContratosPorPatrocinador(patrocinador.id);
+    const pdfsContrato = registros.filter(c => c.tipoMaterial === "CONTRATO");
+    const contratoConsolidado = pdfsContrato.find(
+        c => c.status === "CONTRATO_CONSOLIDADO" || c.status === "CONTRATO_FINALIZADO" || c.autorPerfil === "PATROCINADOR"
+    );
 
     const secao = document.createElement("section");
     secao.className = "patrocinador-cortesias";
@@ -269,158 +317,50 @@ function criarSecaoContratos(patrocinador) {
 
     const conteudo = document.createElement("div");
     conteudo.className = "secao-conteudo";
-    conteudo.hidden = false;
 
-    let faseLabel = "Fase 1: Aguardando envio do contrato pela RBS";
-    let textoBotaoUpload = "Adicionar Contrato em PDF (Enviar para Empresa)";
-    let statusNovoUpload = "AGUARDANDO_ASSINATURA_EMPRESA";
-    let descNovoUpload = "Fase 1/3: Aguardando assinatura da empresa patrocinadora";
-
-    if (contratoAtual) {
-        if (contratoAtual.status === "CONTRATO_FINALIZADO") {
-            faseLabel = "Fase 3/3: Contrato Final Assinado (RBS + Empresa)";
-            textoBotaoUpload = "Substituir Contrato Final Assinado (PDF)";
-            statusNovoUpload = "CONTRATO_FINALIZADO";
-            descNovoUpload = "Fase 3/3: Contrato final assinado por ambas as partes";
-        } else if (contratoAtual.autorPerfil === "PATROCINADOR" || contratoAtual.status === "ASSINADO_PELA_EMPRESA") {
-            faseLabel = "Fase 2/3: Assinado pela Empresa — Aguardando assinatura final da RBS";
-            textoBotaoUpload = "Enviar Contrato Assinado pela RBS (Finalizar)";
-            statusNovoUpload = "CONTRATO_FINALIZADO";
-            descNovoUpload = "Fase 3/3: Contrato final assinado por ambas as partes";
-        } else {
-            faseLabel = "Fase 1/3: Enviado pela RBS — Aguardando assinatura da Empresa";
-            textoBotaoUpload = "Substituir Minuta do Contrato (PDF)";
-            statusNovoUpload = "AGUARDANDO_ASSINATURA_EMPRESA";
-            descNovoUpload = "Fase 1/3: Aguardando assinatura da empresa patrocinadora";
-        }
-    }
-
-    const lista = document.createElement("div");
-    lista.className = "midia-rbs-lista";
-
-    if (!contratoAtual) {
-        const vazio = document.createElement("p");
-        vazio.className = "midia-rbs-vazio";
-        vazio.textContent = "Nenhum contrato ativo no momento. Envie o PDF inicial para a empresa assinar.";
-        lista.appendChild(vazio);
-    } else {
+    if (contratoConsolidado && contratoConsolidado.arquivoData && contratoConsolidado.arquivoData !== "#") {
         const item = document.createElement("div");
         item.className = "envio-item";
-
         const linha = document.createElement("div");
         linha.className = "envio-linha";
 
-        const infoTexto = document.createElement("div");
-        infoTexto.style.flex = "1";
-        const dataStr = contratoAtual.criadoEm ? new Date(contratoAtual.criadoEm).toLocaleString("pt-BR") : "";
-        infoTexto.innerHTML = `
-            <span class="envio-status" style="margin-bottom:6px;">${faseLabel}</span>
-            <p class="envio-texto" style="margin:4px 0;"><strong>${contratoAtual.titulo}</strong></p>
-            <small style="color:#64748b; font-size:0.78rem;">Atualizado por: ${contratoAtual.autorNome} • ${dataStr}</small>
-        `;
-
-        const acoesContrato = document.createElement("div");
-        acoesContrato.style.display = "flex";
-        acoesContrato.style.gap = "8px";
-        acoesContrato.style.alignItems = "center";
+        const nomeArquivo = document.createElement("p");
+        nomeArquivo.className = "envio-arquivo-nome";
+        nomeArquivo.innerHTML = `<strong>${contratoConsolidado.titulo}</strong>`;
 
         const btnBaixar = document.createElement("a");
-        btnBaixar.className = "envio-download button button-primary";
-        btnBaixar.href = contratoAtual.arquivoData;
+        btnBaixar.className = "button button-primary";
+        btnBaixar.href = contratoConsolidado.arquivoData;
         btnBaixar.target = "_blank";
         btnBaixar.rel = "noopener noreferrer";
-        btnBaixar.download = contratoAtual.titulo || "contrato.pdf";
-        btnBaixar.textContent = "Visualizar / Baixar PDF";
+        btnBaixar.download = contratoConsolidado.titulo || "contrato.pdf";
+        btnBaixar.textContent = "Visualizar / Baixar Contrato (PDF)";
         btnBaixar.addEventListener("click", () => {
-            if (contratoAtual.id) {
-                apiRequest(`/materiais/${contratoAtual.id}/acessar`, "POST").catch(() => { });
+            if (contratoConsolidado.id) {
+                apiRequest(`/materiais/${contratoConsolidado.id}/acessar`, "POST").catch(() => { });
             }
         });
 
-        const btnRemoverContrato = document.createElement("button");
-        btnRemoverContrato.type = "button";
-        btnRemoverContrato.className = "btn-acao-perigo";
-        btnRemoverContrato.textContent = "Remover";
-        btnRemoverContrato.addEventListener("click", async () => {
-            if (!window.confirm("Deseja remover o arquivo de contrato atual?")) return;
-            try {
-                for (const c of contratos) {
-                    await apiRequest(`/materiais/${c.id}`, "DELETE").catch(() => { });
-                }
-                await sincronizarDadosComBackend();
-                atualizarTelaPatrocinadores(patrocinador.id);
-            } catch (erro) {
-                alert(erro.message || "Erro ao remover contrato.");
-            }
-        });
-
-        acoesContrato.append(btnBaixar, btnRemoverContrato);
-        linha.append(infoTexto, acoesContrato);
+        linha.append(nomeArquivo, btnBaixar);
         item.appendChild(linha);
-        lista.appendChild(item);
+        conteudo.appendChild(item);
+    } else {
+        const pendenteMsg = document.createElement("div");
+        pendenteMsg.className = "envio-item";
+        pendenteMsg.innerHTML = `
+            <div class="envio-linha">
+                <span style="color: #475569; font-size: 0.9rem;">Ainda existem ações pendentes nos seus contratos.</span>
+                <a href="indexContratos.html" class="btn-acao-pequeno" style="text-decoration: none;">Gerenciar na aba Contratos</a>
+            </div>
+        `;
+        conteudo.appendChild(pendenteMsg);
     }
 
-    const divUpload = document.createElement("div");
-    divUpload.className = "midia-rbs-arquivo";
-    divUpload.style.marginTop = "10px";
-
-    const inputPdf = document.createElement("input");
-    inputPdf.type = "file";
-    inputPdf.accept = ".pdf,application/pdf";
-    inputPdf.hidden = true;
-
-    const btnEnviarPdf = document.createElement("button");
-    btnEnviarPdf.type = "button";
-    btnEnviarPdf.className = "button button-primary";
-    btnEnviarPdf.textContent = textoBotaoUpload;
-
-    btnEnviarPdf.addEventListener("click", () => inputPdf.click());
-
-    inputPdf.addEventListener("change", async () => {
-        const arquivo = inputPdf.files?.[0];
-        if (!arquivo) return;
-        btnEnviarPdf.disabled = true;
-        btnEnviarPdf.textContent = "Atualizando contrato...";
-        try {
-            // Substitui versões anteriores para manter apenas o documento atualizado da fase atual
-            for (const c of contratos) {
-                await apiRequest(`/materiais/${c.id}`, "DELETE").catch(() => { });
-            }
-
-            const novoMat = await apiUploadMaterial(patrocinador.id, {
-                titulo: arquivo.name,
-                descricao: descNovoUpload,
-                abaDestino: "ABA_7_CONTRATO",
-                tipoMaterial: "CONTRATO",
-                caminhoStorage: null,
-                urlExterna: null
-            }, arquivo);
-
-            if (novoMat && novoMat.id && statusNovoUpload !== "ENVIADO") {
-                await apiRequest(`/materiais/${novoMat.id}/status`, "PATCH", {
-                    status: statusNovoUpload
-                }).catch(() => { });
-            }
-
-            alert("Contrato atualizado com sucesso na plataforma!");
-            await sincronizarDadosComBackend();
-            atualizarTelaPatrocinadores(patrocinador.id);
-        } catch (erro) {
-            alert(erro.message || "Não foi possível atualizar o contrato em PDF.");
-        } finally {
-            btnEnviarPdf.disabled = false;
-            btnEnviarPdf.textContent = textoBotaoUpload;
-            inputPdf.value = "";
-        }
-    });
-
-    divUpload.append(btnEnviarPdf, inputPdf);
-    conteudo.append(lista, divUpload);
     secao.append(cabecalho, conteudo);
     return secao;
 }
 
-// --- MODULO: Mídia e Conteúdo (Dividido entre Envios da Marca e Envios da RBS) ---
+// --- MODULO: Mídia e Conteúdo (Descrição abaixo do link e sem botão de baixar .txt) ---
 function criarSecaoMidiaUnificada(patrocinador) {
     const enviosMarca = listarEnviosPorPatrocinador(patrocinador.id);
     const enviosRbs = listarMidiaRBSPorPatrocinador(patrocinador.id);
@@ -436,7 +376,6 @@ function criarSecaoMidiaUnificada(patrocinador) {
 
     const conteudo = document.createElement("div");
     conteudo.className = "secao-conteudo";
-    conteudo.hidden = false;
 
     // SUB-BLOCO 1: Envios da Marca
     const blocoMarca = document.createElement("div");
@@ -454,30 +393,21 @@ function criarSecaoMidiaUnificada(patrocinador) {
         enviosMarca.forEach(function (envio) {
             const item = document.createElement("div");
             item.className = "envio-item";
-            if (envio.texto) {
-                const linhaTexto = document.createElement("div");
-                linhaTexto.className = "envio-linha";
-                const texto = document.createElement("p");
-                texto.className = "envio-texto";
-                texto.textContent = `Texto: ${envio.texto}`;
-                const baixarTexto = document.createElement("a");
-                baixarTexto.className = "envio-download button button-primary";
-                baixarTexto.href = URL.createObjectURL(
-                    new Blob([envio.texto], { type: "text/plain;charset=utf-8" })
-                );
-                baixarTexto.download = `conteudo-enviado-${envio.id || "patrocinador"}.txt`;
-                baixarTexto.textContent = "Baixar conteúdo";
-                linhaTexto.append(texto, baixarTexto);
-                item.appendChild(linhaTexto);
-            }
+
             if (envio.arquivo && envio.arquivo.arquivoData && envio.arquivo.arquivoData !== "#") {
                 const linhaArquivo = document.createElement("div");
                 linhaArquivo.className = "envio-linha";
-                const nomeArquivo = document.createElement("p");
+
+                const nomeArquivo = document.createElement("a");
                 nomeArquivo.className = "envio-arquivo-nome";
-                nomeArquivo.textContent = `Arquivo: ${envio.arquivo.nome || "Arquivo enviado"}`;
+                nomeArquivo.href = envio.arquivo.arquivoData;
+                nomeArquivo.target = "_blank";
+                nomeArquivo.rel = "noopener noreferrer";
+                nomeArquivo.style.fontWeight = "600";
+                nomeArquivo.textContent = envio.arquivo.nome || "Arquivo enviado";
+
                 const baixarArquivo = document.createElement("a");
-                baixarArquivo.className = "envio-download button button-primary";
+                baixarArquivo.className = "button button-primary";
                 baixarArquivo.href = envio.arquivo.arquivoData;
                 baixarArquivo.target = "_blank";
                 baixarArquivo.rel = "noopener noreferrer";
@@ -488,14 +418,23 @@ function criarSecaoMidiaUnificada(patrocinador) {
                         apiRequest(`/materiais/${envio.id}/acessar`, "POST").catch(() => { });
                     }
                 });
+
                 linhaArquivo.append(nomeArquivo, baixarArquivo);
                 item.appendChild(linhaArquivo);
             }
+
+            if (envio.texto && (!envio.arquivo || envio.texto !== envio.arquivo.nome)) {
+                const desc = document.createElement("p");
+                desc.className = "envio-descricao-abaixo";
+                desc.innerHTML = `<strong>Descrição:</strong> ${envio.texto}`;
+                item.appendChild(desc);
+            }
+
             blocoMarca.appendChild(item);
         });
     }
 
-    // SUB-BLOCO 2: Envios da RBS (Com botão de apagar cada item e botão de enviar abaixo de Adicionar link)
+    // SUB-BLOCO 2: Envios da RBS
     const blocoRbs = document.createElement("div");
     blocoRbs.className = "midia-subbloco";
     const h5Rbs = document.createElement("h5");
@@ -521,14 +460,8 @@ function criarSecaoMidiaUnificada(patrocinador) {
             linkPrincipal.className = "envio-arquivo-nome";
             linkPrincipal.target = "_blank";
             linkPrincipal.rel = "noopener noreferrer";
-
-            if (registro.tipo === "relatorio") {
-                linkPrincipal.href = registro.arquivoData;
-                linkPrincipal.textContent = registro.nome;
-            } else {
-                linkPrincipal.href = registro.url;
-                linkPrincipal.textContent = registro.url;
-            }
+            linkPrincipal.href = registro.tipo === "relatorio" ? registro.arquivoData : registro.url;
+            linkPrincipal.textContent = registro.tipo === "relatorio" ? registro.nome : registro.url;
 
             linkPrincipal.addEventListener("click", function () {
                 if (registro.id) {
@@ -543,7 +476,7 @@ function criarSecaoMidiaUnificada(patrocinador) {
 
             if (registro.tipo === "relatorio") {
                 const baixarArquivo = document.createElement("a");
-                baixarArquivo.className = "envio-download button button-primary";
+                baixarArquivo.className = "button button-primary";
                 baixarArquivo.href = registro.arquivoData;
                 baixarArquivo.target = "_blank";
                 baixarArquivo.rel = "noopener noreferrer";
@@ -589,7 +522,6 @@ function criarSecaoMidiaUnificada(patrocinador) {
     botaoLink.textContent = "Adicionar link";
     formularioLink.append(campoLink, botaoLink);
 
-    // Botão Adicionar relatório de mídia posicionado ABAIXO de Adicionar link
     const formularioArquivo = document.createElement("div");
     formularioArquivo.className = "midia-rbs-arquivo";
     const campoArquivo = document.createElement("input");
@@ -660,19 +592,50 @@ function criarSecaoMidiaUnificada(patrocinador) {
     return secao;
 }
 
-// --- MODULO: Cortesias (Apenas setores numéricos, sem Lounge, e botão Editar dentro do bloco) ---
+// --- MODULO: Cortesias (5 Categorias: Arena, Camarote, Premium, Hooftop, Terraço) ---
 function listarCortesias() {
     return JSON.parse(localStorage.getItem(CORTESIAS_KEY) || "[]");
 }
 
 function obterCortesias(patrocinadorId) {
-    const registro = listarCortesias().find(item => item.patrocinadorId === patrocinadorId);
-    if (registro) return registro;
+    const registro = listarCortesias().find(item => String(item.patrocinadorId) === String(patrocinadorId));
     const setores = {};
     SETORES_CORTESIA.forEach(setor => {
-        setores[setor] = { passaporte: 0, sexta: 0, sabado: 0 };
+        setores[setor] = {
+            passaporte: registro?.setores?.[setor]?.passaporte || 0,
+            sexta: registro?.setores?.[setor]?.sexta || 0,
+            sabado: registro?.setores?.[setor]?.sabado || 0
+        };
     });
     return { patrocinadorId, setores };
+}
+
+async function salvarCortesiasNoBackend(patrocinadorId, valoresPorSetor) {
+    const extrasJson = JSON.stringify({
+        Hooftop: {
+            passaporte: Number(valoresPorSetor["Hooftop"]?.passaporte) || 0,
+            sexta: Number(valoresPorSetor["Hooftop"]?.sexta) || 0,
+            sabado: Number(valoresPorSetor["Hooftop"]?.sabado) || 0
+        },
+        "Terraço": {
+            passaporte: Number(valoresPorSetor["Terraço"]?.passaporte) || 0,
+            sexta: Number(valoresPorSetor["Terraço"]?.sexta) || 0,
+            sabado: Number(valoresPorSetor["Terraço"]?.sabado) || 0
+        }
+    });
+
+    await apiRequest(`/marcas/${patrocinadorId}/cortesias`, "PUT", {
+        arenaPassaporte: Number(valoresPorSetor["Arena"]?.passaporte) || 0,
+        arenaSexta: Number(valoresPorSetor["Arena"]?.sexta) || 0,
+        arenaSabado: Number(valoresPorSetor["Arena"]?.sabado) || 0,
+        camarotePassaporte: Number(valoresPorSetor["Camarote"]?.passaporte) || 0,
+        camaroteSexta: Number(valoresPorSetor["Camarote"]?.sexta) || 0,
+        camaroteSabado: Number(valoresPorSetor["Camarote"]?.sabado) || 0,
+        premiumPassaporte: Number(valoresPorSetor["Premium"]?.passaporte) || 0,
+        premiumSexta: Number(valoresPorSetor["Premium"]?.sexta) || 0,
+        premiumSabado: Number(valoresPorSetor["Premium"]?.sabado) || 0,
+        loungeInfo: extrasJson
+    });
 }
 
 function criarSecaoCortesias(patrocinador) {
@@ -688,11 +651,9 @@ function criarSecaoCortesias(patrocinador) {
 
     const conteudoCortesias = document.createElement("div");
     conteudoCortesias.className = "secao-conteudo";
-    conteudoCortesias.hidden = false;
 
     const grade = document.createElement("div");
     grade.className = "cortesias-grade";
-    grade.style.gridTemplateColumns = "repeat(3, minmax(0, 1fr))";
 
     function adicionarResumo(pai, rotulo, valor) {
         const linha = document.createElement("div");
@@ -720,7 +681,6 @@ function criarSecaoCortesias(patrocinador) {
 
     conteudoCortesias.appendChild(grade);
 
-    // Botão Editar cortesias fica dentro do próprio bloco de Cortesias
     const botaoEditar = document.createElement("button");
     botaoEditar.type = "button";
     botaoEditar.className = "botao-editar-cortesias button button-primary";
@@ -730,14 +690,19 @@ function criarSecaoCortesias(patrocinador) {
     formulario.className = "form-cortesias";
     formulario.hidden = true;
     const tituloFormulario = document.createElement("h5");
-    tituloFormulario.textContent = "Definir quantidades de ingressos";
+    tituloFormulario.textContent = "Definir quantidades de ingressos por setor";
     formulario.appendChild(tituloFormulario);
+
+    const gradeForm = document.createElement("div");
+    gradeForm.className = "cortesias-grade";
 
     const campos = {};
     SETORES_CORTESIA.forEach(setor => {
+        const cardSetor = document.createElement("div");
+        cardSetor.className = "cortesia-setor";
         const subtitulo = document.createElement("h5");
         subtitulo.textContent = setor;
-        formulario.appendChild(subtitulo);
+        cardSetor.appendChild(subtitulo);
         campos[setor] = {};
         [
             ["passaporte", "Passaporte"],
@@ -755,9 +720,11 @@ function criarSecaoCortesias(patrocinador) {
             input.value = dados.setores[setor]?.[tipo] ?? 0;
             campos[setor][tipo] = input;
             grupo.appendChild(input);
-            formulario.appendChild(grupo);
+            cardSetor.appendChild(grupo);
         });
+        gradeForm.appendChild(cardSetor);
     });
+    formulario.appendChild(gradeForm);
 
     const botoes = document.createElement("div");
     botoes.className = "cortesias-acoes";
@@ -784,20 +751,16 @@ function criarSecaoCortesias(patrocinador) {
 
     formulario.addEventListener("submit", async function (event) {
         event.preventDefault();
-        const payloadApi = {
-            arenaPassaporte: Number(campos["Arena"]["passaporte"].value) || 0,
-            arenaSexta: Number(campos["Arena"]["sexta"].value) || 0,
-            arenaSabado: Number(campos["Arena"]["sabado"].value) || 0,
-            camarotePassaporte: Number(campos["Camarote"]["passaporte"].value) || 0,
-            camaroteSexta: Number(campos["Camarote"]["sexta"].value) || 0,
-            camaroteSabado: Number(campos["Camarote"]["sabado"].value) || 0,
-            premiumPassaporte: Number(campos["Premium"]["passaporte"].value) || 0,
-            premiumSexta: Number(campos["Premium"]["sexta"].value) || 0,
-            premiumSabado: Number(campos["Premium"]["sabado"].value) || 0,
-            loungeInfo: ""
-        };
+        const valores = {};
+        SETORES_CORTESIA.forEach(setor => {
+            valores[setor] = {
+                passaporte: Number(campos[setor]["passaporte"].value) || 0,
+                sexta: Number(campos[setor]["sexta"].value) || 0,
+                sabado: Number(campos[setor]["sabado"].value) || 0
+            };
+        });
         try {
-            await apiRequest(`/marcas/${patrocinador.id}/cortesias`, "PUT", payloadApi);
+            await salvarCortesiasNoBackend(patrocinador.id, valores);
             alert("Cortesias salvas com sucesso!");
             await sincronizarDadosComBackend();
             atualizarTelaPatrocinadores(patrocinador.id);
@@ -826,11 +789,7 @@ function configurarFiltrosPatrocinadores() {
     if (!campoBusca || !filtroCota) return;
 
     const cotaAnterior = filtroCota.value;
-    const cotas = [...new Set(
-        listarPatrocinadores()
-            .map(patrocinador => patrocinador.cota)
-            .filter(Boolean)
-    )].sort((a, b) => a.localeCompare(b, "pt-BR"));
+    const cotas = ["Master", "Subcota G", "Subcota"];
 
     filtroCota.replaceChildren();
     const opcaoTodas = document.createElement("option");
@@ -867,9 +826,9 @@ function configurarFiltrosPatrocinadores() {
     aplicarFiltros();
 }
 
-// --- MODULO: Cadastro, Edição Completa e Exclusão ---
+// --- MODULO: Cadastro, Edição e Exclusão ---
 async function cadastrarPatrocinador(dados) {
-    const emailsValidos = validarEmailsPatrocinador(dados.email);
+    const emailsValidos = validarEmailsPatrocinador(dados.emails);
     const senhaPadraoInicial = gerarSenhaPadraoPorNome(dados.nome);
 
     const marcaCriada = await apiRequest("/marcas", "POST", {
@@ -886,6 +845,10 @@ async function cadastrarPatrocinador(dados) {
             email: email,
             nome: dados.nome
         });
+    }
+
+    if (dados.cortesiasIniciais) {
+        await salvarCortesiasNoBackend(marcaCriada.id, dados.cortesiasIniciais).catch(() => { });
     }
 
     if (dados.arquivoFisico) {
@@ -924,13 +887,11 @@ async function editarPatrocinadorInline(patrocinadorAtual, novosDados) {
         senhaPadrao: novosDados.senhaPadrao
     });
 
-    // Sincroniza adição e remoção de e-mails da empresa
     const todosUsuarios = JSON.parse(localStorage.getItem(USUARIOS_KEY) || "[]");
     const contasDaMarca = todosUsuarios.filter(
         u => String(u.patrocinadorId) === String(patrocinadorAtual.id)
     );
 
-    // 1. Adiciona e-mails novos
     for (const email of emailsNovos) {
         const jaExiste = contasDaMarca.some(u => String(u.email || "").toLowerCase() === email);
         if (!jaExiste) {
@@ -941,7 +902,6 @@ async function editarPatrocinadorInline(patrocinadorAtual, novosDados) {
         }
     }
 
-    // 2. Remove e-mails que foram retirados da lista pelo Admin
     for (const contaAntiga of contasDaMarca) {
         const mantido = emailsNovos.includes(String(contaAntiga.email || "").toLowerCase());
         if (!mantido) {
@@ -950,12 +910,10 @@ async function editarPatrocinadorInline(patrocinadorAtual, novosDados) {
         }
     }
 
-    // 3. Se alterou a senha padrão da marca, salva a nova senha padrão
     if (novosDados.senhaPadrao && novosDados.senhaPadrao.trim().length >= 6) {
         salvarSenhaPadraoMarca(patrocinadorAtual.id, novosDados.senhaPadrao.trim());
     }
 
-    // 4. Se enviou novo Plano Comercial, substitui o antigo
     if (novosDados.arquivoFisico) {
         if (patrocinadorAtual.planoComercialId) {
             await apiRequest(`/materiais/${patrocinadorAtual.planoComercialId}`, "DELETE").catch(() => { });
@@ -970,7 +928,6 @@ async function editarPatrocinadorInline(patrocinadorAtual, novosDados) {
         }, novosDados.arquivoFisico);
     }
 
-    // 5. Se enviou nova Foto da empresa
     if (novosDados.fotoFisica) {
         await apiUploadMaterial(patrocinadorAtual.id, {
             titulo: novosDados.fotoFisica.name,
@@ -1005,7 +962,9 @@ function renderizarPatrocinadores(patrocinadoresParaExibir, modoDetalhes = false
     const grid = document.getElementById("patrocinadoresGrid");
     if (!grid) return;
 
-    const patrocinadores = patrocinadoresParaExibir || listarPatrocinadores();
+    const patrocinadores = ordenarPatrocinadoresPorCotaEAlfabetica(
+        patrocinadoresParaExibir || listarPatrocinadores()
+    );
     grid.replaceChildren();
 
     if (patrocinadores.length === 0) {
@@ -1030,54 +989,19 @@ function renderizarPatrocinadores(patrocinadoresParaExibir, modoDetalhes = false
         if (patrocinador.foto) {
             const imagem = document.createElement("img");
             imagem.src = patrocinador.foto;
-            imagem.alt = `Foto de ${patrocinador.nome || "empresa"}`;
+            imagem.alt = `Logo de ${patrocinador.nome || "empresa"}`;
             foto.appendChild(imagem);
         } else {
             foto.classList.add("patrocinador-foto-vazia");
-            foto.textContent = "Foto não cadastrada";
-            if (modoDetalhes) {
-                const seletorFoto = document.createElement("input");
-                seletorFoto.type = "file";
-                seletorFoto.accept = "image/jpeg,image/png,image/webp";
-                seletorFoto.hidden = true;
-                foto.setAttribute("role", "button");
-                foto.tabIndex = 0;
-                foto.title = "Clique para adicionar uma foto";
-                foto.appendChild(seletorFoto);
-
-                foto.addEventListener("click", event => {
-                    event.stopPropagation();
-                    seletorFoto.click();
-                });
-                seletorFoto.addEventListener("change", async () => {
-                    const arquivo = seletorFoto.files?.[0];
-                    if (!arquivo) return;
-                    try {
-                        validarArquivoFoto(arquivo);
-                        await apiUploadMaterial(patrocinador.id, {
-                            titulo: arquivo.name,
-                            descricao: "Foto / Logo da Empresa",
-                            abaDestino: "ABA_1_PERFIL",
-                            tipoMaterial: "FOTO_EMPRESA",
-                            caminhoStorage: null,
-                            urlExterna: null
-                        }, arquivo);
-                        await sincronizarDadosComBackend();
-                        renderizarDetalhePatrocinador(patrocinador.id);
-                    } catch (erro) {
-                        alert(erro.message || "Não foi possível salvar a foto.");
-                    }
-                });
-            }
+            foto.textContent = String(patrocinador.nome || "M").slice(0, 2).toUpperCase();
         }
 
         const nome = document.createElement("h3");
         nome.textContent = patrocinador.nome || "Empresa sem nome";
         const cota = document.createElement("span");
         cota.className = "patrocinador-cota";
-        cota.textContent = patrocinador.cota || "Cota não informada";
+        cota.textContent = patrocinador.cota || "Subcota";
 
-        // MODO DASHBOARD PRINCIPAL (Card compacto sem dropdown)
         if (!modoDetalhes) {
             card.setAttribute("role", "link");
             card.tabIndex = 0;
@@ -1105,7 +1029,6 @@ function renderizarPatrocinadores(patrocinadoresParaExibir, modoDetalhes = false
             return;
         }
 
-        // MODO DETALHES DA EMPRESA: Cota ao lado do Nome + Botão Editar onde estava a Cota
         if (typeof window.definirTituloMarcaTopbar === "function") {
             window.definirTituloMarcaTopbar(patrocinador.nome);
         }
@@ -1121,7 +1044,6 @@ function renderizarPatrocinadores(patrocinadoresParaExibir, modoDetalhes = false
 
         header.append(foto, blocoNomeECota, botaoEditarTopo);
 
-        // 1. DADOS DA EMPRESA + SENHA PADRÃO INVISÍVEL COM MOSTRAR/OCULTAR
         const info = document.createElement("div");
         info.className = "patrocinador-info";
 
@@ -1139,7 +1061,6 @@ function renderizarPatrocinadores(patrocinadoresParaExibir, modoDetalhes = false
         adicionarInfoSimples("CNPJ", patrocinador.cnpj);
         adicionarInfoSimples("E-mail", patrocinador.email);
 
-        // Senha padrão da marca (invisível por padrão + botão Mostrar)
         const senhaReal = patrocinador.senhaPadrao || obterSenhaPadraoMarca(patrocinador.id, patrocinador.nome);
         const itemSenha = document.createElement("div");
         itemSenha.className = "patrocinador-info-item";
@@ -1163,7 +1084,6 @@ function renderizarPatrocinadores(patrocinadoresParaExibir, modoDetalhes = false
         itemSenha.append(tituloSenha, linhaSenha);
         info.appendChild(itemSenha);
 
-        // Plano Comercial (com opção de abrir ou remover)
         const itemPlano = document.createElement("div");
         itemPlano.className = "patrocinador-info-item";
         const tituloPlano = document.createElement("strong");
@@ -1206,7 +1126,7 @@ function renderizarPatrocinadores(patrocinadoresParaExibir, modoDetalhes = false
         itemPlano.append(tituloPlano, linhaPlano);
         info.appendChild(itemPlano);
 
-        // FORMULÁRIO DE EDIÇÃO INLINE (Abre na própria página ao clicar em Editar)
+        // FORMULÁRIO DE EDIÇÃO INLINE
         const formEdicaoInline = document.createElement("form");
         formEdicaoInline.className = "form-edicao-inline";
         formEdicaoInline.hidden = true;
@@ -1290,16 +1210,10 @@ function renderizarPatrocinadores(patrocinadoresParaExibir, modoDetalhes = false
             }
         });
 
-        // 2. CONTRATO DE PATROCÍNIO (Logo abaixo dos dados da empresa, antes de Mídia e Conteúdo)
         const secaoContratos = criarSecaoContratos(patrocinador);
-
-        // 3. MÍDIA E CONTEÚDO (Dividido entre Envios da Marca e Envios da RBS)
         const secaoMidia = criarSecaoMidiaUnificada(patrocinador);
-
-        // 4. CORTESIAS (Sem Lounge e com botão Editar dentro do bloco)
         const secaoCortesias = criarSecaoCortesias(patrocinador);
 
-        // 5. EXCLUIR PATROCINADOR (Lá embaixo, exigindo digitar a senha padrão da empresa)
         const acoesRodape = document.createElement("div");
         acoesRodape.className = "patrocinador-acoes";
         acoesRodape.style.justifyContent = "flex-end";
@@ -1334,7 +1248,6 @@ function renderizarPatrocinadores(patrocinadoresParaExibir, modoDetalhes = false
 
         const conteudoPatrocinador = document.createElement("div");
         conteudoPatrocinador.className = "patrocinador-conteudo";
-        conteudoPatrocinador.hidden = false;
         conteudoPatrocinador.append(
             info,
             formEdicaoInline,
@@ -1369,7 +1282,7 @@ function renderizarDetalhePatrocinador(id) {
     renderizarPatrocinadores([patrocinador], true);
 }
 
-// --- Inicialização ---
+// --- Inicialização e Eventos do Modal de Cadastro ---
 document.addEventListener("DOMContentLoaded", async function () {
     const isDetailPage = document.body.classList.contains("sponsor-detail-page");
     const parametrosUrl = new URLSearchParams(window.location.search);
@@ -1392,6 +1305,111 @@ document.addEventListener("DOMContentLoaded", async function () {
     const closeSponsorForm = document.getElementById("closeSponsorForm");
     const cancelSponsor = document.getElementById("cancelSponsor");
     const sponsorForm = document.getElementById("sponsorForm");
+    const emailsContainer = document.getElementById("sponsorEmailsContainer");
+    const btnAddEmailRow = document.getElementById("btnAddSponsorEmailRow");
+    const modalCortesiasGrid = document.getElementById("modalCortesiasInputsGrid");
+    const inputPlan = document.getElementById("sponsorComercialPlan");
+    const clearPlanBtn = document.getElementById("clearSponsorPlanBtn");
+    const inputPhoto = document.getElementById("sponsorPhoto");
+    const clearPhotoBtn = document.getElementById("clearSponsorPhotoBtn");
+    const feedbackEl = document.getElementById("sponsorFormFeedback");
+    const submitBtn = document.getElementById("submitSponsorBtn");
+
+    function adicionarLinhaEmailModal(valorInicial = "") {
+        if (!emailsContainer) return;
+        const row = document.createElement("div");
+        row.className = "dynamic-email-row";
+
+        const input = document.createElement("input");
+        input.type = "email";
+        input.name = "sponsorEmailItem";
+        input.placeholder = "funcionario@empresa.com";
+        input.value = valorInicial;
+        input.required = true;
+
+        const btnRemove = document.createElement("button");
+        btnRemove.type = "button";
+        btnRemove.className = "btn-icon-remove";
+        btnRemove.textContent = "×";
+        btnRemove.title = "Remover este e-mail";
+        btnRemove.addEventListener("click", () => {
+            if (emailsContainer.querySelectorAll(".dynamic-email-row").length > 1) {
+                row.remove();
+            } else {
+                input.value = "";
+            }
+        });
+
+        row.append(input, btnRemove);
+        emailsContainer.appendChild(row);
+        emailsContainer.scrollTop = emailsContainer.scrollHeight;
+    }
+
+    function inicializarCamposCortesiasModal() {
+        if (!modalCortesiasGrid) return;
+        modalCortesiasGrid.replaceChildren();
+        SETORES_CORTESIA.forEach(setor => {
+            const box = document.createElement("div");
+            box.className = "modal-cortesia-card";
+            box.innerHTML = `
+                <strong>${setor}</strong>
+                <div class="modal-cortesia-inputs">
+                    <label>Pass.<input type="number" min="0" value="0" data-setor="${setor}" data-tipo="passaporte"></label>
+                    <label>Sexta<input type="number" min="0" value="0" data-setor="${setor}" data-tipo="sexta"></label>
+                    <label>Sáb.<input type="number" min="0" value="0" data-setor="${setor}" data-tipo="sabado"></label>
+                </div>
+            `;
+            modalCortesiasGrid.appendChild(box);
+        });
+    }
+
+    function resetarModalCadastro() {
+        sponsorForm?.reset();
+        if (feedbackEl) feedbackEl.textContent = "";
+        if (clearPlanBtn) clearPlanBtn.hidden = true;
+        if (clearPhotoBtn) clearPhotoBtn.hidden = true;
+        if (emailsContainer) {
+            emailsContainer.replaceChildren();
+            adicionarLinhaEmailModal("");
+        }
+        inicializarCamposCortesiasModal();
+    }
+
+    resetarModalCadastro();
+
+    btnAddEmailRow?.addEventListener("click", () => adicionarLinhaEmailModal(""));
+
+    inputPlan?.addEventListener("change", () => {
+        if (clearPlanBtn) clearPlanBtn.hidden = !(inputPlan.files && inputPlan.files.length > 0);
+    });
+
+    clearPlanBtn?.addEventListener("click", () => {
+        if (inputPlan) inputPlan.value = "";
+        clearPlanBtn.hidden = true;
+    });
+
+    inputPhoto?.addEventListener("change", () => {
+        if (feedbackEl) feedbackEl.textContent = "";
+        const arq = inputPhoto.files?.[0];
+        if (!arq) {
+            if (clearPhotoBtn) clearPhotoBtn.hidden = true;
+            return;
+        }
+        try {
+            validarArquivoFoto(arq);
+            if (clearPhotoBtn) clearPhotoBtn.hidden = false;
+        } catch (erro) {
+            inputPhoto.value = "";
+            if (clearPhotoBtn) clearPhotoBtn.hidden = true;
+            if (feedbackEl) feedbackEl.textContent = erro.message;
+        }
+    });
+
+    clearPhotoBtn?.addEventListener("click", () => {
+        if (inputPhoto) inputPhoto.value = "";
+        clearPhotoBtn.hidden = true;
+        if (feedbackEl) feedbackEl.textContent = "";
+    });
 
     function closeForm() {
         if (!newSponsorForm || !newSponsorButton) return;
@@ -1406,30 +1424,43 @@ document.addEventListener("DOMContentLoaded", async function () {
             newSponsorButton.setAttribute("aria-expanded", String(isOpen));
         });
         closeSponsorForm?.addEventListener("click", closeForm);
-        cancelSponsor?.addEventListener("click", closeForm);
-        document.addEventListener("click", function (event) {
-            const clicouFora = !newSponsorForm.parentElement.contains(event.target);
-            if (clicouFora) {
-                closeForm();
-            }
+        cancelSponsor?.addEventListener("click", () => {
+            resetarModalCadastro();
+            closeForm();
         });
     }
 
     if (sponsorForm) {
-        const submitButton = sponsorForm.querySelector("[type='submit']");
-
         sponsorForm.addEventListener("submit", async function (event) {
             event.preventDefault();
+            if (feedbackEl) feedbackEl.textContent = "";
+
             const nome = document.getElementById("sponsorName").value.trim();
             const cnpj = document.getElementById("sponsorCnpj").value.trim();
-            const email = document.getElementById("sponsorEmails").value.trim();
             const cota = document.getElementById("sponsorQuota").value;
-            const inputArquivo = document.getElementById("sponsorComercialPlan");
-            const arquivoFisico = inputArquivo?.files?.[0] || null;
-            const inputFoto = document.getElementById("sponsorPhoto");
-            const fotoFisica = inputFoto?.files?.[0] || null;
+            const emailsDigitados = [...emailsContainer.querySelectorAll("input[name='sponsorEmailItem']")]
+                .map(inp => inp.value.trim())
+                .filter(Boolean);
 
-            if (submitButton) submitButton.disabled = true;
+            const arquivoFisico = inputPlan?.files?.[0] || null;
+            const fotoFisica = inputPhoto?.files?.[0] || null;
+
+            const cortesiasIniciais = {};
+            SETORES_CORTESIA.forEach(s => {
+                cortesiasIniciais[s] = { passaporte: 0, sexta: 0, sabado: 0 };
+            });
+            modalCortesiasGrid?.querySelectorAll("input[data-setor]").forEach(inp => {
+                const s = inp.dataset.setor;
+                const t = inp.dataset.tipo;
+                if (cortesiasIniciais[s]) {
+                    cortesiasIniciais[s][t] = Number(inp.value) || 0;
+                }
+            });
+
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = "Cadastrando...";
+            }
 
             try {
                 validarArquivoFoto(fotoFisica);
@@ -1437,22 +1468,25 @@ document.addEventListener("DOMContentLoaded", async function () {
                 await cadastrarPatrocinador({
                     nome,
                     cnpj,
-                    email,
+                    emails: emailsDigitados,
                     cota,
-                    arquivo: arquivoFisico ? arquivoFisico.name : "",
                     arquivoFisico,
-                    fotoFisica
+                    fotoFisica,
+                    cortesiasIniciais
                 });
 
-                alert("Patrocinador cadastrado com sucesso!");
-                sponsorForm.reset();
+                resetarModalCadastro();
                 closeForm();
                 renderizarPatrocinadores();
             } catch (erro) {
-                console.error("Erro ao salvar patrocinador:", erro);
-                alert(erro.message || "Não foi possível salvar o patrocinador.");
+                if (feedbackEl) {
+                    feedbackEl.textContent = erro.message || "Não foi possível cadastrar o patrocinador.";
+                }
             } finally {
-                if (submitButton) submitButton.disabled = false;
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = "Cadastrar";
+                }
             }
         });
     }

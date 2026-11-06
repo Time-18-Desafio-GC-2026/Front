@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RBS Patrocinadores | Relatórios de Volumetria e Impacto</title>
+    <title>RBS Patrocinadores | Relatórios</title>
     <link rel="stylesheet" href="../assets/css/style_portal.css">
     <script src="../src/guards/security.js"></script>
 </head>
@@ -17,20 +17,19 @@
             <header class="topbar"></header>
 
             <main class="content report-content" id="relatorios">
-                <section class="dashboard-header report-header history-header-row">
+                <header class="history-header history-header-row">
                     <div>
-                        <h1>Relatórios de Volumetria e Impacto</h1>
-                        <p>Extraia indicadores auditados de veiculações, visualizações, alcance de mídia (Outubro a
-                            Fevereiro) e ativações no evento.</p>
+                        <h1>Relatórios</h1>
+                        <p>Extraia indicadores auditados de veiculações, visualizações, alcance de mídia e ativações no
+                            evento.</p>
                     </div>
                     <div id="adminTemplateActions" hidden>
-                        <button type="button" class="btn-acao-pequeno" id="btnBaixarPlanilhaModelo">
-                            Baixar Planilha Modelo Padrão (.csv)
+                        <button type="button" class="button button-primary" id="btnBaixarPlanilhaModelo">
+                            Baixar Modelo Padrão Excel (.xls)
                         </button>
                     </div>
-                </section>
+                </header>
 
-                <!-- ALERTA DE DISPONIBILIDADE DE DADOS PARA O PATROCINADOR -->
                 <div id="alertaDisponibilidadeRelatorio" class="report-alert-banner" hidden>
                     <div>
                         <strong id="alertaTituloMarca">Dados atualizados disponíveis para emissão</strong>
@@ -51,20 +50,18 @@
                             <label class="field">
                                 <span>Tipo de relatório</span>
                                 <select id="reportType">
-                                    <option value="VOLUMETRIA_MIDIA">Volumetria de Entrega e Impacto (Mídia)</option>
+                                    <option value="VOLUMETRIA_MIDIA">Volumetria de Entrega e Impacto</option>
                                     <option value="ATIVACAO_EVENTO" id="optRelatorioAtivacao">Ativações do Evento e
-                                        Pesquisa (Exclusivo Master)</option>
-                                    <option value="FINAL_CONSOLIDADO">Relatório Final do Evento (Consolidado)</option>
+                                        Pesquisa</option>
+                                    <option value="FINAL_CONSOLIDADO">Relatório Final do Evento</option>
                                 </select>
                             </label>
 
                             <label class="field">
                                 <span>Ciclo da Campanha Planeta Atlântida</span>
                                 <select id="downloadFormat">
-                                    <option value="Out/2025 a Fev/2026 (Edição 2026)">Out/2025 a Fev/2026 (Edição 2026)
-                                    </option>
-                                    <option value="Out/2024 a Fev/2025 (Edição 2025)">Out/2024 a Fev/2025 (Edição 2025)
-                                    </option>
+                                    <option value="Out/2025 a Fev/2026">Out/2025 a Fev/2026</option>
+                                    <option value="Out/2024 a Fev/2025">Out/2024 a Fev/2025</option>
                                 </select>
                             </label>
 
@@ -73,17 +70,16 @@
                                     Gerar Painel de Dados
                                 </button>
                                 <button class="btn-acao-pequeno" type="button" id="exportStandardPdfButton"
-                                    style="height: 44px; padding: 0 18px;" hidden>
+                                    style="height: 42px; padding: 0 18px;" hidden>
                                     Baixar Relatório (PDF)
                                 </button>
                             </div>
                         </div>
 
-                        <!-- FILTROS DE MESES E VEÍCULOS DE MÍDIA -->
                         <div id="filtrosMidiaContainer">
                             <div class="multi-filter-section">
                                 <div class="multi-filter-header">
-                                    <span>Meses da Campanha (Selecione 1, vários ou todos)</span>
+                                    <span>Meses da Campanha</span>
                                     <button type="button" class="btn-acao-pequeno" id="btnToggleTodosMeses"
                                         style="min-height: 26px; padding: 2px 10px; font-size: 11px;">
                                         Selecionar Todos
@@ -105,7 +101,7 @@
 
                             <div class="multi-filter-section">
                                 <div class="multi-filter-header">
-                                    <span>Veículos de Mídia (Selecione 1, vários ou todos)</span>
+                                    <span>Veículos de Mídia</span>
                                     <button type="button" class="btn-acao-pequeno" id="btnToggleTodosVeiculos"
                                         style="min-height: 26px; padding: 2px 10px; font-size: 11px;">
                                         Selecionar Todos

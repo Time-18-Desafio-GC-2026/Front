@@ -26,7 +26,7 @@
                     </div>
                     <div>
                         <select id="faqFilterCategory"
-                            style="height: 38px; border-radius: 8px; padding: 0 12px; border: 1px solid var(--border); background: #fff; font-size: 13px;">
+                            style="height: 38px; border-radius: 6px; padding: 0 12px; border: 1px solid var(--border); background: #fff; font-size: 13px;">
                             <option value="">Todas as categorias</option>
                             <option value="GERAL">Geral / Operação</option>
                             <option value="MIDIA">Mídia e Marca</option>
@@ -43,7 +43,7 @@
                     <form id="questionForm">
                         <label for="questionCategory">Categoria do assunto</label>
                         <select id="questionCategory" name="categoria" required
-                            style="margin-bottom: 6px; height: 40px; border-radius: 8px; padding: 0 12px; border: 1px solid var(--border); background: #f8fafc;">
+                            style="margin-bottom: 6px; height: 40px; border-radius: 6px; padding: 0 12px; border: 1px solid var(--border); background: #f8fafc;">
                             <option value="GERAL">Geral / Operação</option>
                             <option value="MIDIA">Mídia e Marca</option>
                             <option value="CORTESIAS">Cortesias e Lounge</option>
@@ -62,11 +62,11 @@
 
                 <p class="faq-message" id="faqMessage" role="status" aria-live="polite"></p>
 
-                <!-- DROPDOWN 1: PERGUNTAS RECEBIDAS (AGUARDANDO RESPOSTA) -->
-                <section class="faq-accordion-section" id="secaoRecebidasFaq">
+                <!-- DROPDOWN 1: PERGUNTAS RECEBIDAS (BORDA ESQUERDA LARANJA) -->
+                <section class="faq-accordion-section borda-laranja" id="secaoRecebidasFaq">
                     <div class="faq-accordion-header" id="headerRecebidasFaq">
                         <div class="faq-accordion-title-group">
-                            <h2>Perguntas recebidas (Aguardando resposta)</h2>
+                            <h2>Perguntas recebidas</h2>
                             <span class="faq-count-badge" id="countRecebidasFaq">0</span>
                         </div>
                         <button type="button" class="botao-recolher" id="btnToggleRecebidas" aria-expanded="true">
@@ -80,11 +80,11 @@
                     </div>
                 </section>
 
-                <!-- DROPDOWN 2: PERGUNTAS PUBLICADAS (RESPONDIDAS) -->
-                <section class="faq-accordion-section" id="secaoPublicadasFaq">
+                <!-- DROPDOWN 2: RESPOSTAS PUBLICADAS (BORDA ESQUERDA AZUL) -->
+                <section class="faq-accordion-section borda-azul" id="secaoPublicadasFaq">
                     <div class="faq-accordion-header" id="headerPublicadasFaq">
                         <div class="faq-accordion-title-group">
-                            <h2>Perguntas publicadas</h2>
+                            <h2>Respostas publicadas</h2>
                             <span class="faq-count-badge" id="countPublicadasFaq">0</span>
                         </div>
                         <button type="button" class="botao-recolher" id="btnTogglePublicadas" aria-expanded="true">

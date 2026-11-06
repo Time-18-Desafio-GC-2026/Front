@@ -69,11 +69,22 @@
 
                 <!-- VISÃO DO ADMINISTRADOR RBS -->
                 <section id="visaoAdminPesquisa" hidden>
-                    <header class="history-header">
-                        <h1>Pesquisa de Ativação</h1>
-                        <p>Acompanhe e importe as 3 perguntas personalizadas enviadas por cada patrocinador da Cota
-                            Master.</p>
-                    </header>
+                    <div class="patrocinadores-topo">
+                        <div class="patrocinadores-titulos">
+                            <h1>Pesquisa de Ativação</h1>
+                            <p>Acompanhe e importe as 3 perguntas personalizadas enviadas por cada patrocinador da Cota
+                                Master.</p>
+                        </div>
+
+                        <!-- BLOCO AZUL NO TOPO PARA DEFINIR A DATA LIMITE DE ENVIO DAS PERGUNTAS -->
+                        <div class="pesquisa-prazo-bloco">
+                            <label for="inputDataLimitePesquisa">Data limite de envio:</label>
+                            <input type="date" id="inputDataLimitePesquisa">
+                            <button type="button" class="button button-primary" id="btnSalvarDataLimitePesquisa">
+                                Salvar Prazo
+                            </button>
+                        </div>
+                    </div>
 
                     <div class="history-filters" style="justify-content: space-between; align-items: center;">
                         <label for="buscaMarcaPesquisa" style="margin: 0; flex: 1 1 320px;">

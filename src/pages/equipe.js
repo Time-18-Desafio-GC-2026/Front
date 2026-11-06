@@ -1,17 +1,19 @@
 /**
  * ==========================================================================
- * PORTAL RBS — CONTROLADOR DE GESTÃO DA EQUIPE RBS (EXCLUSIVO SUPERADMIN)
+ * PORTAL RBS — CONTROLADOR DE GESTÃO DA EQUIPE RBS (INPUTS DINÂMICOS + E × COM SENHA DO SUPERADMIN)
  * ==========================================================================
  */
 const SENHA_PADRAO_ADMINS_KEY = "rbs_senha_padrao_admins";
 
 document.addEventListener("DOMContentLoaded", async function () {
+    const sessao = JSON.parse(localStorage.getItem("rbs_sessao") || "null");
     const inputSenhaPadrao = document.getElementById("defaultAdminPassword");
     const btnTogglePwd = document.getElementById("btnToggleDefaultPwd");
     const btnCopiarSenha = document.getElementById("btnCopiarSenhaPadrao");
     const feedbackSenha = document.getElementById("feedbackSenhaPadrao");
     const formLote = document.getElementById("formCriarAdminsLote");
-    const inputEmails = document.getElementById("adminEmailsList");
+    const emailsContainer = document.getElementById("adminEmailsDynamicContainer");
+    const btnAddRow = document.getElementById("btnAddAdminEmailRow");
     const msgCriar = document.getElementById("msgCriarAdmins");
     const btnSubmit = document.getElementById("btnSubmitAdmins");
     const tbody = document.getElementById("tabelaEquipeRows");
@@ -47,20 +49,84 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     });
 
-    function extrairEmailsUnicos(texto) {
-        return [...new Set(
-            String(texto || "")
-                .split(/[\s,;]+/)
-                .map(e => e.trim().toLowerCase())
-                .filter(Boolean)
-        )];
-    }
-
     function formatarDataHoraAcesso(isoString) {
         if (!isoString) return "Nunca acessou";
         const d = new Date(isoString);
         return Number.isNaN(d.getTime()) ? "Nunca acessou" : d.toLocaleString("pt-BR");
     }
+
+    // Cria linha de input para um novo e-mail ou para um administrador já existente
+    function adicionarLinhaEmailAdmin(adminExistente = null) {
+        if (!emailsContainer) return;
+        const row = document.createElement("div");
+        row.className = "dynamic-email-row";
+
+        const input = document.createElement("input");
+        input.type = "email";
+
+        if (adminExistente) {
+            input.value = adminExistente.email;
+            input.readOnly = true;
+            input.style.background = "#f8fafc";
+            input.style.color = "#475569";
+        } else {
+            input.name = "novoAdminEmailItem";
+            input.placeholder = "novo.admin@rbs.com.br";
+        }
+
+        const btnRemove = document.createElement("button");
+        btnRemove.type = "button";
+        btnRemove.className = "btn-icon-remove";
+        btnRemove.textContent = "×";
+        btnRemove.title = adminExistente
+            ? "Remover acesso deste administrador"
+            : "Remover esta linha";
+
+        btnRemove.addEventListener("click", async () => {
+            if (!adminExistente) {
+                const linhasNovas = emailsContainer.querySelectorAll("input[name='novoAdminEmailItem']");
+                if (linhasNovas.length > 1) {
+                    row.remove();
+                } else {
+                    input.value = "";
+                }
+                return;
+            }
+
+            // Se for um administrador já cadastrado, exige a senha do SuperAdmin e avisa sobre a perda de acesso
+            const senhaSuperAdmin = window.prompt(
+                `ATENÇÃO: Remover o e-mail "${adminExistente.email}" fará com que este administrador perca imediatamente o acesso à sua conta na plataforma.\n\nPara confirmar a remoção, digite a sua senha de SuperAdmin:`
+            );
+            if (senhaSuperAdmin === null) return;
+            if (!senhaSuperAdmin.trim()) {
+                alert("A senha do SuperAdmin é obrigatória para remover um administrador.");
+                return;
+            }
+
+            try {
+                const emailSuperAdmin = sessao?.email || "admin@rbs.com.br";
+                await apiRequest("/auth/login", "POST", {
+                    email: emailSuperAdmin,
+                    senha: senhaSuperAdmin.trim()
+                });
+
+                await apiRequest(`/usuarios/${adminExistente.id}/desativar`, "POST").catch(() => { });
+                await apiRequest(`/usuarios/${adminExistente.id}`, "DELETE");
+
+                msgCriar.style.color = "#15803d";
+                msgCriar.textContent = `O acesso do administrador ${adminExistente.email} foi revogado e removido.`;
+                await carregarEquipeRbs();
+            } catch (erro) {
+                alert("Senha de SuperAdmin incorreta ou falha ao remover administrador. Operação cancelada.");
+            }
+        });
+
+        row.append(input, btnRemove);
+        emailsContainer.appendChild(row);
+        emailsContainer.scrollTop = emailsContainer.scrollHeight;
+    }
+
+    btnAddRow?.addEventListener("click", () => adicionarLinhaEmailAdmin(null));
 
     async function carregarEquipeRbs() {
         if (!tbody) return;
@@ -74,7 +140,14 @@ document.addEventListener("DOMContentLoaded", async function () {
                 u => u.perfil === "SUPERADMIN" || u.perfil === "ADMIN"
             );
 
-            // Mapa com o último LOGIN_REALIZADO por e-mail/nome nos logs como complemento
+            // Renderiza na caixa de scroll os administradores existentes (com × protegido por senha) + 1 linha em branco para novos
+            if (emailsContainer) {
+                emailsContainer.replaceChildren();
+                const adminsComuns = equipe.filter(u => u.perfil === "ADMIN");
+                adminsComuns.forEach(adm => adicionarLinhaEmailAdmin(adm));
+                adicionarLinhaEmailAdmin(null);
+            }
+
             const mapaUltimoLogin = {};
             (logsAuditoria || []).forEach(log => {
                 if (log.acao === "LOGIN_REALIZADO" && log.atorNome) {
@@ -128,25 +201,32 @@ document.addEventListener("DOMContentLoaded", async function () {
         event.preventDefault();
         msgCriar.textContent = "";
         const senhaPadrao = inputSenhaPadrao.value.trim();
-        const emails = extrairEmailsUnicos(inputEmails.value);
+
+        const novosEmails = [...emailsContainer.querySelectorAll("input[name='novoAdminEmailItem']")]
+            .map(inp => inp.value.trim().toLowerCase())
+            .filter(Boolean);
+
+        const emailsUnicos = [...new Set(novosEmails)];
 
         if (senhaPadrao.length < 8) {
+            msgCriar.style.color = "#b42318";
             msgCriar.textContent = "A senha padrão precisa ter pelo menos 8 caracteres (letras e números).";
             return;
         }
-        if (emails.length === 0) {
-            msgCriar.textContent = "Informe pelo menos um e-mail válido.";
+        if (emailsUnicos.length === 0) {
+            msgCriar.style.color = "#b42318";
+            msgCriar.textContent = "Preencha pelo menos um novo e-mail para cadastrar.";
             return;
         }
 
         localStorage.setItem(SENHA_PADRAO_ADMINS_KEY, senhaPadrao);
         btnSubmit.disabled = true;
-        btnSubmit.textContent = "Cadastrando equipe...";
+        btnSubmit.textContent = "Cadastrando...";
 
         let criados = 0;
         const erros = [];
 
-        for (const email of emails) {
+        for (const email of emailsUnicos) {
             const prefixoEmail = email.split("@")[0];
             try {
                 await apiRequest("/admins", "POST", {
@@ -164,11 +244,13 @@ document.addEventListener("DOMContentLoaded", async function () {
         btnSubmit.textContent = "Cadastrar Administradores na Plataforma";
 
         if (criados > 0 && erros.length === 0) {
-            formLote.reset();
-            msgCriar.textContent = `${criados} administrador(es) cadastrado(s) com sucesso usando a senha padrão!`;
+            msgCriar.style.color = "#15803d";
+            msgCriar.textContent = `${criados} administrador(es) cadastrado(s) com sucesso!`;
         } else if (criados > 0 && erros.length > 0) {
+            msgCriar.style.color = "#b45309";
             msgCriar.textContent = `${criados} criado(s). Avisos: ${erros.join(" | ")}`;
         } else {
+            msgCriar.style.color = "#b42318";
             msgCriar.textContent = `Não foi possível cadastrar: ${erros.join(" | ")}`;
         }
 

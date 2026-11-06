@@ -1,8 +1,10 @@
 /**
  * ==========================================================================
- * PORTAL RBS — CONTROLADOR DE PESQUISA DE ATIVAÇÃO (LISTA EXPANSÍVEL + PDF)
+ * PORTAL RBS — CONTROLADOR DE PESQUISA DE ATIVAÇÃO (ORDENAÇÃO + PRAZO + PDF)
  * ==========================================================================
  */
+const PRAZO_PESQUISA_STORAGE_KEY = "rbs_pesquisa_data_limite";
+
 document.addEventListener("DOMContentLoaded", async function () {
     const sessao = JSON.parse(localStorage.getItem("rbs_sessao") || "null");
     if (!sessao) return;
@@ -114,13 +116,27 @@ document.addEventListener("DOMContentLoaded", async function () {
     const containerLista = document.getElementById("listaPesquisaAccordion");
     const inputBusca = document.getElementById("buscaMarcaPesquisa");
     const btnImportarPdf = document.getElementById("btnExportarPerguntasPdf");
+    const inputDataLimite = document.getElementById("inputDataLimitePesquisa");
+    const btnSalvarDataLimite = document.getElementById("btnSalvarDataLimitePesquisa");
+
     let consolidadoMaster = [];
+
+    // Ordena sempre dos que têm MAIS perguntas registradas para os que têm MENOS
+    function ordenarPorMaisPerguntas(lista) {
+        return [...(lista || [])].sort((a, b) => {
+            const diff = (b.perguntas?.length || 0) - (a.perguntas?.length || 0);
+            if (diff !== 0) return diff;
+            return String(a.marca.nome || "").localeCompare(String(b.marca.nome || ""), "pt-BR");
+        });
+    }
 
     function renderizarListaMaster(listaFiltrada) {
         if (!containerLista) return;
         containerLista.replaceChildren();
 
-        if (listaFiltrada.length === 0) {
+        const ordenada = ordenarPorMaisPerguntas(listaFiltrada);
+
+        if (ordenada.length === 0) {
             containerLista.innerHTML = `
                 <div class="patrocinadores-vazio" style="border: 0; border-radius: 0;">
                     Nenhum patrocinador da cota <strong>Master</strong> encontrado.
@@ -129,7 +145,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             return;
         }
 
-        listaFiltrada.forEach(({ marca, perguntas, logoUrl }) => {
+        ordenada.forEach(({ marca, perguntas, logoUrl }) => {
             const qtdEnviadas = Math.min(3, (perguntas || []).length);
             const concluido = qtdEnviadas === 3;
 
@@ -192,11 +208,13 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     function obterListaFiltrada() {
         const termo = (inputBusca?.value || "").trim().toLowerCase();
-        if (!termo) return consolidadoMaster;
-        return consolidadoMaster.filter(({ marca }) =>
-            String(marca.nome || "").toLowerCase().includes(termo) ||
-            String(marca.cnpj || "").toLowerCase().includes(termo)
-        );
+        const filtrada = !termo
+            ? consolidadoMaster
+            : consolidadoMaster.filter(({ marca }) =>
+                String(marca.nome || "").toLowerCase().includes(termo) ||
+                String(marca.cnpj || "").toLowerCase().includes(termo)
+            );
+        return ordenarPorMaisPerguntas(filtrada);
     }
 
     async function carregarPainelAdminPesquisa() {
@@ -204,6 +222,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             const todasMarcas = (await apiRequest("/marcas", "GET")) || [];
             const marcasMaster = todasMarcas.filter(m => String(m.cota).toUpperCase() === "MASTER");
             consolidadoMaster = [];
+            let dataLimiteEncontrada = localStorage.getItem(PRAZO_PESQUISA_STORAGE_KEY) || "";
 
             for (const marca of marcasMaster) {
                 const [perguntas, materiais] = await Promise.all([
@@ -211,8 +230,22 @@ document.addEventListener("DOMContentLoaded", async function () {
                     apiRequest(`/marcas/${marca.id}/materiais`, "GET").catch(() => [])
                 ]);
                 const fotoMat = (materiais || []).find(mat => mat.tipoMaterial === "FOTO_EMPRESA");
+                const prazoMat = (materiais || []).find(mat => mat.tipoMaterial === "PRAZO_PESQUISA");
+                if (prazoMat?.descricao && !dataLimiteEncontrada) {
+                    dataLimiteEncontrada = prazoMat.descricao;
+                }
                 const logoUrl = fotoMat ? (fotoMat.caminhoStorage || fotoMat.urlExterna) : "";
-                consolidadoMaster.push({ marca, perguntas: perguntas || [], logoUrl });
+                consolidadoMaster.push({
+                    marca,
+                    perguntas: perguntas || [],
+                    logoUrl,
+                    prazoMatId: prazoMat?.id || null
+                });
+            }
+
+            if (inputDataLimite && dataLimiteEncontrada) {
+                inputDataLimite.value = dataLimiteEncontrada;
+                localStorage.setItem(PRAZO_PESQUISA_STORAGE_KEY, dataLimiteEncontrada);
             }
 
             renderizarListaMaster(obterListaFiltrada());
@@ -221,10 +254,46 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
+    // Salva a Data Limite de Envio e propaga o aviso de prazo para os patrocinadores Master
+    btnSalvarDataLimite?.addEventListener("click", async () => {
+        const novaData = inputDataLimite?.value;
+        if (!novaData) {
+            alert("Selecione uma data limite válida.");
+            return;
+        }
+        btnSalvarDataLimite.disabled = true;
+        btnSalvarDataLimite.textContent = "Salvando...";
+        try {
+            localStorage.setItem(PRAZO_PESQUISA_STORAGE_KEY, novaData);
+            for (const item of consolidadoMaster) {
+                if (item.prazoMatId) {
+                    await apiRequest(`/materiais/${item.prazoMatId}`, "DELETE").catch(() => { });
+                }
+                const criado = await apiUploadMaterial(item.marca.id, {
+                    titulo: "Data Limite da Pesquisa de Ativação",
+                    descricao: novaData,
+                    abaDestino: "ABA_6_PESQUISA",
+                    tipoMaterial: "PRAZO_PESQUISA",
+                    caminhoStorage: null,
+                    urlExterna: "https://portal.rbs.com.br/prazo-pesquisa"
+                }, null).catch(() => null);
+                item.prazoMatId = criado?.id || null;
+            }
+            const dataPt = new Date(novaData + "T00:00:00").toLocaleDateString("pt-BR");
+            alert(`Data limite definida para ${dataPt}! Os patrocinadores Master serão notificados automaticamente.`);
+        } catch (erro) {
+            alert(erro.message || "Não foi possível salvar a data limite.");
+        } finally {
+            btnSalvarDataLimite.disabled = false;
+            btnSalvarDataLimite.textContent = "Salvar Prazo";
+        }
+    });
+
     inputBusca?.addEventListener("input", () => {
         renderizarListaMaster(obterListaFiltrada());
     });
 
+    // Gera PDF da Pauta com título limpo "Pauta Pesquisa de Ativação Planeta Atlântida" e "Emitido em" sem quebrar linha
     btnImportarPdf?.addEventListener("click", () => {
         const lista = obterListaFiltrada();
         if (lista.length === 0) {
@@ -246,6 +315,9 @@ document.addEventListener("DOMContentLoaded", async function () {
             `;
         }).join("");
 
+        const agora = new Date();
+        const dataEmissaoUnicaLinha = `${agora.toLocaleDateString("pt-BR")} às ${agora.toLocaleTimeString("pt-BR")}`;
+
         const janelaPdf = window.open("", "_blank", "width=950,height=750");
         if (!janelaPdf) {
             alert("Permita pop-ups no navegador para gerar o documento PDF.");
@@ -257,25 +329,26 @@ document.addEventListener("DOMContentLoaded", async function () {
             <html lang="pt-BR">
             <head>
                 <meta charset="UTF-8">
-                <title>Relatório de Pesquisa de Ativação — Planeta Atlântida</title>
+                <title>Pauta Pesquisa de Ativação Planeta Atlântida</title>
                 <style>
-                    body { font-family: Arial, sans-serif; color: #1e293b; margin: 32px; }
-                    .header { border-bottom: 3px solid #f47b20; padding-bottom: 14px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-                    .header h1 { margin: 0; color: #101d4d; font-size: 20px; }
-                    .meta { font-size: 12px; color: #64748b; }
-                    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-                    th, td { border: 1px solid #cbd5e1; padding: 10px 12px; text-align: left; font-size: 12px; vertical-align: top; line-height: 1.5; }
+                    @page { size: A4 portrait; margin: 12mm; }
+                    body { font-family: Arial, sans-serif; color: #1e293b; margin: 0; padding: 0; }
+                    .header { border-bottom: 3px solid #f47b20; padding-bottom: 10px; margin-bottom: 16px; }
+                    .header h1 { margin: 0 0 6px; color: #101d4d; font-size: 20px; white-space: nowrap; }
+                    .sub-row { display: flex; justify-content: space-between; align-items: center; font-size: 11.5px; color: #64748b; white-space: nowrap; }
+                    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                    th, td { border: 1px solid #cbd5e1; padding: 9px 11px; text-align: left; font-size: 11.5px; vertical-align: top; line-height: 1.45; }
                     th { background: #101d4d; color: #ffffff; }
                     tr:nth-child(even) { background: #f8fafc; }
                 </style>
             </head>
             <body>
                 <div class="header">
-                    <div>
-                        <h1>Planeta Atlântida — Pauta da Pesquisa de Ativação (Cota Master)</h1>
-                        <div class="meta">Documento Oficial de Auditoria e Pesquisa • Grupo RBS</div>
+                    <h1>Pauta Pesquisa de Ativação Planeta Atlântida</h1>
+                    <div class="sub-row">
+                        <span>Documento Oficial de Auditoria e Pesquisa • Grupo RBS</span>
+                        <strong>Emitido em: ${dataEmissaoUnicaLinha}</strong>
                     </div>
-                    <div class="meta">Emitido em: ${new Date().toLocaleString("pt-BR")}</div>
                 </div>
                 <table>
                     <thead>

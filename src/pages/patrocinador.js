@@ -115,57 +115,37 @@ document.addEventListener("DOMContentLoaded", async function () {
         if (!listaContratosCliente) return;
         listaContratosCliente.replaceChildren();
 
-        const contratoAtual = contratosAtuaisCache[0] || null;
-        if (!contratoAtual) {
-            const msg = document.createElement("p");
-            msg.className = "envios-patrocinador-vazio";
-            msg.textContent = "Nenhum contrato em PDF disponibilizado pela RBS ainda.";
-            listaContratosCliente.appendChild(msg);
+        const formAssinado = document.getElementById("formEnviarContratoAssinado");
+        if (formAssinado) formAssinado.hidden = true;
+
+        const pdfConsolidado = contratosAtuaisCache.find(
+            c => c.tipoMaterial === "CONTRATO" &&
+                (c.status === "CONTRATO_CONSOLIDADO" || c.status === "CONTRATO_FINALIZADO" || c.autorPerfil === "PATROCINADOR")
+        );
+
+        if (!pdfConsolidado) {
+            listaContratosCliente.innerHTML = `
+                <div class="envio-item">
+                    <div class="envio-linha">
+                        <span style="color: #475569; font-size: 0.9rem;">Ainda existem ações pendentes nos seus contratos.</span>
+                        <a href="indexContratos.html" class="button button-primary" style="text-decoration: none;">Acessar aba Contratos</a>
+                    </div>
+                </div>
+            `;
             return;
         }
 
-        const item = document.createElement("div");
-        item.className = "envio-item";
-
-        let faseTexto = "Fase 1/3: Disponibilizado pela RBS — Aguardando assinatura da sua empresa";
-        if (contratoAtual.status === "CONTRATO_FINALIZADO") {
-            faseTexto = "Fase 3/3: Contrato Final Assinado por ambas as partes";
-        } else if (contratoAtual.autorPerfil === "PATROCINADOR" || contratoAtual.status === "ASSINADO_PELA_EMPRESA") {
-            faseTexto = "Fase 2/3: Assinado pela sua empresa — Aguardando assinatura final da RBS";
-        }
-
-        const dataStr = contratoAtual.criadoEm ? new Date(contratoAtual.criadoEm).toLocaleString("pt-BR") : "";
-        const linha = document.createElement("div");
-        linha.className = "envio-linha";
-
-        const info = document.createElement("div");
-        info.style.flex = "1";
-        info.innerHTML = `
-            <span class="envio-status" style="margin-bottom:6px;">${faseTexto}</span>
-            <p class="envio-texto" style="margin:4px 0;"><strong>${contratoAtual.titulo}</strong></p>
-            <small style="color:#64748b; font-size:0.78rem;">Atualizado em: ${dataStr}</small>
+        const urlNuvem = pdfConsolidado.caminhoStorage || pdfConsolidado.urlExterna;
+        listaContratosCliente.innerHTML = `
+            <div class="envio-item">
+                <div class="envio-linha">
+                    <p class="envio-texto"><strong>${pdfConsolidado.titulo}</strong></p>
+                    <a href="${urlNuvem}" target="_blank" rel="noopener noreferrer" download="${pdfConsolidado.titulo}" class="button button-primary">
+                        Visualizar / Baixar Contrato (PDF)
+                    </a>
+                </div>
+            </div>
         `;
-
-        const urlNuvem = contratoAtual.caminhoStorage || contratoAtual.urlExterna;
-        if (urlNuvem && urlNuvem.startsWith("http")) {
-            const baixar = document.createElement("a");
-            baixar.className = "button button-primary";
-            baixar.style.textDecoration = "none";
-            baixar.href = urlNuvem;
-            baixar.target = "_blank";
-            baixar.rel = "noopener noreferrer";
-            baixar.download = contratoAtual.titulo || "contrato.pdf";
-            baixar.textContent = "Visualizar / Baixar PDF";
-            baixar.addEventListener("click", () => {
-                if (contratoAtual.id) apiRequest(`/materiais/${contratoAtual.id}/acessar`, "POST").catch(() => { });
-            });
-            linha.append(info, baixar);
-        } else {
-            linha.appendChild(info);
-        }
-
-        item.appendChild(linha);
-        listaContratosCliente.appendChild(item);
     }
 
     function renderizarMateriais(materiais) {
@@ -262,10 +242,17 @@ document.addEventListener("DOMContentLoaded", async function () {
         if (!resumoCortesiasCliente) return;
         resumoCortesiasCliente.replaceChildren();
 
+        let extras = { Hooftop: { passaporte: 0, sexta: 0, sabado: 0 }, "Terraço": { passaporte: 0, sexta: 0, sabado: 0 } };
+        if (cortesia?.loungeInfo) {
+            try { extras = JSON.parse(cortesia.loungeInfo); } catch { /* ignora */ }
+        }
+
         const setores = [
             { nome: "Arena", passaporte: cortesia?.arenaPassaporte || 0, sexta: cortesia?.arenaSexta || 0, sabado: cortesia?.arenaSabado || 0 },
             { nome: "Camarote", passaporte: cortesia?.camarotePassaporte || 0, sexta: cortesia?.camaroteSexta || 0, sabado: cortesia?.camaroteSabado || 0 },
-            { nome: "Premium", passaporte: cortesia?.premiumPassaporte || 0, sexta: cortesia?.premiumSexta || 0, sabado: cortesia?.premiumSabado || 0 }
+            { nome: "Premium", passaporte: cortesia?.premiumPassaporte || 0, sexta: cortesia?.premiumSexta || 0, sabado: cortesia?.premiumSabado || 0 },
+            { nome: "Hooftop", passaporte: extras?.Hooftop?.passaporte || 0, sexta: extras?.Hooftop?.sexta || 0, sabado: extras?.Hooftop?.sabado || 0 },
+            { nome: "Terraço", passaporte: extras?.["Terraço"]?.passaporte || 0, sexta: extras?.["Terraço"]?.sexta || 0, sabado: extras?.["Terraço"]?.sabado || 0 }
         ];
 
         setores.forEach(s => {

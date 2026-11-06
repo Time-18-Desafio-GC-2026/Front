@@ -1,5 +1,5 @@
 ﻿// ==========================================================================
-// PORTAL RBS — CONTROLADOR DE RELATÓRIOS (POWER BI + VOLUMETRIA OUT-FEV + PDF)
+// PORTAL RBS — CONTROLADOR DE RELATÓRIOS (POWER BI + MODELO EXCEL MULTI-ABAS + PDF COMPACTO)
 // ==========================================================================
 const ORDEM_MESES = ["Outubro", "Novembro", "Dezembro", "Janeiro", "Fevereiro"];
 const ORDEM_VEICULOS = ["Instagram", "X", "TikTok", "Rádio", "Jornais", "Televisão"];
@@ -24,10 +24,6 @@ function parseKeyValueTexto(texto) {
     return mapa;
 }
 
-/**
- * Se o Back-end ainda não tiver gravado a matriz Outubro-Fevereiro para a marca (mas ela já possuir indicadores),
- * sintetiza localmente a estrutura de 5 meses para garantir funcionamento imediato.
- */
 function extrairDadosEstruturadosDoRelatorio(relatorio) {
     const indicadores = relatorio.indicadoresConsolidados || [];
     const midiaMensal = [];
@@ -71,7 +67,6 @@ function extrairDadosEstruturadosDoRelatorio(relatorio) {
         }
     });
 
-    // Compatibilidade caso os indicadores no banco ainda estejam no formato anterior
     if (midiaMensal.length === 0 && indicadores.length > 0) {
         const fator = String(relatorio.cota).toUpperCase() === "MASTER" ? 3 : (String(relatorio.cota).toUpperCase() === "SUB_COTA_G" ? 2 : 1);
         const pesos = [0.75, 0.9, 1.15, 1.45, 1.85];
@@ -119,6 +114,117 @@ function extrairDadosEstruturadosDoRelatorio(relatorio) {
     }
 
     return { midiaMensal, resumoAtivacao, demografia, respostasPerguntas };
+}
+
+/**
+ * Gera um arquivo Excel (.xls SpreadsheetML) com as 6 abas (Outubro, Novembro, Dezembro, Janeiro, Fevereiro e Ativação Master)
+ * exatamente igual à estrutura de colunas por patrocinador (Veiculo | Metrica | Coca-Cola | Renner | Banrisul...).
+ */
+function baixarPlanilhaExcelPadraoMultiAbas(marcas) {
+    const todasMarcas = marcas.length > 0
+        ? marcas.map(m => m.nome)
+        : ["Coca-Cola", "Renner", "Banrisul", "PUCRS", "Budweiser", "Monster", "Mastercard"];
+
+    const marcasMaster = marcas.filter(m => String(m.cota).toUpperCase() === "MASTER").map(m => m.nome);
+    const listaMaster = marcasMaster.length > 0 ? marcasMaster : ["Coca-Cola", "Renner", "Banrisul", "PUCRS", "Budweiser", "Monster"];
+
+    const esc = (str) => String(str ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+    function criarAbaMesXml(nomeMes) {
+        let rowsXml = `<Row ss:StyleID="Header"><Cell><Data ss:Type="String">Veiculo</Data></Cell><Cell><Data ss:Type="String">Metrica</Data></Cell>`;
+        todasMarcas.forEach(m => {
+            rowsXml += `<Cell><Data ss:Type="String">${esc(m)}</Data></Cell>`;
+        });
+        rowsXml += `</Row>`;
+
+        const metricas = [
+            ["Veiculações", 25],
+            ["Visualizações", 85000],
+            ["Alcance", 68000]
+        ];
+
+        ORDEM_VEICULOS.forEach(veiculo => {
+            metricas.forEach(([metrica, valorExemplo]) => {
+                rowsXml += `<Row><Cell><Data ss:Type="String">${esc(veiculo)}</Data></Cell><Cell><Data ss:Type="String">${esc(metrica)}</Data></Cell>`;
+                todasMarcas.forEach((_, idx) => {
+                    rowsXml += `<Cell><Data ss:Type="Number">${idx === 0 ? valorExemplo : ""}</Data></Cell>`;
+                });
+                rowsXml += `</Row>`;
+            });
+        });
+
+        rowsXml += `<Row ss:StyleID="Subtotal"><Cell><Data ss:Type="String">TOTAL DO MÊS</Data></Cell><Cell><Data ss:Type="String">Soma Mensal</Data></Cell>`;
+        todasMarcas.forEach((_, idx) => {
+            rowsXml += `<Cell><Data ss:Type="Number">${idx === 0 ? 150 : ""}</Data></Cell>`;
+        });
+        rowsXml += `</Row>`;
+
+        return `<Worksheet ss:Name="${esc(nomeMes)}"><Table>${rowsXml}</Table></Worksheet>`;
+    }
+
+    function criarAbaAtivacaoMasterXml() {
+        let rowsXml = `<Row ss:StyleID="Header"><Cell><Data ss:Type="String">Categoria</Data></Cell><Cell><Data ss:Type="String">Metrica</Data></Cell>`;
+        listaMaster.forEach(m => {
+            rowsXml += `<Cell><Data ss:Type="String">${esc(m)}</Data></Cell>`;
+        });
+        rowsXml += `</Row>`;
+
+        const linhasMaster = [
+            ["Resumo Geral", "Entrevistados (Total)", 1260],
+            ["Resumo Geral", "Alcance da Ativação", 51700],
+            ["Gênero (%)", "Feminino", 54],
+            ["Gênero (%)", "Masculino", 43],
+            ["Gênero (%)", "Não-binário / Outros", 3],
+            ["Idade (%)", "18 a 24 anos", 42],
+            ["Idade (%)", "25 a 34 anos", 35],
+            ["Idade (%)", "35 a 44 anos", 15],
+            ["Idade (%)", "45 anos ou mais", 8],
+            ["Perfil do Público (%)", "Já participou antes", 68],
+            ["Perfil do Público (%)", "Primeira vez no Planeta", 32],
+            ["Pergunta 1 (%)", "Sim", 92],
+            ["Pergunta 1 (%)", "Não", 8],
+            ["Pergunta 2 (%)", "Sim", 87],
+            ["Pergunta 2 (%)", "Não", 13],
+            ["Pergunta 3 (%)", "Sim", 95],
+            ["Pergunta 3 (%)", "Não", 5]
+        ];
+
+        linhasMaster.forEach(([cat, met, valEx]) => {
+            rowsXml += `<Row><Cell><Data ss:Type="String">${esc(cat)}</Data></Cell><Cell><Data ss:Type="String">${esc(met)}</Data></Cell>`;
+            listaMaster.forEach((_, idx) => {
+                rowsXml += `<Cell><Data ss:Type="Number">${idx === 0 ? valEx : ""}</Data></Cell>`;
+            });
+            rowsXml += `</Row>`;
+        });
+
+        return `<Worksheet ss:Name="Ativação Master"><Table>${rowsXml}</Table></Worksheet>`;
+    }
+
+    const workbookXml = `<?xml version="1.0" encoding="UTF-8"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:x="urn:schemas-microsoft-com:office:excel"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+ <Styles>
+  <Style ss:ID="Header">
+   <Font ss:Bold="1" ss:Color="#FFFFFF"/>
+   <Interior ss:Color="#1B5E20" ss:Pattern="Solid"/>
+  </Style>
+  <Style ss:ID="Subtotal">
+   <Font ss:Bold="1" ss:Color="#101D4D"/>
+   <Interior ss:Color="#E8EAF6" ss:Pattern="Solid"/>
+  </Style>
+ </Styles>
+ ${ORDEM_MESES.map(criarAbaMesXml).join("\n")}
+ ${criarAbaAtivacaoMasterXml()}
+</Workbook>`;
+
+    const blob = new Blob([workbookXml], { type: "application/vnd.ms-excel;charset=utf-8" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "planilha_padrao_volumetria_rbs.xls";
+    link.click();
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -215,7 +321,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (ehPatrocinador && sessao.patrocinadorId) {
                 const minhaMarca = await apiRequest(`/marcas/${sessao.patrocinadorId}`, "GET");
                 marcasCarregadas = minhaMarca ? [minhaMarca] : [];
-                if (sponsorSelect) sponsorSelect.disabled = true; // Patrocinador só vê a própria marca
+                if (sponsorSelect) sponsorSelect.disabled = true;
             } else {
                 marcasCarregadas = (await apiRequest("/marcas", "GET")) || [];
             }
@@ -235,7 +341,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 .forEach((marca) => {
                     const option = document.createElement("option");
                     option.value = marca.id;
-                    option.textContent = `${marca.nome} (${marca.cota})`;
+                    option.textContent = marca.nome;
                     sponsorSelect.appendChild(option);
                 });
 
@@ -257,7 +363,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     });
 
-    // Botões de Selecionar Todos / Desmarcar Todos para Meses e Veículos
     document.getElementById("btnToggleTodosMeses")?.addEventListener("click", () => {
         const inputs = [...document.querySelectorAll("#mesesCheckboxes input[type='checkbox']")];
         const todosMarcados = inputs.every(i => i.checked);
@@ -270,31 +375,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         inputs.forEach(i => { i.checked = !todosMarcados; });
     });
 
-    // Download da Planilha Modelo Padrão (Outubro a Fevereiro) para o Admin RBS
     btnBaixarPlanilhaModelo?.addEventListener("click", () => {
-        const nomesMarcas = marcasCarregadas.length > 0
-            ? marcasCarregadas.map(m => m.nome)
-            : ["Coca-Cola", "Budweiser", "Ambev"];
-
-        const linhasCsv = [
-            "PLANILHA PADRAO RBS - VOLUMETRIA DE ENTREGA E IMPACTO (OUTUBRO A FEVEREIRO)",
-            ["Mes", "Veiculo_de_Midia", ...nomesMarcas.flatMap(n => [`${n}_Veiculacoes`, `${n}_Visualizacoes`, `${n}_Alcance`])].join(";")
-        ];
-
-        ORDEM_MESES.forEach(mes => {
-            ORDEM_VEICULOS.forEach(veic => {
-                const valores = nomesMarcas.flatMap(() => ["25", "85000", "68000"]);
-                linhasCsv.push([mes, veic, ...valores].join(";"));
-            });
-            const subtotais = nomesMarcas.flatMap(() => ["150", "510000", "408000"]);
-            linhasCsv.push([mes, "TOTAL DO MES", ...subtotais].join(";"));
-        });
-
-        const blob = new Blob(["\uFEFF" + linhasCsv.join("\n")], { type: "text/csv;charset=utf-8;" });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = "planilha_padrao_volumetria_rbs_out_fev.csv";
-        link.click();
+        baixarPlanilhaExcelPadraoMultiAbas(marcasCarregadas);
     });
 
     await carregarPatrocinadores();
@@ -307,7 +389,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         return [...document.querySelectorAll("#veiculosCheckboxes input[type='checkbox']:checked")].map(i => i.value);
     }
 
-    // ==================== RENDERIZAÇÃO DO PAINEL POWER BI E CONSTRUÇÃO DO PDF ====================
     async function gerarPainelRelatorio() {
         const marcaSelecionadaId = sponsorSelect.value;
         const tipoRelatorio = reportTypeSelect.value;
@@ -323,7 +404,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (tipoRelatorio !== "ATIVACAO_EVENTO") {
             if (mesesEscolhidos.length === 0) {
-                alert("Selecione pelo menos 1 mês da campanha (Outubro a Fevereiro).");
+                alert("Selecione pelo menos 1 mês da campanha.");
                 return;
             }
             if (veiculosEscolhidos.length === 0) {
@@ -349,10 +430,13 @@ document.addEventListener("DOMContentLoaded", async () => {
             const fotoMat = materiais.find(m => m.tipoMaterial === "FOTO_EMPRESA");
             const logoUrl = fotoMat ? (fotoMat.caminhoStorage || fotoMat.urlExterna) : "";
             const comprovacoesMidia = materiais.filter(
-                m => m.tipoMaterial !== "FOTO_EMPRESA" && m.tipoMaterial !== "PLANO_COMERCIAL" && m.tipoMaterial !== "CONTRATO"
+                m => m.tipoMaterial !== "FOTO_EMPRESA" &&
+                    m.tipoMaterial !== "PLANO_COMERCIAL" &&
+                    m.tipoMaterial !== "CONTRATO" &&
+                    m.tipoMaterial !== "DADOS_SIGNATARIO" &&
+                    m.tipoMaterial !== "PRAZO_PESQUISA"
             );
 
-            // Filtra os dados mensais conforme os meses e veículos selecionados (sem adicionar placeholders vazios)
             const registrosMidiaFiltrados = dados.midiaMensal.filter(
                 item => mesesEscolhidos.includes(item.mes) && veiculosEscolhidos.includes(item.veiculo)
             );
@@ -363,9 +447,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                         <strong style="color: #b42318; font-size: 1rem;">Sem dados de veiculação para ${relatorio.marcaNome}</strong>
                         <p style="margin: 0.5rem 0 0; font-size: 0.92rem;">
                             Esta marca ainda não possui registros de volumetria para os meses/veículos selecionados.
-                            ${ehPatrocinador
-                        ? "Aguarde a equipe RBS publicar a planilha atualizada da campanha."
-                        : "Envie a planilha (.xlsx) nos detalhes do patrocinador para liberar os indicadores."}
                         </p>
                     </div>
                 `;
@@ -373,7 +454,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 return;
             }
 
-            // 1. Cálculos de Volumetria por Mês, por Veículo e Soma Geral
             let totalGeralVeiculacoes = 0;
             let totalGeralVisualizacoes = 0;
             let totalGeralAlcance = 0;
@@ -419,22 +499,21 @@ document.addEventListener("DOMContentLoaded", async () => {
             const mostrarBlocoAtivacao = ehMaster && (tipoRelatorio === "ATIVACAO_EVENTO" || tipoRelatorio === "FINAL_CONSOLIDADO");
             const mostrarComprovacoes = tipoRelatorio === "FINAL_CONSOLIDADO" && comprovacoesMidia.length > 0;
 
-            // Construção dos blocos HTML (Power BI View e PDF View)
             let htmlSecaoMidia = "";
             if (mostrarBlocoMidia && mesesComDados.length > 0) {
                 const maxVisMes = Math.max(...mesesComDados.map(([, o]) => o.subVisualizacoes), 1);
 
                 const htmlColunasMes = mesesComDados.map(([mes, obj]) => {
-                    const altVis = Math.max(Math.round((obj.subVisualizacoes / maxVisMes) * 135), 8);
-                    const altAlc = Math.max(Math.round((obj.subAlcance / maxVisMes) * 135), 6);
+                    const altVis = Math.max(Math.round((obj.subVisualizacoes / maxVisMes) * 125), 8);
+                    const altAlc = Math.max(Math.round((obj.subAlcance / maxVisMes) * 125), 6);
                     return `
                         <div class="pbi-col-group">
                             <div style="font-size: 10px; font-weight: 700; color: #334155; margin-bottom: 4px;">
                                 ${(obj.subVisualizacoes / 1000).toFixed(0)}k
                             </div>
                             <div class="pbi-col-bars">
-                                <div class="pbi-bar-vert" style="height: ${altVis}px; background: #101d4d;" title="Visualizações: ${obj.subVisualizacoes.toLocaleString("pt-BR")}"></div>
-                                <div class="pbi-bar-vert" style="height: ${altAlc}px; background: #f47b20;" title="Alcance: ${obj.subAlcance.toLocaleString("pt-BR")}"></div>
+                                <div class="pbi-bar-vert" style="height: ${altVis}px; background: #101d4d;"></div>
+                                <div class="pbi-bar-vert" style="height: ${altAlc}px; background: #f47b20;"></div>
                             </div>
                             <span class="pbi-col-label">${mes.slice(0, 3).toUpperCase()}</span>
                         </div>
@@ -446,12 +525,12 @@ document.addEventListener("DOMContentLoaded", async () => {
                     const perc = ((obj.visualizacoes / somaVisVeiculos) * 100).toFixed(1);
                     const cor = CORES_VEICULOS[veic] || "#101d4d";
                     return `
-                        <div style="margin-bottom: 10px;">
-                            <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px; color: #1e293b;">
+                        <div style="margin-bottom: 9px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 11.5px; font-weight: 700; margin-bottom: 3px; color: #1e293b;">
                                 <span>${veic} (${obj.veiculacoes.toLocaleString("pt-BR")} inserções)</span>
                                 <span>${obj.visualizacoes.toLocaleString("pt-BR")} views • Alcance: ${obj.alcance.toLocaleString("pt-BR")} (${perc}%)</span>
                             </div>
-                            <div style="width: 100%; height: 12px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                            <div style="width: 100%; height: 10px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
                                 <div style="width: ${Math.max(Number(perc), 4)}%; height: 100%; background: ${cor}; border-radius: 999px;"></div>
                             </div>
                         </div>
@@ -525,27 +604,24 @@ document.addEventListener("DOMContentLoaded", async () => {
                         </div>
                     </div>
 
-                    <div class="pbi-card" style="margin-bottom: 16px;">
+                    <div class="pbi-card" style="margin-bottom: 14px;">
                         <h4 class="pbi-card-title">Matriz de Volumetria Mensal e Acumulado Geral</h4>
-                        <div style="overflow-x: auto;">
-                            <table class="pbi-table">
-                                <thead>
-                                    <tr>
-                                        <th>Mês da Campanha</th>
-                                        <th>Meio de Veiculação</th>
-                                        <th class="num">Veiculações</th>
-                                        <th class="num">Visualizações</th>
-                                        <th class="num">Alcance</th>
-                                    </tr>
-                                </thead>
-                                <tbody>${linhasTabelaMensal}</tbody>
-                            </table>
-                        </div>
+                        <table class="pbi-table">
+                            <thead>
+                                <tr>
+                                    <th>Mês da Campanha</th>
+                                    <th>Meio de Veiculação</th>
+                                    <th class="num">Veiculações</th>
+                                    <th class="num">Visualizações</th>
+                                    <th class="num">Alcance</th>
+                                </tr>
+                            </thead>
+                            <tbody>${linhasTabelaMensal}</tbody>
+                        </table>
                     </div>
                 `;
             }
 
-            // 2. Bloco de Ativações do Evento e Pesquisa Demográfica + 3 Perguntas Sim/Não (Exclusivo Cota Master)
             let htmlSecaoAtivacao = "";
             if (mostrarBlocoAtivacao && dados.resumoAtivacao.entrevistados > 0) {
                 const perguntasCadastradas = relatorio.perguntasPesquisa || [];
@@ -564,33 +640,33 @@ document.addEventListener("DOMContentLoaded", async () => {
                     const qtdNao = dados.resumoAtivacao.entrevistados - qtdSim;
 
                     htmlPerguntasMaster += `
-                        <div style="margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9;">
-                            <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; color: #0f172a; margin-bottom: 6px;">
+                        <div style="margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #f1f5f9;">
+                            <div style="display: flex; justify-content: space-between; font-size: 12.5px; font-weight: 700; color: #0f172a; margin-bottom: 5px;">
                                 <span>Pergunta ${i}: "${textoPergunta}"</span>
-                                <span style="color: #15803d;">Sim: ${resp.sim}% (${qtdSim} entrevistados) | Não: ${resp.nao}% (${qtdNao})</span>
+                                <span style="color: #15803d; white-space: nowrap;">Sim: ${resp.sim}% (${qtdSim}) | Não: ${resp.nao}% (${qtdNao})</span>
                             </div>
-                            <div style="display: flex; width: 100%; height: 16px; border-radius: 999px; overflow: hidden; background: #fee2e2;">
-                                <div style="width: ${resp.sim}%; background: #16a34a; height: 100%;" title="Sim: ${resp.sim}%"></div>
-                                <div style="width: ${resp.nao}%; background: #dc2626; height: 100%;" title="Não: ${resp.nao}%"></div>
+                            <div style="display: flex; width: 100%; height: 14px; border-radius: 999px; overflow: hidden; background: #fee2e2;">
+                                <div style="width: ${resp.sim}%; background: #16a34a; height: 100%;"></div>
+                                <div style="width: ${resp.nao}%; background: #dc2626; height: 100%;"></div>
                             </div>
                         </div>
                     `;
                 }
 
                 const renderDemoBars = (listaDemo, corBarra) => listaDemo.map(item => `
-                    <div style="margin-bottom: 10px;">
-                        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; margin-bottom: 4px; color: #1e293b;">
+                    <div style="margin-bottom: 9px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 11.5px; font-weight: 600; margin-bottom: 3px; color: #1e293b;">
                             <span>${item.rotulo}</span>
                             <span>${item.percentual}% (${item.quantidade} pessoas)</span>
                         </div>
-                        <div style="width: 100%; height: 10px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                        <div style="width: 100%; height: 9px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
                             <div style="width: ${item.percentual}%; height: 100%; background: ${corBarra}; border-radius: 999px;"></div>
                         </div>
                     </div>
                 `).join("");
 
                 htmlSecaoAtivacao = `
-                    <div class="pbi-kpi-grid" style="margin-top: 16px;">
+                    <div class="pbi-kpi-grid" style="margin-top: 14px;">
                         <div class="pbi-kpi-card accent-orange">
                             <span class="pbi-kpi-label">Alcance Geral da Ativação</span>
                             <div class="pbi-kpi-value">${dados.resumoAtivacao.alcanceAtivacao.toLocaleString("pt-BR")}</div>
@@ -605,26 +681,25 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                     <div class="pbi-charts-grid">
                         <div class="pbi-card">
-                            <h4 class="pbi-card-title">Demografia do Público — Faixa Etária (Idade)</h4>
+                            <h4 class="pbi-card-title">Demografia do Público — Faixa Etária</h4>
                             ${renderDemoBars(dados.demografia.IDADE, "#101d4d")}
                         </div>
                         <div class="pbi-card">
                             <h4 class="pbi-card-title">Demografia do Público — Gênero e Recorrência</h4>
                             ${renderDemoBars(dados.demografia.GENERO, "#f47b20")}
-                            <div style="margin-top: 12px; padding-top: 10px; border-top: 1px dashed #cbd5e1;">
+                            <div style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed #cbd5e1;">
                                 ${renderDemoBars(dados.demografia.PERFIL, "#4338ca")}
                             </div>
                         </div>
                     </div>
 
-                    <div class="pbi-card" style="margin-bottom: 16px;">
-                        <h4 class="pbi-card-title">Resultado das 3 Perguntas Personalizadas da Pesquisa de Ativação (Cota Master)</h4>
+                    <div class="pbi-card" style="margin-bottom: 14px;">
+                        <h4 class="pbi-card-title">Resultado das 3 Perguntas Personalizadas da Pesquisa de Ativação</h4>
                         ${htmlPerguntasMaster}
                     </div>
                 `;
             }
 
-            // 3. Bloco de Comprovações de Mídia (Exibido apenas se existirem arquivos/links enviados no Relatório Final)
             let htmlSecaoComprovacoes = "";
             if (mostrarComprovacoes) {
                 const linhasComp = comprovacoesMidia.map(m => {
@@ -639,7 +714,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 }).join("");
 
                 htmlSecaoComprovacoes = `
-                    <div class="pbi-card" style="margin-bottom: 16px;">
+                    <div class="pbi-card">
                         <h4 class="pbi-card-title">Comprovações de Veiculação e Materiais Registrados</h4>
                         <table class="pbi-table">
                             <thead>
@@ -655,31 +730,34 @@ document.addEventListener("DOMContentLoaded", async () => {
                 `;
             }
 
+            // Títulos limpos sem travessão conforme solicitado
             const mapTitulos = {
-                "VOLUMETRIA_MIDIA": "Relatório de Volumetria de Entrega e Impacto",
-                "ATIVACAO_EVENTO": "Relatório de Ativações do Evento e Pesquisa Demográfica",
-                "FINAL_CONSOLIDADO": "Relatório Final Consolidado do Patrocinador"
+                "VOLUMETRIA_MIDIA": `Relatório de Volumetria de Entrega e Impacto ${relatorio.marcaNome}`,
+                "ATIVACAO_EVENTO": `Relatório de Ativações do Evento ${relatorio.marcaNome}`,
+                "FINAL_CONSOLIDADO": `Relatório Final Patrocinador ${relatorio.marcaNome}`
             };
-            const tituloRelatorio = mapTitulos[tipoRelatorio] || "Relatório Executivo";
+            const tituloRelatorio = mapTitulos[tipoRelatorio] || `Relatório ${relatorio.marcaNome}`;
+
             const iniciaisMarca = String(relatorio.marcaNome || "M").slice(0, 2).toUpperCase();
             const htmlLogo = logoUrl
                 ? `<img class="pbi-brand-logo" src="${logoUrl}" alt="${relatorio.marcaNome}">`
                 : `<div class="pbi-brand-logo">${iniciaisMarca}</div>`;
 
+            const agora = new Date();
+            const dataEmissaoUnicaLinha = `${agora.toLocaleDateString("pt-BR")} às ${agora.toLocaleTimeString("pt-BR")}`;
+
+            // Cabeçalho com Título em uma linha e "Emitido em" na linha de baixo alinhado na mesma altura das infos do patrocinador/evento
             const mioloRelatorio = `
                 <div class="pbi-top-bar">
                     <div class="pbi-brand-identity">
                         ${htmlLogo}
-                        <div>
-                            <h3 style="margin: 0; font-size: 18px; color: #0f172a;">${tituloRelatorio} — ${relatorio.marcaNome}</h3>
-                            <span style="font-size: 12px; color: #64748b;">
-                                Cota: <strong>${relatorio.cota}</strong> • Ciclo: <strong>${cicloEdicao}</strong>
-                            </span>
+                        <div class="pbi-header-texts">
+                            <h3 style="margin: 0; font-size: 18px; color: #0f172a; white-space: nowrap;">${tituloRelatorio}</h3>
+                            <div class="pbi-sub-row">
+                                <span>Cota: <strong>${relatorio.cota}</strong> • Ciclo: <strong>${cicloEdicao}</strong> • Planeta Atlântida Rede RBS</span>
+                                <span class="emitido-inline">Emitido em: ${dataEmissaoUnicaLinha}</span>
+                            </div>
                         </div>
-                    </div>
-                    <div style="text-align: right; font-size: 11px; color: #64748b;">
-                        <div>Planeta Atlântida • Rede RBS</div>
-                        <div>Emitido em: ${new Date().toLocaleString("pt-BR")}</div>
                     </div>
                 </div>
                 ${htmlSecaoMidia}
@@ -689,7 +767,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             summary.innerHTML = `<div class="pbi-workspace">${mioloRelatorio}</div>`;
             ultimoRelatorioGeradoHtmlPdf = mioloRelatorio;
-            ultimoTituloRelatorioPdf = `${tituloRelatorio} — ${relatorio.marcaNome}`;
+            ultimoTituloRelatorioPdf = tituloRelatorio;
 
             if (exportPdfButton) {
                 exportPdfButton.hidden = false;
@@ -703,7 +781,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
-    // Exportador de Documento PDF Padronizado (Sem recortar a tela do sistema)
+    // Exportador de Documento PDF Padronizado e Compacto (Sem buracos em branco entre páginas e sem quebrar datas)
     function exportarDocumentoPdfPadronizado() {
         if (!ultimoRelatorioGeradoHtmlPdf) {
             alert("Gere o painel de dados antes de baixar o PDF.");
@@ -723,30 +801,35 @@ document.addEventListener("DOMContentLoaded", async () => {
                 <meta charset="UTF-8">
                 <title>${ultimoTituloRelatorioPdf}</title>
                 <style>
+                    @page { size: A4 portrait; margin: 10mm; }
                     * { box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-                    body { font-family: Arial, Helvetica, sans-serif; color: #0f172a; background: #ffffff; margin: 24px; }
-                    .pbi-top-bar { display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #f47b20; padding-bottom: 14px; margin-bottom: 18px; }
-                    .pbi-brand-identity { display: flex; align-items: center; gap: 14px; }
-                    .pbi-brand-logo { width: 52px; height: 52px; border-radius: 10px; border: 1px solid #cbd5e1; object-fit: cover; display: grid; place-items: center; font-weight: bold; color: #101d4d; background: #f8fafc; }
-                    .pbi-kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
-                    .pbi-kpi-card { border: 1px solid #cbd5e1; border-top: 4px solid #101d4d; border-radius: 8px; padding: 12px 14px; page-break-inside: avoid; }
+                    body { font-family: Arial, Helvetica, sans-serif; color: #0f172a; background: #ffffff; margin: 0; padding: 0; }
+                    .pbi-top-bar { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #f47b20; padding-bottom: 8px; margin-bottom: 10px; }
+                    .pbi-brand-identity { display: flex; align-items: center; gap: 12px; width: 100%; }
+                    .pbi-brand-logo { width: 44px; height: 44px; border: 0; object-fit: contain; display: grid; place-items: center; font-weight: bold; color: #101d4d; background: transparent; flex-shrink: 0; }
+                    .pbi-header-texts { flex: 1; min-width: 0; }
+                    .pbi-header-texts h3 { font-size: 16px !important; margin: 0; white-space: nowrap; }
+                    .pbi-sub-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 4px; font-size: 10.5px; color: #475569; white-space: nowrap; }
+                    .pbi-sub-row .emitido-inline { font-weight: bold; white-space: nowrap; }
+                    .pbi-kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
+                    .pbi-kpi-card { border: 1px solid #cbd5e1; border-top: 3px solid #101d4d; border-radius: 6px; padding: 8px 10px; }
                     .pbi-kpi-card.accent-orange { border-top-color: #f47b20; }
-                    .pbi-kpi-label { font-size: 10px; font-weight: bold; text-transform: uppercase; color: #64748b; display: block; margin-bottom: 4px; }
-                    .pbi-kpi-value { font-size: 20px; font-weight: bold; color: #0f172a; }
-                    .pbi-kpi-sub { font-size: 10px; color: #64748b; display: block; margin-top: 3px; }
-                    .pbi-charts-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 16px; page-break-inside: avoid; }
-                    .pbi-card { border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px 16px; page-break-inside: avoid; }
-                    .pbi-card-title { margin: 0 0 12px; font-size: 13px; font-weight: bold; color: #101d4d; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; }
-                    .pbi-column-chart { display: flex; align-items: flex-end; justify-content: space-around; height: 170px; padding-top: 16px; border-bottom: 1px solid #cbd5e1; gap: 10px; }
+                    .pbi-kpi-label { font-size: 9px; font-weight: bold; text-transform: uppercase; color: #64748b; display: block; margin-bottom: 2px; }
+                    .pbi-kpi-value { font-size: 16px; font-weight: bold; color: #0f172a; }
+                    .pbi-kpi-sub { font-size: 9px; color: #64748b; display: block; margin-top: 2px; }
+                    .pbi-charts-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px; }
+                    .pbi-card { border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px 12px; margin-bottom: 10px; }
+                    .pbi-card-title { margin: 0 0 8px; font-size: 11.5px; font-weight: bold; color: #101d4d; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }
+                    .pbi-column-chart { display: flex; align-items: flex-end; justify-content: space-around; height: 145px; padding-top: 12px; border-bottom: 1px solid #cbd5e1; gap: 8px; }
                     .pbi-col-group { display: flex; flex-direction: column; align-items: center; flex: 1; height: 100%; justify-content: flex-end; }
-                    .pbi-col-bars { display: flex; align-items: flex-end; gap: 4px; height: 135px; justify-content: center; }
-                    .pbi-bar-vert { width: 16px; border-radius: 3px 3px 0 0; }
-                    .pbi-col-label { margin-top: 6px; font-size: 10px; font-weight: bold; }
-                    .pbi-legend { display: flex; justify-content: center; gap: 14px; margin-top: 8px; font-size: 10px; }
-                    .pbi-legend-item { display: inline-flex; align-items: center; gap: 5px; }
-                    .pbi-legend-dot { width: 9px; height: 9px; display: inline-block; }
-                    .pbi-table { width: 100%; border-collapse: collapse; font-size: 11px; }
-                    .pbi-table th, .pbi-table td { border: 1px solid #cbd5e1; padding: 7px 10px; text-align: left; }
+                    .pbi-col-bars { display: flex; align-items: flex-end; gap: 3px; height: 115px; justify-content: center; }
+                    .pbi-bar-vert { width: 14px; border-radius: 2px 2px 0 0; }
+                    .pbi-col-label { margin-top: 4px; font-size: 9px; font-weight: bold; }
+                    .pbi-legend { display: flex; justify-content: center; gap: 12px; margin-top: 6px; font-size: 9.5px; }
+                    .pbi-legend-item { display: inline-flex; align-items: center; gap: 4px; }
+                    .pbi-legend-dot { width: 8px; height: 8px; display: inline-block; }
+                    .pbi-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+                    .pbi-table th, .pbi-table td { border: 1px solid #cbd5e1; padding: 4px 8px; text-align: left; }
                     .pbi-table th { background: #101d4d; color: #ffffff; }
                     .pbi-table td.num, .pbi-table th.num { text-align: right; }
                     .pbi-table tr.subtotal-row { background: #f1f5f9; font-weight: bold; }
