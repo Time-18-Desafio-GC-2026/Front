@@ -1,5 +1,5 @@
 ﻿// ==========================================================================
-// PORTAL RBS — CONTROLADOR DA ÁREA DO PATROCINADOR (DRY + SUPABASE STORAGE)
+// PORTAL RBS — CONTROLADOR DA CENTRAL DA MARCA (ÁREA DO PATROCINADOR)
 // ==========================================================================
 document.addEventListener("DOMContentLoaded", async function () {
     const botaoNovoEnvio = document.getElementById("newSponsorButton");
@@ -7,11 +7,16 @@ document.addEventListener("DOMContentLoaded", async function () {
     const botaoFechar = document.getElementById("closeSponsorForm");
     const botaoCancelar = document.getElementById("cancelSponsor");
     const formularioEnvio = document.getElementById("sponsorForm");
-    const mensagemPatrocinador = document.getElementById("mensagemPatrocinador");
+
+    const logoContainer = document.getElementById("logoContainerPatrocinador");
     const nomeEmpresa = document.getElementById("nomePatrocinador");
+    const badgeCota = document.getElementById("badgeCotaPatrocinador");
+    const infoCnpj = document.getElementById("infoCnpjPatrocinador");
+    const infoEmail = document.getElementById("infoEmailPatrocinador");
+    const infoPlano = document.getElementById("infoPlanoPatrocinador");
+
     const campoEmail = document.getElementById("sponsorActorEmail");
-    const secaoMateriais = document.getElementById("materiaisPublicadosRBS");
-    const listaMateriais = document.getElementById("listaMateriaisRBS");
+    const listaMateriaisRBS = document.getElementById("listaMateriaisRBS");
     const listaMeusEnvios = document.getElementById("listaMeusEnvios");
     const resumoCortesiasCliente = document.getElementById("resumoCortesiasCliente");
     const listaContratosCliente = document.getElementById("listaContratosCliente");
@@ -27,15 +32,15 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     const sessao = JSON.parse(localStorage.getItem("rbs_sessao") || "null");
     const marcaId = sessao?.patrocinadorId;
-    if (campoEmail) {
-        campoEmail.value = sessionStorage.getItem("rbs_usuario_email") || sessao?.email || "";
-    }
+    const emailLogado = sessionStorage.getItem("rbs_usuario_email") || sessao?.email || "";
+
+    if (campoEmail) campoEmail.value = emailLogado;
+    if (infoEmail) infoEmail.textContent = emailLogado || "Não identificado";
+
+    let contratosAtuaisCache = [];
 
     async function carregarPainelDoPatrocinador() {
         if (!marcaId) {
-            if (mensagemPatrocinador) {
-                mensagemPatrocinador.textContent = "Não foi possível localizar sua empresa vinculada.";
-            }
             if (botaoNovoEnvio) botaoNovoEnvio.disabled = true;
             return;
         }
@@ -46,45 +51,64 @@ document.addEventListener("DOMContentLoaded", async function () {
                 apiRequest(`/marcas/${marcaId}/cortesias`, "GET").catch(() => null)
             ]);
 
-            if (nomeEmpresa) {
-                nomeEmpresa.textContent = marcaApi.nome;
-            }
-            const cotaLegivel = MAPA_COTA_FRONT[marcaApi.cota] || marcaApi.cota || "Não informada";
-            const ehMaster = marcaApi.cota === "MASTER";
-            const tituloCota = document.getElementById("tituloCota");
-            const detalheCota = document.getElementById("detalheCota");
-            if (tituloCota) {
-                tituloCota.textContent = `Sua empresa faz parte da cota ${cotaLegivel}`;
-            }
-            if (mensagemPatrocinador) {
-                mensagemPatrocinador.textContent = ehMaster
-                    ? "Você possui a categoria de patrocínio Master."
-                    : `Sua categoria de patrocínio é ${cotaLegivel}.`;
-            }
-            if (detalheCota) {
-                detalheCota.classList.toggle("destaque-master", ehMaster);
-            }
+            if (nomeEmpresa) nomeEmpresa.textContent = marcaApi.nome;
+            if (infoCnpj) infoCnpj.textContent = marcaApi.cnpj || "Não informado";
+
+            const cotaLegivel = MAPA_COTA_FRONT[marcaApi.cota] || marcaApi.cota || "Subcota";
+            if (badgeCota) badgeCota.textContent = cotaLegivel;
 
             const todosMateriais = materiaisApi || [];
+            const fotoMat = todosMateriais.find(m => m.tipoMaterial === "FOTO_EMPRESA");
+            const planoMat = todosMateriais.find(m => m.tipoMaterial === "PLANO_COMERCIAL");
             const contratos = todosMateriais.filter(
                 m => m.tipoMaterial === "CONTRATO" || m.abaDestino === "ABA_7_CONTRATO"
             );
             const demaisMateriais = todosMateriais.filter(
-                m => m.tipoMaterial !== "CONTRATO" && m.abaDestino !== "ABA_7_CONTRATO" && m.tipoMaterial !== "FOTO_EMPRESA"
+                m => m.tipoMaterial !== "CONTRATO" &&
+                    m.abaDestino !== "ABA_7_CONTRATO" &&
+                    m.tipoMaterial !== "FOTO_EMPRESA" &&
+                    m.tipoMaterial !== "PLANO_COMERCIAL"
             );
 
-            renderizarMateriais(demaisMateriais);
+            // Renderiza a Logo da Empresa
+            if (logoContainer) {
+                const urlLogo = fotoMat ? (fotoMat.caminhoStorage || fotoMat.urlExterna) : "";
+                if (urlLogo) {
+                    logoContainer.innerHTML = `<img src="${urlLogo}" alt="Logo de ${marcaApi.nome}">`;
+                } else {
+                    const iniciais = String(marcaApi.nome || "M").slice(0, 2).toUpperCase();
+                    logoContainer.innerHTML = `<strong style="font-size:14px;">${iniciais}</strong>`;
+                }
+            }
+
+            // Renderiza o Plano Comercial
+            if (infoPlano) {
+                infoPlano.replaceChildren();
+                const urlPlano = planoMat ? (planoMat.caminhoStorage || planoMat.urlExterna) : "";
+                if (urlPlano) {
+                    const link = document.createElement("a");
+                    link.href = urlPlano;
+                    link.target = "_blank";
+                    link.rel = "noopener noreferrer";
+                    link.textContent = planoMat.titulo || "Baixar Plano Comercial";
+                    link.addEventListener("click", () => {
+                        if (planoMat.id) apiRequest(`/materiais/${planoMat.id}/acessar`, "POST").catch(() => { });
+                    });
+                    infoPlano.appendChild(link);
+                } else {
+                    const span = document.createElement("span");
+                    span.textContent = "Aguardando publicação pela RBS";
+                    infoPlano.appendChild(span);
+                }
+            }
+
             renderizarContratosCliente(contratos);
+            renderizarMateriais(demaisMateriais);
             renderizarCortesiasCliente(cortesiaApi);
         } catch (erro) {
             console.error("Erro ao carregar dados do patrocinador:", erro);
-            if (mensagemPatrocinador) {
-                mensagemPatrocinador.textContent = erro.message || "Erro ao consultar dados da empresa.";
-            }
         }
     }
-
-    let contratosAtuaisCache = [];
 
     function renderizarContratosCliente(contratos) {
         contratosAtuaisCache = contratos || [];
@@ -101,7 +125,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
 
         const item = document.createElement("div");
-        item.className = "material-publicado-item";
+        item.className = "envio-item";
 
         let faseTexto = "Fase 1/3: Disponibilizado pela RBS — Aguardando assinatura da sua empresa";
         if (contratoAtual.status === "CONTRATO_FINALIZADO") {
@@ -111,17 +135,22 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
 
         const dataStr = contratoAtual.criadoEm ? new Date(contratoAtual.criadoEm).toLocaleString("pt-BR") : "";
+        const linha = document.createElement("div");
+        linha.className = "envio-linha";
 
-        const titulo = document.createElement("p");
-        titulo.className = "material-publicado-titulo";
-        titulo.innerHTML = `<span class="envio-status" style="margin-right:8px;">${faseTexto}</span> ${contratoAtual.titulo} <small style="color:#64748b; font-weight:400;">(${dataStr})</small>`;
-
-        const acoes = document.createElement("div");
-        acoes.className = "material-publicado-acoes";
+        const info = document.createElement("div");
+        info.style.flex = "1";
+        info.innerHTML = `
+            <span class="envio-status" style="margin-bottom:6px;">${faseTexto}</span>
+            <p class="envio-texto" style="margin:4px 0;"><strong>${contratoAtual.titulo}</strong></p>
+            <small style="color:#64748b; font-size:0.78rem;">Atualizado em: ${dataStr}</small>
+        `;
 
         const urlNuvem = contratoAtual.caminhoStorage || contratoAtual.urlExterna;
         if (urlNuvem && urlNuvem.startsWith("http")) {
             const baixar = document.createElement("a");
+            baixar.className = "button button-primary";
+            baixar.style.textDecoration = "none";
             baixar.href = urlNuvem;
             baixar.target = "_blank";
             baixar.rel = "noopener noreferrer";
@@ -130,121 +159,100 @@ document.addEventListener("DOMContentLoaded", async function () {
             baixar.addEventListener("click", () => {
                 if (contratoAtual.id) apiRequest(`/materiais/${contratoAtual.id}/acessar`, "POST").catch(() => { });
             });
-            acoes.appendChild(baixar);
+            linha.append(info, baixar);
+        } else {
+            linha.appendChild(info);
         }
 
-        item.append(titulo, acoes);
+        item.appendChild(linha);
         listaContratosCliente.appendChild(item);
     }
 
     function renderizarMateriais(materiais) {
-        if (secaoMateriais && listaMateriais) {
-            listaMateriais.replaceChildren();
-            const publicadosRbs = materiais.filter(m => m.autorPerfil !== "PATROCINADOR");
-            if (publicadosRbs.length === 0) {
-                const msg = document.createElement("p");
-                msg.textContent = "Nenhum relatório, plano comercial ou link publicado pela RBS ainda.";
-                listaMateriais.appendChild(msg);
-            } else {
-                publicadosRbs.forEach(mat => {
-                    const item = document.createElement("div");
-                    item.className = "material-publicado-item";
-                    const titulo = document.createElement("p");
-                    titulo.className = "material-publicado-titulo";
-                    const acoes = document.createElement("div");
-                    acoes.className = "material-publicado-acoes";
-                    const urlNuvem = mat.caminhoStorage || mat.urlExterna;
-                    if (mat.tipoMaterial === "LINK_POST" && mat.urlExterna) {
-                        titulo.textContent = mat.urlExterna;
-                        const abrir = document.createElement("a");
-                        abrir.href = mat.urlExterna;
-                        abrir.target = "_blank";
-                        abrir.rel = "noopener noreferrer";
-                        abrir.textContent = "Abrir publicação";
-                        abrir.addEventListener("click", () => {
-                            if (mat.id) apiRequest(`/materiais/${mat.id}/acessar`, "POST").catch(() => { });
-                        });
-                        acoes.appendChild(abrir);
-                    } else {
-                        titulo.textContent = `${mat.titulo} (${mat.descricao || "Arquivo RBS"})`;
-                        if (urlNuvem && (urlNuvem.startsWith("http") || urlNuvem.startsWith("data:"))) {
-                            const visualizar = document.createElement("a");
-                            visualizar.href = urlNuvem;
-                            visualizar.target = "_blank";
-                            visualizar.rel = "noopener noreferrer";
-                            visualizar.textContent = "Visualizar";
-                            visualizar.addEventListener("click", () => {
-                                if (mat.id) apiRequest(`/materiais/${mat.id}/acessar`, "POST").catch(() => { });
-                            });
-                            const baixar = document.createElement("a");
-                            baixar.href = urlNuvem;
-                            baixar.target = "_blank";
-                            baixar.rel = "noopener noreferrer";
-                            baixar.download = mat.titulo || "relatorio";
-                            baixar.textContent = "Baixar arquivo";
-                            baixar.addEventListener("click", () => {
-                                if (mat.id) apiRequest(`/materiais/${mat.id}/acessar`, "POST").catch(() => { });
-                            });
-                            acoes.append(visualizar, baixar);
-                        }
-                    }
-                    item.append(titulo, acoes);
-                    listaMateriais.appendChild(item);
-                });
-            }
-            secaoMateriais.hidden = false;
-        }
-
         if (listaMeusEnvios) {
             listaMeusEnvios.replaceChildren();
             const enviadosCliente = materiais.filter(m => m.autorPerfil === "PATROCINADOR");
             if (enviadosCliente.length === 0) {
                 const msg = document.createElement("p");
                 msg.className = "envios-patrocinador-vazio";
-                msg.textContent = "Você ainda não enviou conteúdos.";
+                msg.textContent = "Sua marca ainda não enviou arquivos ou conteúdos.";
                 listaMeusEnvios.appendChild(msg);
             } else {
                 enviadosCliente.forEach(mat => {
-                    const item = document.createElement("article");
-                    item.className = "envio-patrocinador-item";
-                    if (mat.descricao) {
-                        const texto = document.createElement("p");
-                        texto.className = "envio-patrocinador-texto";
-                        texto.textContent = mat.descricao;
-                        item.appendChild(texto);
-                        const baixarTexto = document.createElement("a");
-                        baixarTexto.className = "envio-patrocinador-download";
-                        baixarTexto.href = URL.createObjectURL(
-                            new Blob([mat.descricao], { type: "text/plain;charset=utf-8" })
-                        );
-                        baixarTexto.download = `conteudo-enviado-${mat.id}.txt`;
-                        baixarTexto.textContent = "Baixar conteúdo (.txt)";
-                        item.appendChild(baixarTexto);
-                    }
+                    const item = document.createElement("div");
+                    item.className = "envio-item";
+                    const linha = document.createElement("div");
+                    linha.className = "envio-linha";
+
+                    const dataFormatada = mat.criadoEm ? new Date(mat.criadoEm).toLocaleString("pt-BR") : "";
+                    const textoInfo = document.createElement("div");
+                    textoInfo.style.flex = "1";
+                    textoInfo.innerHTML = `
+                        <p class="envio-texto" style="margin:0 0 4px;"><strong>${mat.titulo}</strong>${mat.descricao ? " — " + mat.descricao : ""}</p>
+                        <small style="color:#64748b; font-size:12px;">Status: ${mat.status || "ENVIADO"} • Enviado em: ${dataFormatada}</small>
+                    `;
+                    linha.appendChild(textoInfo);
+
                     const urlNuvem = mat.caminhoStorage || mat.urlExterna;
                     if (urlNuvem && urlNuvem.startsWith("http")) {
-                        const arquivoP = document.createElement("p");
-                        arquivoP.className = "envio-patrocinador-arquivo";
-                        arquivoP.textContent = `Arquivo: ${mat.titulo}`;
-                        item.appendChild(arquivoP);
                         const baixarArquivo = document.createElement("a");
-                        baixarArquivo.className = "envio-patrocinador-download";
+                        baixarArquivo.className = "btn-acao-pequeno";
+                        baixarArquivo.style.textDecoration = "none";
                         baixarArquivo.href = urlNuvem;
                         baixarArquivo.target = "_blank";
                         baixarArquivo.rel = "noopener noreferrer";
                         baixarArquivo.download = mat.titulo || "arquivo";
-                        baixarArquivo.textContent = "Baixar mídia";
-                        baixarArquivo.addEventListener("click", () => {
+                        baixarArquivo.textContent = "Baixar arquivo";
+                        linha.appendChild(baixarArquivo);
+                    }
+
+                    item.appendChild(linha);
+                    listaMeusEnvios.appendChild(item);
+                });
+            }
+        }
+
+        if (listaMateriaisRBS) {
+            listaMateriaisRBS.replaceChildren();
+            const publicadosRbs = materiais.filter(m => m.autorPerfil !== "PATROCINADOR");
+            if (publicadosRbs.length === 0) {
+                const msg = document.createElement("p");
+                msg.className = "envios-patrocinador-vazio";
+                msg.textContent = "Nenhum relatório ou link publicado pela RBS até o momento.";
+                listaMateriaisRBS.appendChild(msg);
+            } else {
+                publicadosRbs.forEach(mat => {
+                    const item = document.createElement("div");
+                    item.className = "envio-item";
+                    const linha = document.createElement("div");
+                    linha.className = "envio-linha";
+
+                    const urlNuvem = mat.caminhoStorage || mat.urlExterna;
+                    const titulo = document.createElement("p");
+                    titulo.className = "envio-texto";
+                    titulo.innerHTML = `<strong>${mat.tipoMaterial === "LINK_POST" ? mat.urlExterna : mat.titulo}</strong>`;
+
+                    const acoes = document.createElement("div");
+                    acoes.style.display = "flex";
+                    acoes.style.gap = "8px";
+
+                    if (urlNuvem && urlNuvem.startsWith("http")) {
+                        const btnAbrir = document.createElement("a");
+                        btnAbrir.className = "button button-primary";
+                        btnAbrir.style.textDecoration = "none";
+                        btnAbrir.href = urlNuvem;
+                        btnAbrir.target = "_blank";
+                        btnAbrir.rel = "noopener noreferrer";
+                        btnAbrir.textContent = mat.tipoMaterial === "LINK_POST" ? "Abrir publicação" : "Visualizar / Baixar";
+                        btnAbrir.addEventListener("click", () => {
                             if (mat.id) apiRequest(`/materiais/${mat.id}/acessar`, "POST").catch(() => { });
                         });
-                        item.appendChild(baixarArquivo);
+                        acoes.appendChild(btnAbrir);
                     }
-                    const detalhes = document.createElement("p");
-                    detalhes.className = "envio-patrocinador-detalhes";
-                    const dataFormatada = mat.criadoEm ? new Date(mat.criadoEm).toLocaleString("pt-BR") : "Data não informada";
-                    detalhes.textContent = `Status: ${mat.status || "ENVIADO"} - Enviado em: ${dataFormatada}`;
-                    item.appendChild(detalhes);
-                    listaMeusEnvios.appendChild(item);
+
+                    linha.append(titulo, acoes);
+                    item.appendChild(linha);
+                    listaMateriaisRBS.appendChild(item);
                 });
             }
         }
@@ -253,17 +261,24 @@ document.addEventListener("DOMContentLoaded", async function () {
     function renderizarCortesiasCliente(cortesia) {
         if (!resumoCortesiasCliente) return;
         resumoCortesiasCliente.replaceChildren();
-        if (!cortesia) {
-            resumoCortesiasCliente.textContent = "Nenhuma cortesia cadastrada até o momento.";
-            return;
-        }
-        const resumo = document.createElement("p");
-        resumo.innerHTML = `
-            <strong>Arena:</strong> Passaporte (${cortesia.arenaPassaporte}) | Sexta (${cortesia.arenaSexta}) | Sábado (${cortesia.arenaSabado})<br>
-            <strong>Camarote:</strong> Passaporte (${cortesia.camarotePassaporte}) | Sexta (${cortesia.camaroteSexta}) | Sábado (${cortesia.camaroteSabado})<br>
-            <strong>Premium:</strong> Passaporte (${cortesia.premiumPassaporte}) | Sexta (${cortesia.premiumSexta}) | Sábado (${cortesia.premiumSabado})
-        `;
-        resumoCortesiasCliente.appendChild(resumo);
+
+        const setores = [
+            { nome: "Arena", passaporte: cortesia?.arenaPassaporte || 0, sexta: cortesia?.arenaSexta || 0, sabado: cortesia?.arenaSabado || 0 },
+            { nome: "Camarote", passaporte: cortesia?.camarotePassaporte || 0, sexta: cortesia?.camaroteSexta || 0, sabado: cortesia?.camaroteSabado || 0 },
+            { nome: "Premium", passaporte: cortesia?.premiumPassaporte || 0, sexta: cortesia?.premiumSexta || 0, sabado: cortesia?.premiumSabado || 0 }
+        ];
+
+        setores.forEach(s => {
+            const bloco = document.createElement("div");
+            bloco.className = "cortesia-setor";
+            bloco.innerHTML = `
+                <h5>${s.nome}</h5>
+                <div class="cortesia-resumo"><span>Passaporte</span><strong>${s.passaporte}</strong></div>
+                <div class="cortesia-resumo"><span>Sexta-feira</span><strong>${s.sexta}</strong></div>
+                <div class="cortesia-resumo"><span>Sábado</span><strong>${s.sabado}</strong></div>
+            `;
+            resumoCortesiasCliente.appendChild(bloco);
+        });
     }
 
     function fecharFormularioEnvio() {
@@ -307,13 +322,12 @@ document.addEventListener("DOMContentLoaded", async function () {
                     caminhoStorage: null,
                     urlExterna: null
                 }, arquivo);
-                alert("Material enviado com sucesso e armazenado no Supabase Storage!");
+                alert("Material enviado com sucesso!");
                 formularioEnvio.reset();
-                if (campoEmail) campoEmail.value = sessao?.email || "";
+                if (campoEmail) campoEmail.value = emailLogado;
                 fecharFormularioEnvio();
                 await carregarPainelDoPatrocinador();
             } catch (erro) {
-                console.error("Erro ao enviar material:", erro);
                 alert(erro.message || "Não foi possível registrar o envio.");
             } finally {
                 if (botaoSubmitEnvio) {
@@ -324,7 +338,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         });
     }
 
-    // Envio do Contrato Assinado em PDF pelo Patrocinador de volta para a RBS
     formContratoAssinado?.addEventListener("submit", async function (event) {
         event.preventDefault();
         if (!marcaId) return;
@@ -338,11 +351,9 @@ document.addEventListener("DOMContentLoaded", async function () {
             btnContratoAssinado.textContent = "Atualizando contrato...";
         }
         try {
-            // Substitui a versão anterior para avançar o contrato para a Fase 2
             for (const c of contratosAtuaisCache) {
                 await apiRequest(`/materiais/${c.id}`, "DELETE").catch(() => { });
             }
-
             await apiUploadMaterial(marcaId, {
                 titulo: arquivoPdf.name,
                 descricao: "Fase 2/3: Contrato assinado pela empresa patrocinadora",
@@ -351,7 +362,6 @@ document.addEventListener("DOMContentLoaded", async function () {
                 caminhoStorage: null,
                 urlExterna: null
             }, arquivoPdf);
-
             alert("Contrato assinado enviado e atualizado com sucesso! A RBS fará a assinatura final.");
             formContratoAssinado.reset();
             await carregarPainelDoPatrocinador();

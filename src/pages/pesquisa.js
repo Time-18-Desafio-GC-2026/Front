@@ -21,28 +21,28 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (ehPatrocinador) {
         if (visaoPatrocinador) visaoPatrocinador.hidden = false;
         const marcaId = sessao.patrocinadorId;
-        const nomeTitulo = document.getElementById("nomeMarcaPesquisa");
         const form = document.getElementById("masterQuestionsForm");
         const msgEl = document.getElementById("pesquisaMensagem");
         const listaEl = document.getElementById("listaMinhasPerguntas");
         const btnSalvar = document.getElementById("btnSalvarPerguntas");
 
-        if (sessao.marcaNome && nomeTitulo) {
-            nomeTitulo.textContent = `Pesquisa Oficial — ${sessao.marcaNome}`;
-        }
-
         async function carregarPerguntasDoCliente() {
             try {
-                const perguntas = (await apiRequest(`/marcas/${marcaId}/pesquisa-perguntas`, "GET")) || [];
+                const [marcaInfo, perguntas] = await Promise.all([
+                    apiRequest(`/marcas/${marcaId}`, "GET").catch(() => null),
+                    apiRequest(`/marcas/${marcaId}/pesquisa-perguntas`, "GET").catch(() => [])
+                ]);
+
+                const nomeDaMarca = marcaInfo?.nome || sessao.marcaNome || "Sua Marca";
                 listaEl.replaceChildren();
 
                 for (let n = 1; n <= 3; n++) {
                     const input = document.getElementById(`perguntaInput${n}`);
-                    const encontrada = perguntas.find(p => Number(p.numeroPergunta) === n);
+                    const encontrada = (perguntas || []).find(p => Number(p.numeroPergunta) === n);
                     if (input) input.value = encontrada ? encontrada.textoPergunta : "";
                 }
 
-                if (perguntas.length === 0) {
+                if (!perguntas || perguntas.length === 0) {
                     const p = document.createElement("p");
                     p.className = "envios-patrocinador-vazio";
                     p.textContent = "Sua marca ainda não cadastrou nenhuma das 3 perguntas personalizadas.";
@@ -53,10 +53,12 @@ document.addEventListener("DOMContentLoaded", async function () {
                 perguntas.forEach(q => {
                     const card = document.createElement("article");
                     card.className = "envio-patrocinador-item";
+                    const nomeAutor = q.autorNome || sessao.nome || sessao.email;
+                    const marcaRepresentada = q.marcaNome || nomeDaMarca;
                     card.innerHTML = `
                         <p class="envio-patrocinador-texto"><strong>Pergunta ${q.numeroPergunta}:</strong> ${q.textoPergunta}</p>
                         <p class="envio-patrocinador-detalhes">
-                            Registrada por: ${q.autorNome || sessao.email} • Última atualização: ${formatarData(q.atualizadoEm)}
+                            Registrada por: <strong>${nomeAutor}</strong> • Representando: <strong>${marcaRepresentada}</strong> • Última atualização: ${formatarData(q.atualizadoEm)}
                         </p>
                     `;
                     listaEl.appendChild(card);
@@ -121,21 +123,19 @@ document.addEventListener("DOMContentLoaded", async function () {
         if (listaFiltrada.length === 0) {
             containerLista.innerHTML = `
                 <div class="patrocinadores-vazio" style="border: 0; border-radius: 0;">
-                    Nenhum patrocinador da cota <strong>Master</strong> encontrado para os critérios informados.
+                    Nenhum patrocinador da cota <strong>Master</strong> encontrado.
                 </div>
             `;
             return;
         }
 
         listaFiltrada.forEach(({ marca, perguntas, logoUrl }) => {
-            const qtdEnviadas = (perguntas || []).length;
-            const faltam = Math.max(0, 3 - qtdEnviadas);
+            const qtdEnviadas = Math.min(3, (perguntas || []).length);
+            const concluido = qtdEnviadas === 3;
 
-            const textoTag = faltam === 0
-                ? "3/3 perguntas concluídas"
-                : (faltam === 1 ? "Falta 1 pergunta" : `Faltam ${faltam} perguntas`);
-            const bgTag = faltam === 0 ? "#dcfce7" : "#fef3c7";
-            const corTag = faltam === 0 ? "#166534" : "#92400e";
+            const textoTag = concluido ? "3/3 Concluído" : `${qtdEnviadas}/3`;
+            const bgTag = concluido ? "#dcfce7" : (qtdEnviadas > 0 ? "#fef3c7" : "#fee2e2");
+            const corTag = concluido ? "#166534" : (qtdEnviadas > 0 ? "#92400e" : "#b42318");
 
             const item = document.createElement("div");
             item.className = "pesquisa-accordion-item";
@@ -158,7 +158,9 @@ document.addEventListener("DOMContentLoaded", async function () {
                 </div>
                 <div style="display: flex; align-items: center; gap: 12px;">
                     <span class="patrocinador-cota" style="background: ${bgTag}; color: ${corTag}; margin: 0;">${textoTag}</span>
-                    <button type="button" class="botao-recolher" aria-expanded="false" title="Expandir perguntas">⌄</button>
+                    <button type="button" class="botao-recolher" aria-expanded="false" title="Expandir perguntas">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
                 </div>
             `;
 
@@ -171,7 +173,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 const linha = document.createElement("div");
                 linha.className = "pesquisa-linha-pergunta";
                 linha.innerHTML = p
-                    ? `<strong>Pergunta ${i}:</strong> ${p.textoPergunta} <span style="float:right; color:#64748b; font-size:11px;">${formatarData(p.atualizadoEm)}</span>`
+                    ? `<strong>Pergunta ${i}:</strong> ${p.textoPergunta} <span style="float:right; color:#64748b; font-size:11px;">Autor: ${p.autorNome || "-"} • ${formatarData(p.atualizadoEm)}</span>`
                     : `<strong>Pergunta ${i}:</strong> <em style="color:#94a3b8;">Ainda não enviada pelo patrocinador.</em>`;
                 body.appendChild(linha);
             }
@@ -180,7 +182,6 @@ document.addEventListener("DOMContentLoaded", async function () {
             header.addEventListener("click", () => {
                 const vaiFechar = !body.hidden;
                 body.hidden = vaiFechar;
-                btnToggle.textContent = vaiFechar ? "⌄" : "⌃";
                 btnToggle.setAttribute("aria-expanded", String(!vaiFechar));
             });
 
@@ -224,7 +225,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         renderizarListaMaster(obterListaFiltrada());
     });
 
-    // Gera Relatório Oficial em PDF (Impressão Nativa Formatada)
     btnImportarPdf?.addEventListener("click", () => {
         const lista = obterListaFiltrada();
         if (lista.length === 0) {
@@ -236,11 +236,12 @@ document.addEventListener("DOMContentLoaded", async function () {
             const q1 = perguntas.find(p => Number(p.numeroPergunta) === 1)?.textoPergunta || "<em>Pendente de envio</em>";
             const q2 = perguntas.find(p => Number(p.numeroPergunta) === 2)?.textoPergunta || "<em>Pendente de envio</em>";
             const q3 = perguntas.find(p => Number(p.numeroPergunta) === 3)?.textoPergunta || "<em>Pendente de envio</em>";
+            const statusTxt = perguntas.length === 3 ? "3/3 Concluído" : `${perguntas.length}/3`;
             return `
                 <tr>
                     <td><strong>${marca.nome}</strong><br><small>${marca.cnpj || "-"}</small></td>
                     <td>1. ${q1}<br>2. ${q2}<br>3. ${q3}</td>
-                    <td>${perguntas.length}/3 enviadas</td>
+                    <td>${statusTxt}</td>
                 </tr>
             `;
         }).join("");

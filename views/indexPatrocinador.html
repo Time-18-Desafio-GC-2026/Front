@@ -1,210 +1,149 @@
 ﻿<!DOCTYPE html>
-
 <html lang="pt-BR">
 
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <meta name="description" content="Portal de gestão RBS - Dashboard administrativo">
-
-    <title>Cliente | Dashboard</title>
+    <meta name="description" content="Central da Marca Patrocinadora - Portal RBS">
+    <title>Portal do Patrocinador | Central da Marca</title>
     <link rel="stylesheet" href="../assets/css/style_portal.css">
-
-    <script src="../src/shared/theme.js"></script>
     <script src="../src/guards/security.js"></script>
 </head>
 
-
 <body>
-    <!-- APP SHELL -->
-
     <div class="app-shell">
-
-
-        <!-- SIDEBAR -->
-
         <aside class="sidebar" id="sidebar"></aside>
 
-        <!-- =====================================================
-
-             MAIN AREA
-
-        ====================================================== -->
-
         <div class="main-area">
-
-            <!-- TOPBAR -->
-
             <header class="topbar"></header>
 
-
-
             <main class="content" id="dashboard">
-
-
-
-                <!-- DASHBOARD HEADER -->
-
-                <section class="dashboard-header">
-
-                    <section class="identificacao-patrocinador">
-                        <div class="identificacao-cabecalho">
-                            <div>
-                                <span class="identificacao-legenda">ÁREA DO PATROCINADOR</span>
-                                <h1 id="nomePatrocinador">Minha empresa</h1>
+                <div class="central-marca-wrapper">
+                    <article class="patrocinador-card">
+                        <!-- CABEÇALHO DA CENTRAL DA MARCA (LOGO + NOME + TAG DE COTA + BOTÃO DE ENVIO) -->
+                        <div class="patrocinador-card-header">
+                            <div class="patrocinador-foto" id="logoContainerPatrocinador" title="Logo da sua empresa">
+                                <span>Logo</span>
                             </div>
-                        </div>
 
-                        <p class="identificacao-descricao">
-                            Acompanhe os materiais, os conteúdos e as informações
-                            vinculados à sua empresa no Portal do Patrocinador.
-                        </p>
-
-                        <div class="cota-destaque" id="detalheCota">
-                            <span class="cota-status-icone" aria-hidden="true">✓</span>
-                            <div>
-                                <strong id="tituloCota">Carregando sua categoria...</strong>
-                                <p id="mensagemPatrocinador" role="status">
-                                    Consultando informações da sua conta.
-                                </p>
+                            <div class="titulo-cota-inline">
+                                <h1 id="nomePatrocinador" style="font-size: 24px; color: var(--text-strong);">Minha
+                                    Empresa</h1>
+                                <span class="patrocinador-cota" id="badgeCotaPatrocinador">Carregando...</span>
                             </div>
-                        </div>
-                    </section>
 
+                            <div class="new-sponsor-wrapper">
+                                <button class="button button-primary" type="button" id="newSponsorButton"
+                                    aria-expanded="false" aria-controls="newSponsorForm">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M12 5v14M5 12h14" />
+                                    </svg>
+                                    Enviar Mídia ou Conteúdo
+                                </button>
 
-
-                    <div class="dashboard-title">
-                        <h1>Mídia e conteúdo</h1>
-                        <p>Envie materiais em arquivo ou em texto</p>
-
-                        <div class="new-sponsor-wrapper">
-                            <button class="button button-primary" type="button" id="newSponsorButton"
-                                aria-expanded="false" aria-controls="newSponsorForm">
-                                <svg viewBox="0 0 24 24" aria-hidden="true">
-                                    <path d="M12 5v14M5 12h14" />
-                                </svg>
-                                Enviar Mídia ou Conteudo
-                            </button>
-
-
-                            <div class="new-sponsor-form" id="newSponsorForm">
-                                <div class="form-header">
-                                    <div>
-
-                                        <h3>Enviar Mídia ou Conteúdo</h3>
-                                        <p>Registar novos dados em texto ou imagem na plataforma.</p>
-
+                                <!-- MODAL CENTRALIZADO DE ENVIO DE MÍDIA/CONTEÚDO -->
+                                <div class="new-sponsor-form" id="newSponsorForm">
+                                    <div class="form-header">
+                                        <div>
+                                            <h3>Enviar Mídia ou Conteúdo</h3>
+                                            <p>Registre arquivos de marca (MIV/Logo), peças de ativação ou observações
+                                                para a equipe RBS.</p>
+                                        </div>
+                                        <button type="button" class="close-form" id="closeSponsorForm"
+                                            aria-label="Fechar">×</button>
                                     </div>
-
-                                    <button type="button" class="close-form" id="closeSponsorForm" aria-label="Fechar">
-                                        ×
-                                    </button>
-
+                                    <form id="sponsorForm">
+                                        <div class="form-group">
+                                            <label for="sponsorActorEmail">Conta conectada</label>
+                                            <input type="email" id="sponsorActorEmail" readonly required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="sponsorTexto">Descrição / Conteúdo em Texto</label>
+                                            <input type="text" id="sponsorTexto" name="texto"
+                                                placeholder="Ex.: Manual de Identidade Visual (MIV), briefing ou link de campanha">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="sponsorArchive">Arquivo (Imagem, PDF, Vídeo, ZIP)</label>
+                                            <input type="file" id="sponsorArchive" name="arquivo">
+                                        </div>
+                                        <div class="form-actions">
+                                            <button type="button" class="form-cancel"
+                                                id="cancelSponsor">Cancelar</button>
+                                            <button type="submit" class="form-submit">Enviar Dados</button>
+                                        </div>
+                                    </form>
                                 </div>
-
-                                <form id="sponsorForm">
-                                    <!-- Envio Texto -->
-                                    <div class="form-group">
-                                        <label for="sponsorActorEmail">
-                                            Conta conectada
-                                        </label>
-                                        <input type="email" id="sponsorActorEmail" autocomplete="email" readonly
-                                            required>
-
-                                        <label for="sponsorTexto">Texto</label>
-
-                                        <input type="text" id="sponsorTexto" name="texto"
-                                            placeholder="Ex.: Dados releventas em texto de qualquer tipo, como informações de mídia, conteúdo ou outros dados importantes.">
-                                    </div>
-
-
-                                    <!-- Arquivo -->
-
-                                    <div class="form-group form-group-arquivo">
-
-                                        <label for="sponsorArchive">
-
-                                            Arquivo (Imagem, PDF, Vídeo, etc.)
-
-                                        </label>
-
-                                        <input type="file" id="sponsorArchive" name="arquivo">
-
-                                    </div>
-                                    <!-- Botões -->
-
-                                    <div class="form-actions">
-
-
-
-                                        <button type="button" class="form-cancel" id="cancelSponsor">
-
-                                            Cancelar
-
-                                        </button>
-
-                                        <button type="submit" class="form-submit">
-
-                                            Enviar Dados
-
-                                        </button>
-
-                                    </div>
-
-                                </form>
                             </div>
                         </div>
-                    </div>
-                    <!-- Materiais publicados pela RBS (Agora fora do form oculto, sempre visível!) -->
-                    <section id="materiaisPublicadosRBS" class="materiais-publicados-cliente" hidden>
-                        <h2>Materiais publicados pela RBS</h2>
-                        <div id="listaMateriaisRBS"></div>
-                    </section>
 
-                    <!-- Materiais enviados pelo próprio Patrocinador -->
-                    <section id="meusEnviosSection" class="materiais-publicados-cliente" style="margin-top: 1.5rem;">
-                        <h2>Meus Materiais Enviados</h2>
-                        <div id="listaMeusEnvios"></div>
-                    </section>
-                    <!-- Quadro de Cortesias da Marca (Somente Leitura para o Patrocinador) -->
-                    <section id="cortesiasClienteSection" class="materiais-publicados-cliente"
-                        style="margin-top: 1.5rem;">
-                        <h2>Minhas Cortesias</h2>
-                        <div id="resumoCortesiasCliente"></div>
-                    </section>
+                        <!-- BARRA DE DADOS DA EMPRESA E PLANO COMERCIAL -->
+                        <div class="patrocinador-info-grid">
+                            <div class="patrocinador-info-item">
+                                <strong>CNPJ</strong>
+                                <span id="infoCnpjPatrocinador">--</span>
+                            </div>
+                            <div class="patrocinador-info-item">
+                                <strong>Conta Autenticada</strong>
+                                <span id="infoEmailPatrocinador">--</span>
+                            </div>
+                            <div class="patrocinador-info-item">
+                                <strong>Plano Comercial</strong>
+                                <div id="infoPlanoPatrocinador"><span>Consultando...</span></div>
+                            </div>
+                        </div>
 
-                    <!-- Seção de Contrato (Download para Assinatura e Devolução de PDF Assinado) -->
-                    <section id="contratosClienteSection" class="materiais-publicados-cliente"
-                        style="margin-top: 1.5rem;">
-                        <h2>Contrato de Patrocínio</h2>
-                        <p style="margin: 0 0 12px; color: var(--text-muted); font-size: 13px;">
-                            Baixe o contrato disponibilizado pela RBS, realize a assinatura e envie o arquivo PDF
-                            assinado para atualizar o
-                            documento na plataforma.
-                        </p>
-                        <div id="listaContratosCliente"></div>
-                        <form id="formEnviarContratoAssinado"
-                            style="margin-top: 12px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                            <input type="file" id="inputContratoAssinadoPdf" accept=".pdf,application/pdf" required
-                                style="max-width: 320px; padding: 6px; border: 1px solid var(--border); border-radius: 6px; background: #fff;">
-                            <button type="submit" class="button button-primary" id="btnEnviarContratoAssinado">
-                                Enviar Contrato Assinado (PDF)
-                            </button>
-                        </form>
-                    </section>
+                        <!-- 1. CONTRATO DE PATROCÍNIO -->
+                        <section class="patrocinador-cortesias" id="contratosClienteSection">
+                            <div class="secao-cabecalho">
+                                <h4>Contrato de Patrocínio</h4>
+                            </div>
+                            <p class="envios-vazio" style="margin-bottom: 12px;">
+                                Baixe o contrato disponibilizado pela RBS, realize a assinatura e envie o arquivo PDF
+                                assinado para atualizar o documento na plataforma.
+                            </p>
+                            <div id="listaContratosCliente" class="midia-rbs-lista"></div>
+                            <form id="formEnviarContratoAssinado"
+                                style="margin-top: 12px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                <input type="file" id="inputContratoAssinadoPdf" accept=".pdf,application/pdf" required
+                                    style="max-width: 340px;">
+                                <button type="submit" class="button button-primary" id="btnEnviarContratoAssinado">
+                                    Enviar Contrato Assinado (PDF)
+                                </button>
+                            </form>
+                        </section>
+
+                        <!-- 2. MÍDIA E CONTEÚDO (DIVIDIDO ENTRE ENVIOS DA MARCA E ENVIOS DA RBS) -->
+                        <div class="patrocinador-envios">
+                            <div class="secao-cabecalho">
+                                <h4>Mídia e Conteúdo</h4>
+                            </div>
+
+                            <div class="midia-subbloco">
+                                <h5>Envios da Sua Marca</h5>
+                                <div id="listaMeusEnvios"></div>
+                            </div>
+
+                            <div class="midia-subbloco" id="materiaisPublicadosRBS">
+                                <h5>Envios da RBS</h5>
+                                <div id="listaMateriaisRBS"></div>
+                            </div>
+                        </div>
+
+                        <!-- 3. CORTESIAS DA MARCA -->
+                        <section class="patrocinador-cortesias" id="cortesiasClienteSection">
+                            <div class="secao-cabecalho">
+                                <h4>Minhas Cortesias</h4>
+                            </div>
+                            <div id="resumoCortesiasCliente" class="cortesias-grade"></div>
+                        </section>
+                    </article>
+                </div>
+            </main>
         </div>
     </div>
 
-    <!-- Camada central de serviço HTTP (conecta com o Back-end Java) -->
     <script src="../src/services/api.js"></script>
-
-    <!-- Nome e avatar da conta -->
     <script src="../src/shared/layout.js"></script>
-
-    <!-- Comportamentos exclusivos da área do patrocinador conectados à API -->
     <script src="../src/pages/patrocinador.js"></script>
 </body>
 

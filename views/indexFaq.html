@@ -6,9 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Perguntas frequentes dos patrocinadores e respostas da equipe RBS">
     <title>RBS Patrocinadores | FAQ</title>
-    <script src="../src/shared/theme.js"></script>
-    <script src="../src/guards/security.js"></script>
     <link rel="stylesheet" href="../assets/css/style_portal.css">
+    <script src="../src/guards/security.js"></script>
 </head>
 
 <body>
@@ -19,44 +18,84 @@
             <header class="topbar"></header>
 
             <main class="content faq-content">
-                <section class="faq-header">
+                <section class="faq-header history-header-row">
                     <div>
                         <h1>Perguntas frequentes</h1>
-                        <p id="faqIntro">Envie uma pergunta e consulte as dúvidas compartilhadas pelos patrocinadores
-                            (ordenadas pelas mais acessadas).</p>
+                        <p id="faqIntro">Envie uma dúvida para a equipe RBS ou consulte as respostas publicadas por
+                            categoria.</p>
                     </div>
-                </section>
-
-                <section class="faq-compose" id="questionSection" aria-labelledby="questionHeading">
-                    <h2 id="questionHeading">Faça uma pergunta</h2>
-                    <form id="questionForm">
-                        <label for="questionCategory">Categoria do assunto</label>
-                        <select id="questionCategory" name="categoria" required
-                            style="margin-bottom: 8px; height: 38px; border-radius: 6px; padding: 0 10px; border: 1px solid var(--border);">
+                    <div>
+                        <select id="faqFilterCategory"
+                            style="height: 38px; border-radius: 8px; padding: 0 12px; border: 1px solid var(--border); background: #fff; font-size: 13px;">
+                            <option value="">Todas as categorias</option>
                             <option value="GERAL">Geral / Operação</option>
                             <option value="MIDIA">Mídia e Marca</option>
                             <option value="CORTESIAS">Cortesias e Lounge</option>
                             <option value="ATIVACAO">Pesquisa e Ativação</option>
                             <option value="CONTRATO">Plano Comercial e Contrato</option>
                         </select>
+                    </div>
+                </section>
 
+                <!-- FORMULÁRIO DE ENVIO DE PERGUNTA (APENAS PARA PATROCINADORES) -->
+                <section class="faq-compose" id="questionSection" aria-labelledby="questionHeading">
+                    <h2 id="questionHeading">Faça uma pergunta</h2>
+                    <form id="questionForm">
+                        <label for="questionCategory">Categoria do assunto</label>
+                        <select id="questionCategory" name="categoria" required
+                            style="margin-bottom: 6px; height: 40px; border-radius: 8px; padding: 0 12px; border: 1px solid var(--border); background: #f8fafc;">
+                            <option value="GERAL">Geral / Operação</option>
+                            <option value="MIDIA">Mídia e Marca</option>
+                            <option value="CORTESIAS">Cortesias e Lounge</option>
+                            <option value="ATIVACAO">Pesquisa e Ativação</option>
+                            <option value="CONTRATO">Plano Comercial e Contrato</option>
+                        </select>
                         <label for="questionInput">Sua pergunta</label>
                         <textarea id="questionInput" name="question" maxlength="500" required
                             placeholder="Escreva sua dúvida (até 500 caracteres)"></textarea>
                         <div class="faq-form-footer">
-                            <span id="questionCounter">0/500</span>
+                            <span id="questionCounter" style="font-size: 12px; color: var(--text-muted);">0/500</span>
                             <button class="button button-primary" type="submit">Publicar pergunta</button>
                         </div>
                     </form>
                 </section>
 
-                <section class="faq-list-section" aria-labelledby="questionsHeading">
-                    <div class="faq-list-heading">
-                        <h2 id="questionsHeading">Perguntas da comunidade</h2>
-                        <span id="questionCount" aria-live="polite"></span>
+                <p class="faq-message" id="faqMessage" role="status" aria-live="polite"></p>
+
+                <!-- DROPDOWN 1: PERGUNTAS RECEBIDAS (AGUARDANDO RESPOSTA) -->
+                <section class="faq-accordion-section" id="secaoRecebidasFaq">
+                    <div class="faq-accordion-header" id="headerRecebidasFaq">
+                        <div class="faq-accordion-title-group">
+                            <h2>Perguntas recebidas (Aguardando resposta)</h2>
+                            <span class="faq-count-badge" id="countRecebidasFaq">0</span>
+                        </div>
+                        <button type="button" class="botao-recolher" id="btnToggleRecebidas" aria-expanded="true">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="m6 9 6 6 6-6" />
+                            </svg>
+                        </button>
                     </div>
-                    <p class="faq-message" id="faqMessage" role="status" aria-live="polite"></p>
-                    <div class="faq-list" id="faqList"></div>
+                    <div class="faq-accordion-body" id="bodyRecebidasFaq">
+                        <div class="faq-list" id="faqListRecebidas"></div>
+                    </div>
+                </section>
+
+                <!-- DROPDOWN 2: PERGUNTAS PUBLICADAS (RESPONDIDAS) -->
+                <section class="faq-accordion-section" id="secaoPublicadasFaq">
+                    <div class="faq-accordion-header" id="headerPublicadasFaq">
+                        <div class="faq-accordion-title-group">
+                            <h2>Perguntas publicadas</h2>
+                            <span class="faq-count-badge" id="countPublicadasFaq">0</span>
+                        </div>
+                        <button type="button" class="botao-recolher" id="btnTogglePublicadas" aria-expanded="true">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="m6 9 6 6 6-6" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="faq-accordion-body" id="bodyPublicadasFaq">
+                        <div class="faq-list" id="faqListPublicadas"></div>
+                    </div>
                 </section>
             </main>
         </div>

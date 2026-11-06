@@ -9,18 +9,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         return;
     }
 
-    document.querySelectorAll(".toggle-password").forEach(button => {
-        button.addEventListener("click", () => {
-            const input = document.getElementById(button.dataset.target);
-            if (!input) return;
-            const mostrar = input.type === "password";
-            input.type = mostrar ? "text" : "password";
-            button.textContent = mostrar ? "Ocultar" : "Mostrar";
-            button.setAttribute("aria-label", `${mostrar ? "Ocultar" : "Mostrar"} senha`);
-            button.setAttribute("aria-pressed", String(mostrar));
-        });
-    });
-
     const profileEmail = document.getElementById("profileEmail");
     const profileUsername = document.getElementById("profileUsername");
     const usernameForm = document.getElementById("usernameForm");
@@ -30,6 +18,18 @@ document.addEventListener("DOMContentLoaded", async function () {
     const currentPasswordInput = document.getElementById("currentPassword");
     const newPasswordInput = document.getElementById("newPassword");
     const confirmPasswordInput = document.getElementById("confirmPassword");
+    const toggleAllBtn = document.getElementById("toggleAllPasswordsBtn");
+
+    // Botão único fora dos inputs que mostra/oculta as 3 senhas ao mesmo tempo
+    toggleAllBtn?.addEventListener("click", () => {
+        const campos = [currentPasswordInput, newPasswordInput, confirmPasswordInput].filter(Boolean);
+        const mostrar = campos[0]?.type === "password";
+        campos.forEach(input => {
+            input.type = mostrar ? "text" : "password";
+        });
+        toggleAllBtn.textContent = mostrar ? "Ocultar senhas" : "Mostrar senhas";
+        toggleAllBtn.setAttribute("aria-pressed", String(mostrar));
+    });
 
     try {
         const meuUsuario = await apiRequest("/auth/eu", "GET");
@@ -102,6 +102,13 @@ document.addEventListener("DOMContentLoaded", async function () {
                 localStorage.setItem("rbs_token", sessaoNova.tokenJwt);
             }
             profileForm.reset();
+            if (toggleAllBtn) {
+                toggleAllBtn.textContent = "Mostrar senhas";
+                toggleAllBtn.setAttribute("aria-pressed", "false");
+            }
+            [currentPasswordInput, newPasswordInput, confirmPasswordInput].forEach(inp => {
+                if (inp) inp.type = "password";
+            });
             profileMessage.textContent = "Senha atualizada com sucesso!";
         } catch (error) {
             profileMessage.textContent = error.message || "Não foi possível atualizar a senha.";
